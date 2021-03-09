@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.AppProductDao">
+
+    <resultMap type="com.yh.entity.AppProduct" id="AppProductMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="productCode" column="product_code" jdbcType="VARCHAR"/>
+        <result property="productName" column="product_name" jdbcType="VARCHAR"/>
+        <result property="protocol" column="protocol" jdbcType="VARCHAR"/>
+        <result property="logoUrl" column="logo_url" jdbcType="VARCHAR"/>
+        <result property="redirectUrl" column="redirect_url" jdbcType="VARCHAR"/>
+        <result property="loginoutUrl" column="loginout_url" jdbcType="VARCHAR"/>
+        <result property="productType" column="product_type" jdbcType="VARCHAR"/>
+        <result property="productStatus" column="product_status" jdbcType="VARCHAR"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="AppProductMap">
+        select
+          id, product_code, product_name, protocol, logo_url, redirect_url, loginout_url, product_type, product_status, description, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AppProductMap">
+        select
+          id, product_code, product_name, protocol, logo_url, redirect_url, loginout_url, product_type, product_status, description, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="AppProductMap">
+        select
+        id, product_code, product_name, protocol, logo_url, redirect_url, loginout_url, product_type, product_status,
+        description, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="productCode != null and productCode != ''">
+                and product_code = #{productCode}
+            </if>
+            <if test="productName != null and productName != ''">
+                and product_name = #{productName}
+            </if>
+            <if test="protocol != null and protocol != ''">
+                and protocol = #{protocol}
+            </if>
+            <if test="logoUrl != null and logoUrl != ''">
+                and logo_url = #{logoUrl}
+            </if>
+            <if test="redirectUrl != null and redirectUrl != ''">
+                and redirect_url = #{redirectUrl}
+            </if>
+            <if test="loginoutUrl != null and loginoutUrl != ''">
+                and loginout_url = #{loginoutUrl}
+            </if>
+            <if test="productType != null and productType != ''">
+                and product_type = #{productType}
+            </if>
+            <if test="productStatus != null and productStatus != ''">
+                and product_status = #{productStatus}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product(product_code, product_name, protocol, logo_url, redirect_url, loginout_url, product_type, product_status, description, is_delete, created_by, updated_by, created_time, updated_time)
+        values (#{productCode}, #{productName}, #{protocol}, #{logoUrl}, #{redirectUrl}, #{loginoutUrl}, #{productType}, #{productStatus}, #{description}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product(product_code, product_name, protocol, logo_url, redirect_url,
+        loginout_url, product_type, product_status, description, is_delete, created_by, updated_by, created_time,
+        updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.productCode}, #{entity.productName}, #{entity.protocol}, #{entity.logoUrl}, #{entity.redirectUrl},
+            #{entity.loginoutUrl}, #{entity.productType}, #{entity.productStatus}, #{entity.description},
+            #{entity.isDelete}, #{entity.createdBy}, #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product(product_code, product_name, protocol, logo_url, redirect_url,
+        loginout_url, product_type, product_status, description, is_delete, created_by, updated_by, created_time,
+        updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.productCode}, #{entity.productName}, #{entity.protocol}, #{entity.logoUrl}, #{entity.redirectUrl},
+            #{entity.loginoutUrl}, #{entity.productType}, #{entity.productStatus}, #{entity.description},
+            #{entity.isDelete}, #{entity.createdBy}, #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+        on duplicate key update
+        product_code = values(product_code) , product_name = values(product_name) , protocol = values(protocol) ,
+        logo_url = values(logo_url) , redirect_url = values(redirect_url) , loginout_url = values(loginout_url) ,
+        product_type = values(product_type) , product_status = values(product_status) , description =
+        values(description) , is_delete = values(is_delete) , created_by = values(created_by) , updated_by =
+        values(updated_by) , created_time = values(created_time) , updated_time = values(updated_time)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update o2o_support_idaas.app_product
+        <set>
+            <if test="productCode != null and productCode != ''">
+                product_code = #{productCode},
+            </if>
+            <if test="productName != null and productName != ''">
+                product_name = #{productName},
+            </if>
+            <if test="protocol != null and protocol != ''">
+                protocol = #{protocol},
+            </if>
+            <if test="logoUrl != null and logoUrl != ''">
+                logo_url = #{logoUrl},
+            </if>
+            <if test="redirectUrl != null and redirectUrl != ''">
+                redirect_url = #{redirectUrl},
+            </if>
+            <if test="loginoutUrl != null and loginoutUrl != ''">
+                loginout_url = #{loginoutUrl},
+            </if>
+            <if test="productType != null and productType != ''">
+                product_type = #{productType},
+            </if>
+            <if test="productStatus != null and productStatus != ''">
+                product_status = #{productStatus},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from o2o_support_idaas.app_product where id = #{id}
+    </delete>
+
+</mapper>

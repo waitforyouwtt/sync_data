@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.AppProductRoleDao">
+
+    <resultMap type="com.yh.entity.AppProductRole" id="AppProductRoleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uniqueCode" column="unique_code" jdbcType="VARCHAR"/>
+        <result property="productCode" column="product_code" jdbcType="VARCHAR"/>
+        <result property="tenantCode" column="tenant_code" jdbcType="VARCHAR"/>
+        <result property="roleCode" column="role_code" jdbcType="VARCHAR"/>
+        <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="roleStatus" column="role_status" jdbcType="VARCHAR"/>
+        <result property="outRoleCode" column="out_role_code" jdbcType="VARCHAR"/>
+        <result property="platform" column="platform" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="AppProductRoleMap">
+        select
+          id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product_role
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AppProductRoleMap">
+        select
+          id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product_role
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="AppProductRoleMap">
+        select
+        id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code,
+        platform, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product_role
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uniqueCode != null and uniqueCode != ''">
+                and unique_code = #{uniqueCode}
+            </if>
+            <if test="productCode != null and productCode != ''">
+                and product_code = #{productCode}
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                and tenant_code = #{tenantCode}
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                and role_code = #{roleCode}
+            </if>
+            <if test="roleName != null and roleName != ''">
+                and role_name = #{roleName}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+            <if test="roleStatus != null and roleStatus != ''">
+                and role_status = #{roleStatus}
+            </if>
+            <if test="outRoleCode != null and outRoleCode != ''">
+                and out_role_code = #{outRoleCode}
+            </if>
+            <if test="platform != null and platform != ''">
+                and platform = #{platform}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product_role(unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time, updated_time)
+        values (#{uniqueCode}, #{productCode}, #{tenantCode}, #{roleCode}, #{roleName}, #{description}, #{roleStatus}, #{outRoleCode}, #{platform}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product_role(unique_code, product_code, tenant_code, role_code, role_name,
+        description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time,
+        updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.uniqueCode}, #{entity.productCode}, #{entity.tenantCode}, #{entity.roleCode}, #{entity.roleName},
+            #{entity.description}, #{entity.roleStatus}, #{entity.outRoleCode}, #{entity.platform}, #{entity.isDelete},
+            #{entity.createdBy}, #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product_role(unique_code, product_code, tenant_code, role_code, role_name,
+        description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time,
+        updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.uniqueCode}, #{entity.productCode}, #{entity.tenantCode}, #{entity.roleCode}, #{entity.roleName},
+            #{entity.description}, #{entity.roleStatus}, #{entity.outRoleCode}, #{entity.platform}, #{entity.isDelete},
+            #{entity.createdBy}, #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+        on duplicate key update
+        product_code = values(product_code) , tenant_code = values(tenant_code) ,
+        role_code = values(role_code)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update o2o_support_idaas.app_product_role
+        <set>
+            <if test="uniqueCode != null and uniqueCode != ''">
+                unique_code = #{uniqueCode},
+            </if>
+            <if test="productCode != null and productCode != ''">
+                product_code = #{productCode},
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                tenant_code = #{tenantCode},
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                role_code = #{roleCode},
+            </if>
+            <if test="roleName != null and roleName != ''">
+                role_name = #{roleName},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="roleStatus != null and roleStatus != ''">
+                role_status = #{roleStatus},
+            </if>
+            <if test="outRoleCode != null and outRoleCode != ''">
+                out_role_code = #{outRoleCode},
+            </if>
+            <if test="platform != null and platform != ''">
+                platform = #{platform},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from o2o_support_idaas.app_product_role where id = #{id}
+    </delete>
+
+</mapper>

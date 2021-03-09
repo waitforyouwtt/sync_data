@@ -1,0 +1,54 @@
+#服务端口
+server:
+  port: 8003
+
+spring:
+  #应用名称
+  application:
+    name: consumer
+  #数据库连接池
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/o2o_support_idaas?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    #HOME PC
+    username: 000000
+    password: 000000
+  # 格式化日期
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+
+#mybabtis 配置
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath*:mapper/*Mapper.xml
+  type-aliases-package: com.yh.entity
+
+#注册中心地址[多个配置中心，中间用逗号分开]
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:8000/eureka/ # ,http://127.0.0.1:8762/eureka/
+  instance:
+    prefer-ip-address: true
+
+#远程调用配置
+feign:
+  hystrix:
+    enabled: true
+  client:
+    config:
+      default:
+        connectTimeout: 1000000
+        readTimeout: 100000
+
+ribbon:
+  #建立连接超时时间
+  ConnectTimeout: 1000000
+  #建立连接之后，读取响应资源超时时间
+  ReadTimeout: 1000000
+
+logging:
+  level:
+    com.yh.dao: debug

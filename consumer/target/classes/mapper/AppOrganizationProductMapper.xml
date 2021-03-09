@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.AppOrganizationProductDao">
+
+    <resultMap type="com.yh.entity.AppOrganizationProduct" id="AppOrganizationProductMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="productCode" column="product_code" jdbcType="VARCHAR"/>
+        <result property="productName" column="product_name" jdbcType="VARCHAR"/>
+        <result property="tenantCode" column="tenant_code" jdbcType="VARCHAR"/>
+        <result property="organizationCode" column="organization_code" jdbcType="VARCHAR"/>
+        <result property="organizationName" column="organization_name" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="AppOrganizationProductMap">
+        select
+          id, product_code, product_name, tenant_code, organization_code, organization_name, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_organization_product
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AppOrganizationProductMap">
+        select
+          id, product_code, product_name, tenant_code, organization_code, organization_name, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_organization_product
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="AppOrganizationProductMap">
+        select
+        id, product_code, product_name, tenant_code, organization_code, organization_name, is_delete, created_by,
+        updated_by, created_time, updated_time
+        from o2o_support_idaas.app_organization_product
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="productCode != null and productCode != ''">
+                and product_code = #{productCode}
+            </if>
+            <if test="productName != null and productName != ''">
+                and product_name = #{productName}
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                and tenant_code = #{tenantCode}
+            </if>
+            <if test="organizationCode != null and organizationCode != ''">
+                and organization_code = #{organizationCode}
+            </if>
+            <if test="organizationName != null and organizationName != ''">
+                and organization_name = #{organizationName}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_organization_product(product_code, product_name, tenant_code, organization_code, organization_name, is_delete, created_by, updated_by, created_time, updated_time)
+        values (#{productCode}, #{productName}, #{tenantCode}, #{organizationCode}, #{organizationName}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_organization_product(product_code, product_name, tenant_code,
+        organization_code, organization_name, is_delete, created_by, updated_by, created_time, updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.productCode}, #{entity.productName}, #{entity.tenantCode}, #{entity.organizationCode},
+            #{entity.organizationName}, #{entity.isDelete}, #{entity.createdBy}, #{entity.updatedBy},
+            #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_organization_product(product_code, product_name, tenant_code,
+        organization_code, organization_name, is_delete, created_by, updated_by, created_time, updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.productCode}, #{entity.productName}, #{entity.tenantCode}, #{entity.organizationCode},
+            #{entity.organizationName}, #{entity.isDelete}, #{entity.createdBy}, #{entity.updatedBy},
+            #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+        on duplicate key update
+        product_code = values(product_code) , product_name = values(product_name) , tenant_code = values(tenant_code) ,
+        organization_code = values(organization_code) , organization_name = values(organization_name) , is_delete =
+        values(is_delete) , created_by = values(created_by) , updated_by = values(updated_by) , created_time =
+        values(created_time) , updated_time = values(updated_time)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update o2o_support_idaas.app_organization_product
+        <set>
+            <if test="productCode != null and productCode != ''">
+                product_code = #{productCode},
+            </if>
+            <if test="productName != null and productName != ''">
+                product_name = #{productName},
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                tenant_code = #{tenantCode},
+            </if>
+            <if test="organizationCode != null and organizationCode != ''">
+                organization_code = #{organizationCode},
+            </if>
+            <if test="organizationName != null and organizationName != ''">
+                organization_name = #{organizationName},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from o2o_support_idaas.app_organization_product where id = #{id}
+    </delete>
+
+</mapper>

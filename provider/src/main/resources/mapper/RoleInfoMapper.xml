@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.RoleInfoDao">
+
+    <resultMap type="com.yh.entity.RoleInfo" id="RoleInfoMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="roleTypeCode" column="role_type_code" jdbcType="VARCHAR"/>
+        <result property="roleCode" column="role_code" jdbcType="VARCHAR"/>
+        <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+        <result property="isLeaf" column="is_leaf" jdbcType="INTEGER"/>
+        <result property="parentId" column="parent_id" jdbcType="INTEGER"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+        <result property="rolePath" column="role_path" jdbcType="VARCHAR"/>
+        <result property="businessType" column="business_type" jdbcType="VARCHAR"/>
+        <result property="outRoleId" column="out_role_id" jdbcType="INTEGER"/>
+        <result property="outRoleIdTest" column="out_role_id_test" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="RoleInfoMap">
+        select
+          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
+        from yh_srm_usercenter_test.role_info
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="RoleInfoMap">
+        select
+          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
+        from yh_srm_usercenter_test.role_info
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="RoleInfoMap">
+        select
+        id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by,
+        updated_by, role_path, business_type, out_role_id, out_role_id_test
+        from yh_srm_usercenter_test.role_info
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="roleTypeCode != null and roleTypeCode != ''">
+                and role_type_code = #{roleTypeCode}
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                and role_code = #{roleCode}
+            </if>
+            <if test="roleName != null and roleName != ''">
+                and role_name = #{roleName}
+            </if>
+            <if test="isLeaf != null">
+                and is_leaf = #{isLeaf}
+            </if>
+            <if test="parentId != null">
+                and parent_id = #{parentId}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+            <if test="rolePath != null and rolePath != ''">
+                and role_path = #{rolePath}
+            </if>
+            <if test="businessType != null and businessType != ''">
+                and business_type = #{businessType}
+            </if>
+            <if test="outRoleId != null">
+                and out_role_id = #{outRoleId}
+            </if>
+            <if test="outRoleIdTest != null">
+                and out_role_id_test = #{outRoleIdTest}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.role_info(role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test)
+        values (#{roleTypeCode}, #{roleCode}, #{roleName}, #{isLeaf}, #{parentId}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}, #{rolePath}, #{businessType}, #{outRoleId}, #{outRoleIdTest})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
+        is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id,
+        out_role_id_test)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.roleTypeCode}, #{entity.roleCode}, #{entity.roleName}, #{entity.isLeaf}, #{entity.parentId},
+            #{entity.isDelete}, #{entity.createdTime}, #{entity.updatedTime}, #{entity.createdBy}, #{entity.updatedBy},
+            #{entity.rolePath}, #{entity.businessType}, #{entity.outRoleId}, #{entity.outRoleIdTest})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
+        is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id,
+        out_role_id_test)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.roleTypeCode}, #{entity.roleCode}, #{entity.roleName}, #{entity.isLeaf}, #{entity.parentId},
+            #{entity.isDelete}, #{entity.createdTime}, #{entity.updatedTime}, #{entity.createdBy}, #{entity.updatedBy},
+            #{entity.rolePath}, #{entity.businessType}, #{entity.outRoleId}, #{entity.outRoleIdTest})
+        </foreach>
+        on duplicate key update
+        role_type_code = values(role_type_code) , role_code = values(role_code) , role_name = values(role_name) ,
+        is_leaf = values(is_leaf) , parent_id = values(parent_id) , is_delete = values(is_delete) , created_time =
+        values(created_time) , updated_time = values(updated_time) , created_by = values(created_by) , updated_by =
+        values(updated_by) , role_path = values(role_path) , business_type = values(business_type) , out_role_id =
+        values(out_role_id) , out_role_id_test = values(out_role_id_test)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update yh_srm_usercenter_test.role_info
+        <set>
+            <if test="roleTypeCode != null and roleTypeCode != ''">
+                role_type_code = #{roleTypeCode},
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                role_code = #{roleCode},
+            </if>
+            <if test="roleName != null and roleName != ''">
+                role_name = #{roleName},
+            </if>
+            <if test="isLeaf != null">
+                is_leaf = #{isLeaf},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+            <if test="rolePath != null and rolePath != ''">
+                role_path = #{rolePath},
+            </if>
+            <if test="businessType != null and businessType != ''">
+                business_type = #{businessType},
+            </if>
+            <if test="outRoleId != null">
+                out_role_id = #{outRoleId},
+            </if>
+            <if test="outRoleIdTest != null">
+                out_role_id_test = #{outRoleIdTest},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from yh_srm_usercenter_test.role_info where id = #{id}
+    </delete>
+
+    <select id="findCountRoles" resultType="string">
+        select id from yh_srm_usercenter_test.role_info
+        where 1 = 1 and is_delete = 0
+    </select>
+
+    <select id="findRoleBetweenIds" resultMap="RoleInfoMap">
+        select
+          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
+        from yh_srm_usercenter_test.role_info
+        where 1 = 1 and is_delete = 0
+        and id &gt;= #{min} and id &lt;= #{max}
+    </select>
+
+</mapper>

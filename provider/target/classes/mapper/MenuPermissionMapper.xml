@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.MenuPermissionDao">
+
+    <resultMap type="com.yh.entity.MenuPermission" id="MenuPermissionMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="businessType" column="business_type" jdbcType="VARCHAR"/>
+        <result property="operationObjectiveId" column="operation_objective_id" jdbcType="INTEGER"/>
+        <result property="operationObjectiveName" column="operation_objective_name" jdbcType="VARCHAR"/>
+        <result property="apiUrl" column="api_url" jdbcType="VARCHAR"/>
+        <result property="apiMethod" column="api_method" jdbcType="VARCHAR"/>
+        <result property="permissionCode" column="permission_code" jdbcType="VARCHAR"/>
+        <result property="permissionName" column="permission_name" jdbcType="VARCHAR"/>
+        <result property="rank" column="rank" jdbcType="INTEGER"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+        <result property="outMenuId" column="out_menu_id" jdbcType="INTEGER"/>
+        <result property="outMenuPermissionId" column="out_menu_permission_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="MenuPermissionMap">
+        select
+          id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id
+        from yh_srm_usercenter_test.menu_permission
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="MenuPermissionMap">
+        select
+          id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id
+        from yh_srm_usercenter_test.menu_permission
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="MenuPermissionMap">
+        select
+        id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code,
+        permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id,
+        out_menu_permission_id
+        from yh_srm_usercenter_test.menu_permission
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="businessType != null and businessType != ''">
+                and business_type = #{businessType}
+            </if>
+            <if test="operationObjectiveId != null">
+                and operation_objective_id = #{operationObjectiveId}
+            </if>
+            <if test="operationObjectiveName != null and operationObjectiveName != ''">
+                and operation_objective_name = #{operationObjectiveName}
+            </if>
+            <if test="apiUrl != null and apiUrl != ''">
+                and api_url = #{apiUrl}
+            </if>
+            <if test="apiMethod != null and apiMethod != ''">
+                and api_method = #{apiMethod}
+            </if>
+            <if test="permissionCode != null and permissionCode != ''">
+                and permission_code = #{permissionCode}
+            </if>
+            <if test="permissionName != null and permissionName != ''">
+                and permission_name = #{permissionName}
+            </if>
+            <if test="rank != null">
+                and rank = #{rank}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+            <if test="outMenuId != null">
+                and out_menu_id = #{outMenuId}
+            </if>
+            <if test="outMenuPermissionId != null">
+                and out_menu_permission_id = #{outMenuPermissionId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.menu_permission(business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id)
+        values (#{businessType}, #{operationObjectiveId}, #{operationObjectiveName}, #{apiUrl}, #{apiMethod}, #{permissionCode}, #{permissionName}, #{rank}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}, #{outMenuId}, #{outMenuPermissionId})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.menu_permission(business_type, operation_objective_id,
+        operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time,
+        updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.businessType}, #{entity.operationObjectiveId}, #{entity.operationObjectiveName}, #{entity.apiUrl},
+            #{entity.apiMethod}, #{entity.permissionCode}, #{entity.permissionName}, #{entity.rank}, #{entity.isDelete},
+            #{entity.createdTime}, #{entity.updatedTime}, #{entity.createdBy}, #{entity.updatedBy}, #{entity.outMenuId},
+            #{entity.outMenuPermissionId})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.menu_permission(business_type, operation_objective_id,
+        operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time,
+        updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.businessType}, #{entity.operationObjectiveId}, #{entity.operationObjectiveName}, #{entity.apiUrl},
+            #{entity.apiMethod}, #{entity.permissionCode}, #{entity.permissionName}, #{entity.rank}, #{entity.isDelete},
+            #{entity.createdTime}, #{entity.updatedTime}, #{entity.createdBy}, #{entity.updatedBy}, #{entity.outMenuId},
+            #{entity.outMenuPermissionId})
+        </foreach>
+        on duplicate key update
+        business_type = values(business_type) , operation_objective_id = values(operation_objective_id) ,
+        operation_objective_name = values(operation_objective_name) , api_url = values(api_url) , api_method =
+        values(api_method) , permission_code = values(permission_code) , permission_name = values(permission_name) ,
+        rank = values(rank) , is_delete = values(is_delete) , created_time = values(created_time) , updated_time =
+        values(updated_time) , created_by = values(created_by) , updated_by = values(updated_by) , out_menu_id =
+        values(out_menu_id) , out_menu_permission_id = values(out_menu_permission_id)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update yh_srm_usercenter_test.menu_permission
+        <set>
+            <if test="businessType != null and businessType != ''">
+                business_type = #{businessType},
+            </if>
+            <if test="operationObjectiveId != null">
+                operation_objective_id = #{operationObjectiveId},
+            </if>
+            <if test="operationObjectiveName != null and operationObjectiveName != ''">
+                operation_objective_name = #{operationObjectiveName},
+            </if>
+            <if test="apiUrl != null and apiUrl != ''">
+                api_url = #{apiUrl},
+            </if>
+            <if test="apiMethod != null and apiMethod != ''">
+                api_method = #{apiMethod},
+            </if>
+            <if test="permissionCode != null and permissionCode != ''">
+                permission_code = #{permissionCode},
+            </if>
+            <if test="permissionName != null and permissionName != ''">
+                permission_name = #{permissionName},
+            </if>
+            <if test="rank != null">
+                rank = #{rank},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+            <if test="outMenuId != null">
+                out_menu_id = #{outMenuId},
+            </if>
+            <if test="outMenuPermissionId != null">
+                out_menu_permission_id = #{outMenuPermissionId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from yh_srm_usercenter_test.menu_permission where id = #{id}
+    </delete>
+
+    <select id="findCountPermission" resultType="integer">
+        select id from yh_srm_usercenter_test.menu_permission where is_delete = 0
+    </select>
+
+    <select id="menuPermissionBetweenIds" resultMap="MenuPermissionMap">
+        select
+        id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code,
+        permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id,
+        out_menu_permission_id
+        from yh_srm_usercenter_test.menu_permission
+        where 1 = 1 and is_delete = 0
+        and id &gt;= #{min} and id &lt;= #{max}
+    </select>
+
+</mapper>

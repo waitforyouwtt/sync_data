@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.AppRoleResourceDao">
+
+    <resultMap type="com.yh.entity.AppRoleResource" id="AppRoleResourceMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="productCode" column="product_code" jdbcType="VARCHAR"/>
+        <result property="productName" column="product_name" jdbcType="VARCHAR"/>
+        <result property="tenantCode" column="tenant_code" jdbcType="VARCHAR"/>
+        <result property="roleCode" column="role_code" jdbcType="VARCHAR"/>
+        <result property="resourceCode" column="resource_code" jdbcType="VARCHAR"/>
+        <result property="resourceName" column="resource_name" jdbcType="VARCHAR"/>
+        <result property="platform" column="platform" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="AppRoleResourceMap">
+        select
+          id, product_code, product_name, tenant_code, role_code, resource_code, resource_name,platform, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_role_resource
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AppRoleResourceMap">
+        select
+          id, product_code, product_name, tenant_code, role_code, resource_code, resource_name, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_role_resource
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="AppRoleResourceMap">
+        select
+        id, product_code, product_name, tenant_code, role_code, resource_code, resource_name,platform,
+        is_delete, created_by,updated_by, created_time, updated_time
+        from o2o_support_idaas.app_role_resource
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="productCode != null and productCode != ''">
+                and product_code = #{productCode}
+            </if>
+            <if test="productName != null and productName != ''">
+                and product_name = #{productName}
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                and tenant_code = #{tenantCode}
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                and role_code = #{roleCode}
+            </if>
+            <if test="resourceCode != null and resourceCode != ''">
+                and resource_code = #{resourceCode}
+            </if>
+            <if test="resourceName != null and resourceName != ''">
+                and resource_name = #{resourceName}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_role_resource(product_code, product_name, tenant_code, role_code, resource_code, resource_name,platform, is_delete, created_by, updated_by, created_time, updated_time)
+        values (#{productCode}, #{productName}, #{tenantCode}, #{roleCode}, #{resourceCode}, #{resourceName}, #{platform},#{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_role_resource(product_code, product_name, tenant_code, role_code,
+        resource_code, resource_name,platform, is_delete, created_by, updated_by, created_time, updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.productCode}, #{entity.productName}, #{entity.tenantCode}, #{entity.roleCode},
+            #{entity.resourceCode}, #{entity.resourceName},#{entity.platform}, #{entity.isDelete}, #{entity.createdBy},
+            #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_role_resource(product_code, product_name, tenant_code, role_code,
+        resource_code, resource_name,platform, is_delete, created_by, updated_by, created_time, updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.productCode}, #{entity.productName}, #{entity.tenantCode}, #{entity.roleCode},
+            #{entity.resourceCode}, #{entity.resourceName},#{entity.platform}, #{entity.isDelete}, #{entity.createdBy},
+            #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+        on duplicate key update
+        product_code = values(product_code) , tenant_code = values(tenant_code) ,
+        role_code = values(role_code) , resource_code = values(resource_code)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update o2o_support_idaas.app_role_resource
+        <set>
+            <if test="productCode != null and productCode != ''">
+                product_code = #{productCode},
+            </if>
+            <if test="productName != null and productName != ''">
+                product_name = #{productName},
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                tenant_code = #{tenantCode},
+            </if>
+            <if test="roleCode != null and roleCode != ''">
+                role_code = #{roleCode},
+            </if>
+            <if test="resourceCode != null and resourceCode != ''">
+                resource_code = #{resourceCode},
+            </if>
+            <if test="resourceName != null and resourceName != ''">
+                resource_name = #{resourceName},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from o2o_support_idaas.app_role_resource where id = #{id}
+    </delete>
+
+</mapper>

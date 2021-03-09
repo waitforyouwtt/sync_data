@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.RelationUserRoleDao">
+
+    <resultMap type="com.yh.entity.RelationUserRole" id="RelationUserRoleMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userId" column="user_id" jdbcType="INTEGER"/>
+        <result property="roleId" column="role_id" jdbcType="INTEGER"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="RelationUserRoleMap">
+        select
+          id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
+        from yh_srm_usercenter_test.relation_user_role
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="RelationUserRoleMap">
+        select
+          id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
+        from yh_srm_usercenter_test.relation_user_role
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="RelationUserRoleMap">
+        select
+        id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
+        from yh_srm_usercenter_test.relation_user_role
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="userId != null">
+                and user_id = #{userId}
+            </if>
+            <if test="roleId != null">
+                and role_id = #{roleId}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.relation_user_role(user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by)
+        values (#{userId}, #{roleId}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.relation_user_role(user_id, role_id, is_delete, created_time, updated_time,
+        created_by, updated_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId}, #{entity.roleId}, #{entity.isDelete}, #{entity.createdTime}, #{entity.updatedTime},
+            #{entity.createdBy}, #{entity.updatedBy})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into yh_srm_usercenter_test.relation_user_role(user_id, role_id, is_delete, created_time, updated_time,
+        created_by, updated_by)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.userId}, #{entity.roleId}, #{entity.isDelete}, #{entity.createdTime}, #{entity.updatedTime},
+            #{entity.createdBy}, #{entity.updatedBy})
+        </foreach>
+        on duplicate key update
+        user_id = values(user_id) , role_id = values(role_id) , is_delete = values(is_delete) , created_time =
+        values(created_time) , updated_time = values(updated_time) , created_by = values(created_by) , updated_by =
+        values(updated_by)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update yh_srm_usercenter_test.relation_user_role
+        <set>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="roleId != null">
+                role_id = #{roleId},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from yh_srm_usercenter_test.relation_user_role where id = #{id}
+    </delete>
+
+    <select id="queryBetweenId" resultMap="RelationUserRoleMap">
+        select
+        id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
+        from yh_srm_usercenter_test.relation_user_role where 1 = 1 and is_delete = 0
+        and id &gt;= #{min} and id &lt;= #{max}
+    </select>
+
+    <select id="queryIds" resultType="integer">
+        select id from yh_srm_usercenter_test.relation_user_role
+        where 1 = 1 and is_delete = 0
+        and id &gt;= #{min} and id &lt;= #{max}
+        order by id ASC
+    </select>
+
+    <select id="findCountRelationUserRoles" resultType="integer">
+        select id from yh_srm_usercenter_test.relation_user_role
+        where 1 = 1 and is_delete = 0
+    </select>
+
+</mapper>

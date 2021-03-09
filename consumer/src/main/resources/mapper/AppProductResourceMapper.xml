@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.AppProductResourceDao">
+
+    <resultMap type="com.yh.entity.AppProductResource" id="AppProductResourceMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uniqueCode" column="unique_code" jdbcType="VARCHAR"/>
+        <result property="productCode" column="product_code" jdbcType="VARCHAR"/>
+        <result property="tenantCode" column="tenant_code" jdbcType="VARCHAR"/>
+        <result property="parentCode" column="parent_code" jdbcType="VARCHAR"/>
+        <result property="resourceCode" column="resource_code" jdbcType="VARCHAR"/>
+        <result property="resourceName" column="resource_name" jdbcType="VARCHAR"/>
+        <result property="path" column="path" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="VARCHAR"/>
+        <result property="resourceType" column="resource_type" jdbcType="VARCHAR"/>
+        <result property="orderNum" column="order_num" jdbcType="INTEGER"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="expand1" column="expand1" jdbcType="VARCHAR"/>
+        <result property="expand2" column="expand2" jdbcType="VARCHAR"/>
+        <result property="expand3" column="expand3" jdbcType="VARCHAR"/>
+        <result property="expand4" column="expand4" jdbcType="VARCHAR"/>
+        <result property="expand5" column="expand5" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="platform" column="platform" jdbcType="VARCHAR"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="updatedTime" column="updated_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="AppProductResourceMap">
+        select
+          id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product_resource
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="AppProductResourceMap">
+        select
+          id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product_resource
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="AppProductResourceMap">
+        select
+        id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type,
+        resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by,
+        updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product_resource
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uniqueCode != null and uniqueCode != ''">
+                and unique_code = #{uniqueCode}
+            </if>
+            <if test="productCode != null and productCode != ''">
+                and product_code = #{productCode}
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                and tenant_code = #{tenantCode}
+            </if>
+            <if test="parentCode != null and parentCode != ''">
+                and parent_code = #{parentCode}
+            </if>
+            <if test="resourceCode != null and resourceCode != ''">
+                and resource_code = #{resourceCode}
+            </if>
+            <if test="resourceName != null and resourceName != ''">
+                and resource_name = #{resourceName}
+            </if>
+            <if test="path != null and path != ''">
+                and path = #{path}
+            </if>
+            <if test="type != null and type != ''">
+                and type = #{type}
+            </if>
+            <if test="resourceType != null and resourceType != ''">
+                and resource_type = #{resourceType}
+            </if>
+            <if test="orderNum != null">
+                and order_num = #{orderNum}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+            <if test="expand1 != null and expand1 != ''">
+                and expand1 = #{expand1}
+            </if>
+            <if test="expand2 != null and expand2 != ''">
+                and expand2 = #{expand2}
+            </if>
+            <if test="expand3 != null and expand3 != ''">
+                and expand3 = #{expand3}
+            </if>
+            <if test="expand4 != null and expand4 != ''">
+                and expand4 = #{expand4}
+            </if>
+            <if test="expand5 != null">
+                and expand5 = #{expand5}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                and created_by = #{createdBy}
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                and updated_by = #{updatedBy}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product_resource(unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5,status,platform ,is_delete, created_by, updated_by, created_time, updated_time)
+        values (#{uniqueCode}, #{productCode}, #{tenantCode}, #{parentCode}, #{resourceCode}, #{resourceName}, #{path}, #{type}, #{resourceType}, #{orderNum}, #{description}, #{expand1}, #{expand2}, #{expand3}, #{expand4}, #{expand5},#{status},#{platform}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product_resource(unique_code, product_code, tenant_code, parent_code,
+        resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3,
+        expand4, expand5,status,platform, is_delete, created_by, updated_by, created_time, updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.uniqueCode}, #{entity.productCode}, #{entity.tenantCode}, #{entity.parentCode},
+            #{entity.resourceCode}, #{entity.resourceName}, #{entity.path}, #{entity.type}, #{entity.resourceType},
+            #{entity.orderNum}, #{entity.description}, #{entity.expand1}, #{entity.expand2}, #{entity.expand3},
+            #{entity.expand4}, #{entity.expand5},#{entity.status},#{entity.platform}, #{entity.isDelete}, #{entity.createdBy}, #{entity.updatedBy},
+            #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into o2o_support_idaas.app_product_resource(unique_code, product_code, tenant_code, parent_code,
+        resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3,
+        expand4, expand5, is_delete,status,platform, created_by, updated_by, created_time, updated_time)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.uniqueCode}, #{entity.productCode}, #{entity.tenantCode}, #{entity.parentCode},
+            #{entity.resourceCode}, #{entity.resourceName}, #{entity.path}, #{entity.type}, #{entity.resourceType},
+            #{entity.orderNum}, #{entity.description}, #{entity.expand1}, #{entity.expand2}, #{entity.expand3},
+            #{entity.expand4}, #{entity.expand5}, #{entity.isDelete},#{entity.status},#{entity.platform},#{entity.createdBy}, #{entity.updatedBy},
+            #{entity.createdTime}, #{entity.updatedTime})
+        </foreach>
+        on duplicate key update
+        product_code = values(product_code) ,
+        tenant_code = values(tenant_code) ,
+        resource_code = values(resource_code)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update o2o_support_idaas.app_product_resource
+        <set>
+            <if test="uniqueCode != null and uniqueCode != ''">
+                unique_code = #{uniqueCode},
+            </if>
+            <if test="productCode != null and productCode != ''">
+                product_code = #{productCode},
+            </if>
+            <if test="tenantCode != null and tenantCode != ''">
+                tenant_code = #{tenantCode},
+            </if>
+            <if test="parentCode != null and parentCode != ''">
+                parent_code = #{parentCode},
+            </if>
+            <if test="resourceCode != null and resourceCode != ''">
+                resource_code = #{resourceCode},
+            </if>
+            <if test="resourceName != null and resourceName != ''">
+                resource_name = #{resourceName},
+            </if>
+            <if test="path != null and path != ''">
+                path = #{path},
+            </if>
+            <if test="type != null and type != ''">
+                type = #{type},
+            </if>
+            <if test="resourceType != null and resourceType != ''">
+                resource_type = #{resourceType},
+            </if>
+            <if test="orderNum != null">
+                order_num = #{orderNum},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="expand1 != null and expand1 != ''">
+                expand1 = #{expand1},
+            </if>
+            <if test="expand2 != null and expand2 != ''">
+                expand2 = #{expand2},
+            </if>
+            <if test="expand3 != null and expand3 != ''">
+                expand3 = #{expand3},
+            </if>
+            <if test="expand4 != null and expand4 != ''">
+                expand4 = #{expand4},
+            </if>
+            <if test="expand5 != null">
+                expand5 = #{expand5},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="updatedBy != null and updatedBy != ''">
+                updated_by = #{updatedBy},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from o2o_support_idaas.app_product_resource where id = #{id}
+    </delete>
+
+    <select id="selectOne2" resultMap="AppProductResourceMap">
+         select
+          id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by, updated_by, created_time, updated_time
+        from o2o_support_idaas.app_product_resource
+        where 1 = 1 and is_delete = 0
+        and product_code = #{productCode}
+        and tenant_code  = #{tenantCode}
+        and resource_code = #{resourceCode}
+    </select>
+
+</mapper>
