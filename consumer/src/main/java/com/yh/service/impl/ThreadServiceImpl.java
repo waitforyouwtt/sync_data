@@ -255,7 +255,7 @@ public class ThreadServiceImpl implements ThreadService {
                 AppUserRole view = new AppUserRole();
                 view.setProductCode(productCode);
                 view.setTenantCode(singleFindService.findTenantCode(productCode));
-                view.setUserCode(user.getUserCode());
+                view.setUserCode(user.getUserNumber());
                 view.setUserName(user.getName());
                 view.setRoleCode(info.getRoleId().toString());
                 view.setPlatform("purchase");
@@ -524,7 +524,7 @@ public class ThreadServiceImpl implements ThreadService {
             if (Objects.isNull(menu)){
                 resource.setParentCode("0");
             }else{
-                resource.setParentCode(menu.getCode().toString());
+                resource.setParentCode(menu.getCode());
             }
             String resource_fix = Constant.BUTTON+info.getId()+"_";
 
