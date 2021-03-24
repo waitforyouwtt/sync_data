@@ -13,6 +13,9 @@
         <result property="roleStatus" column="role_status" jdbcType="VARCHAR"/>
         <result property="outRoleCode" column="out_role_code" jdbcType="VARCHAR"/>
         <result property="platform" column="platform" jdbcType="VARCHAR"/>
+        <result property="extension1" column="extension1" jdbcType="VARCHAR"/>
+        <result property="extension2" column="extension2" jdbcType="VARCHAR"/>
+        <result property="extension3" column="extension3" jdbcType="VARCHAR"/>
         <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
         <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
         <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
@@ -23,7 +26,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="AppProductRoleMap">
         select
-          id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time, updated_time
+          id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform,extension1,extension2,extension3, is_delete, created_by, updated_by, created_time, updated_time
         from o2o_support_idaas.app_product_role
         where id = #{id}
     </select>
@@ -31,7 +34,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="AppProductRoleMap">
         select
-          id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time, updated_time
+          id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform,extension1,extension2,extension3, is_delete, created_by, updated_by, created_time, updated_time
         from o2o_support_idaas.app_product_role
         limit #{offset}, #{limit}
     </select>
@@ -40,7 +43,7 @@
     <select id="queryAll" resultMap="AppProductRoleMap">
         select
         id, unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code,
-        platform, is_delete, created_by, updated_by, created_time, updated_time
+        platform,extension1,extension2,extension3, is_delete, created_by, updated_by, created_time, updated_time
         from o2o_support_idaas.app_product_role
         <where>
             <if test="id != null">
@@ -93,30 +96,32 @@
 
     <!--新增所有列-->
     <insert id="insert" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_product_role(unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time, updated_time)
-        values (#{uniqueCode}, #{productCode}, #{tenantCode}, #{roleCode}, #{roleName}, #{description}, #{roleStatus}, #{outRoleCode}, #{platform}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
+        insert into o2o_support_idaas.app_product_role(unique_code, product_code, tenant_code, role_code, role_name, description, role_status, out_role_code, platform, is_delete,extension1,extension2,extension3, created_by, updated_by, created_time, updated_time)
+        values (#{uniqueCode}, #{productCode}, #{tenantCode}, #{roleCode}, #{roleName}, #{description}, #{roleStatus}, #{outRoleCode}, #{platform},#{extension1},#{extension2},#{extension3}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
         insert into o2o_support_idaas.app_product_role(unique_code, product_code, tenant_code, role_code, role_name,
-        description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time,
+        description, role_status, out_role_code, platform, extension1,extension2,extension3,is_delete, created_by, updated_by, created_time,
         updated_time)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.uniqueCode}, #{entity.productCode}, #{entity.tenantCode}, #{entity.roleCode}, #{entity.roleName},
-            #{entity.description}, #{entity.roleStatus}, #{entity.outRoleCode}, #{entity.platform}, #{entity.isDelete},
+            #{entity.description}, #{entity.roleStatus}, #{entity.outRoleCode}, #{entity.platform},
+            #{entity.extension1}, #{entity.extension2}, #{entity.extension3},  #{entity.isDelete},
             #{entity.createdBy}, #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
         </foreach>
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
         insert into o2o_support_idaas.app_product_role(unique_code, product_code, tenant_code, role_code, role_name,
-        description, role_status, out_role_code, platform, is_delete, created_by, updated_by, created_time,
+        description, role_status, out_role_code, platform,extension1,extension2,extension3, is_delete, created_by, updated_by, created_time,
         updated_time)
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.uniqueCode}, #{entity.productCode}, #{entity.tenantCode}, #{entity.roleCode}, #{entity.roleName},
-            #{entity.description}, #{entity.roleStatus}, #{entity.outRoleCode}, #{entity.platform}, #{entity.isDelete},
+            #{entity.description}, #{entity.roleStatus}, #{entity.outRoleCode}, #{entity.platform},
+            #{entity.extension1}, #{entity.extension2}, #{entity.extension3},   #{entity.isDelete},
             #{entity.createdBy}, #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
         </foreach>
         on duplicate key update

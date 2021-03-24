@@ -136,13 +136,6 @@ public class ThreadServiceImpl implements ThreadService {
             executor.shutdown();
         }
         return "成功";
-
-        /*for (List<Integer> lists : partition){
-            Integer start = Collections.min(lists);
-            Integer end = Collections.max(lists);
-            threadRunRole(start,end,batchNum);
-        }
-        return "成功";*/
     }
 
     @Override
@@ -486,6 +479,10 @@ public class ThreadServiceImpl implements ThreadService {
 
                     role.setRoleStatus("Y");
                     role.setPlatform("purchase");
+                    //存放父级编码
+                    role.setExtension1(String.valueOf(info.getParentId()));
+                    //存放path
+                    role.setExtension2(info.getRolePath());
                     role.setIsDelete(0);
                     if (info.getCreatedBy() == null){
                         role.setCreatedBy("admin");

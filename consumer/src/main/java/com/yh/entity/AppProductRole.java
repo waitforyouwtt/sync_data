@@ -54,6 +54,18 @@ public class AppProductRole implements Serializable {
      */
     private String platform;
     /**
+     *扩展字段：父级编码
+     */
+    private String extension1;
+    /**
+     *扩展字段：path
+     */
+    private String extension2;
+    /**
+     * 扩展字段：
+     */
+    private String extension3;
+    /**
      * 删除标记
      */
     private Integer isDelete;
