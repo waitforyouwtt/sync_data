@@ -316,6 +316,11 @@ public class ThreadServiceImpl implements ThreadService {
             if (Objects.isNull(menuPermission)){
                 continue;
             }
+            MenuInfo menuInfo = feign.findById(String.valueOf(menuPermission.getOperationObjectiveId()));
+            if (Objects.isNull(menuInfo)){
+                continue;
+            }
+
             String tenantCode = singleFindService.findTenantCode(menuPermission.getBusinessType());
 
             //判定重复
@@ -326,7 +331,7 @@ public class ThreadServiceImpl implements ThreadService {
             view.setProductCode(menuPermission.getBusinessType());
             view.setProductName(menuPermission.getBusinessType());
             view.setRoleCode(info.getRoleId().toString());
-            view.setResourceCode(menuPermission.getPermissionCode());
+            view.setResourceCode(String.valueOf(menuInfo.getId()));
             view.setResourceName(menuPermission.getPermissionName());
             view.setTenantCode(tenantCode);
             view.setPlatform("purchase");
@@ -510,7 +515,6 @@ public class ThreadServiceImpl implements ThreadService {
         for (MenuPermission info: data){
             AppProductResource resource = new AppProductResource();
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setId(100000+info.getId());
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(singleFindService.findTenantCode(info.getBusinessType()));
             /**
@@ -547,6 +551,12 @@ public class ThreadServiceImpl implements ThreadService {
             }else{
                 resource.setUpdatedBy(info.getUpdatedBy());
             }
+            if (Objects.isNull(menu) || StringUtils.isBlank(menu.getId().toString())){
+                break;
+            }else{
+                resource.setParentCode(String.valueOf(menu.getId()));
+            }
+            resource.setExpand2(String.valueOf(info.getId()));
             resource.setStatus("Y");
             resource.setIsDelete(0);
             resource.setPlatform("purchase");
@@ -572,7 +582,6 @@ public class ThreadServiceImpl implements ThreadService {
 
             AppProductResource resource = new AppProductResource();
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setId(100000+info.getId());
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(tenantCode);
             /**
@@ -607,6 +616,8 @@ public class ThreadServiceImpl implements ThreadService {
             }else{
                 resource.setUpdatedBy(info.getUpdatedBy());
             }
+            resource.setExpand2(String.valueOf(info.getId()));
+            resource.setExpand3(String.valueOf(info.getParentId()));
             resource.setPlatform("purchase");
             resource.setUpdatedTime(new Date());
             resource.setCreatedTime(new Date());
