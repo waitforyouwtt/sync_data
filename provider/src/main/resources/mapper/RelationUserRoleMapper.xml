@@ -17,7 +17,7 @@
     <select id="queryById" resultMap="RelationUserRoleMap">
         select
           id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
-        from yh_srm_usercenter_test.relation_user_role
+        from relation_user_role
         where id = #{id}
     </select>
 
@@ -25,7 +25,7 @@
     <select id="queryAllByLimit" resultMap="RelationUserRoleMap">
         select
           id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
-        from yh_srm_usercenter_test.relation_user_role
+        from relation_user_role
         limit #{offset}, #{limit}
     </select>
 
@@ -33,7 +33,7 @@
     <select id="queryAll" resultMap="RelationUserRoleMap">
         select
         id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
-        from yh_srm_usercenter_test.relation_user_role
+        from relation_user_role
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -64,12 +64,12 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.relation_user_role(user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by)
+        insert into relation_user_role(user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by)
         values (#{userId}, #{roleId}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.relation_user_role(user_id, role_id, is_delete, created_time, updated_time,
+        insert into relation_user_role(user_id, role_id, is_delete, created_time, updated_time,
         created_by, updated_by)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -79,7 +79,7 @@
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.relation_user_role(user_id, role_id, is_delete, created_time, updated_time,
+        insert into relation_user_role(user_id, role_id, is_delete, created_time, updated_time,
         created_by, updated_by)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -94,7 +94,7 @@
 
     <!--通过主键修改数据-->
     <update id="update">
-        update yh_srm_usercenter_test.relation_user_role
+        update relation_user_role
         <set>
             <if test="userId != null">
                 user_id = #{userId},
@@ -123,25 +123,25 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from yh_srm_usercenter_test.relation_user_role where id = #{id}
+        delete from relation_user_role where id = #{id}
     </delete>
 
     <select id="queryBetweenId" resultMap="RelationUserRoleMap">
         select
         id, user_id, role_id, is_delete, created_time, updated_time, created_by, updated_by
-        from yh_srm_usercenter_test.relation_user_role where 1 = 1 and is_delete = 0
+        from relation_user_role where 1 = 1 and is_delete = 0
         and id &gt;= #{min} and id &lt;= #{max}
     </select>
 
     <select id="queryIds" resultType="integer">
-        select id from yh_srm_usercenter_test.relation_user_role
+        select id from relation_user_role
         where 1 = 1 and is_delete = 0
         and id &gt;= #{min} and id &lt;= #{max}
         order by id ASC
     </select>
 
     <select id="findCountRelationUserRoles" resultType="integer">
-        select id from yh_srm_usercenter_test.relation_user_role
+        select id from relation_user_role
         where 1 = 1 and is_delete = 0
     </select>
 

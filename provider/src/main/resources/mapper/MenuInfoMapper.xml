@@ -25,7 +25,7 @@
     <select id="queryById" resultMap="MenuInfoMap">
         select
           id, type, parent_id, code, name, display_url, level, rank, is_delete, created_time, updated_time, created_by, updated_by, business_type, status, out_menu_id
-        from yh_srm_usercenter_test.menu_info
+        from menu_info
         where id = #{id}
     </select>
 
@@ -33,7 +33,7 @@
     <select id="queryAllByLimit" resultMap="MenuInfoMap">
         select
           id, type, parent_id, code, name, display_url, level, rank, is_delete, created_time, updated_time, created_by, updated_by, business_type, status, out_menu_id
-        from yh_srm_usercenter_test.menu_info
+        from menu_info
         limit #{offset}, #{limit}
     </select>
 
@@ -56,7 +56,7 @@
         business_type,
         status,
         out_menu_id
-        from yh_srm_usercenter_test.menu_info
+        from menu_info
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -111,12 +111,12 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.menu_info(type, parent_id, code, name, display_url, level, rank, is_delete, created_time, updated_time, created_by, updated_by, business_type, status, out_menu_id)
+        insert into menu_info(type, parent_id, code, name, display_url, level, rank, is_delete, created_time, updated_time, created_by, updated_by, business_type, status, out_menu_id)
         values (#{type}, #{parentId}, #{code}, #{name}, #{displayUrl}, #{level}, #{rank}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}, #{businessType}, #{status}, #{outMenuId})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.menu_info(type, parent_id, code, name, display_url, level, rank, is_delete,
+        insert into menu_info(type, parent_id, code, name, display_url, level, rank, is_delete,
         created_time, updated_time, created_by, updated_by, business_type, status, out_menu_id)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -127,7 +127,7 @@
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.menu_info(type, parent_id, code, name, display_url, level, rank, is_delete,
+        insert into menu_info(type, parent_id, code, name, display_url, level, rank, is_delete,
         created_time, updated_time, created_by, updated_by, business_type, status, out_menu_id)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -145,7 +145,7 @@
 
     <!--通过主键修改数据-->
     <update id="update">
-        update yh_srm_usercenter_test.menu_info
+        update menu_info
         <set>
             <if test="type != null">
                 type = #{type},
@@ -198,11 +198,11 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from yh_srm_usercenter_test.menu_info where id = #{id}
+        delete from menu_info where id = #{id}
     </delete>
 
     <select id="findCountMenus" resultType="integer">
-        select id from yh_srm_usercenter_test.menu_info
+        select id from menu_info
         where 1 = 1 and is_delete = 0
     </select>
 
@@ -224,7 +224,7 @@
         business_type,
         status,
         out_menu_id
-        from yh_srm_usercenter_test.menu_info
+        from menu_info
         where 1 = 1 and is_delete = 0
         and id &gt;= #{min} and id &lt;= #{max}
     </select>
