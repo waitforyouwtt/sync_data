@@ -61,10 +61,14 @@ public interface RelationRoleMenuPermissionService {
     List<String> findProductCodeByRoleId(String roleId);
 
     /**
-     *
+     *根据条件获取id区间角色资源集合
      * @return
      */
     List<RelationRoleMenuPermission> findRelationRoleMenuPermissions(Integer min,Integer max);
 
+    /**
+     * 获取角色资源总条数
+     * @return
+     */
     List<Integer> findCountRelationRoleMenuPermissions();
 }

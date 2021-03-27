@@ -56,10 +56,46 @@ public class SyncController {
        return menuPermissionService.findCountPermission();
     }
 
+    @ApiOperation(value = "根据条件获取id区间按钮集合",notes = "根据条件获取id区间按钮集合",tags = {"SyncController"})
+    @GetMapping("/menuPermissionBetweenIds")
+    List<MenuPermission> menuPermissionBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max){
+        return menuPermissionService.menuPermissionBetweenIds(min,max);
+    }
+
+    @ApiOperation(value = "按照operation_objective_id查找父级菜单(根据MenuPermission的operation_objective_id{menu 的主键哦} 查找menu 信息)",notes = "按照operation_objective_id查找父级菜单(根据MenuPermission的operation_objective_id{menu 的主键哦} 查找menu 信息)",tags = {"SyncController"})
+    @GetMapping("/findById")
+    public MenuInfo findById(@RequestParam("id") String id){
+        return singleQueryService.findById(id);
+    }
+
     @ApiOperation(value = "获取角色的总条数",notes = "获取角色的总条数",tags = {"SyncController"})
     @GetMapping("/findCountRoles")
     List<String> findCountRoles(){
         return roleInfoService.findCountRoles();
+    }
+
+    @ApiOperation(value = "根据条件获取id区间角色集合",notes = "根据条件获取id区间角色集合")
+    @GetMapping("/findRoleBetweenIds")
+    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max){
+        return roleInfoService.findRoleBetweenIds(min,max);
+    }
+
+    @ApiOperation(value = "通过角色id倒推productCode",notes = "通过角色id倒推productCode")
+    @GetMapping("/findProductCodeByRoleId")
+    public List<String> findProductCodeByRoleId(@RequestParam("roleId") String roleId){
+        return relationRoleMenuPermissionService.findProductCodeByRoleId(roleId);
+    }
+
+    @ApiOperation(value = "获取角色资源总条数",notes = "获取角色资源总条数")
+    @GetMapping("/findCountRelationRoleMenuPermissions")
+    public List<Integer> findCountRelationRoleMenuPermissions(){
+        return relationRoleMenuPermissionService.findCountRelationRoleMenuPermissions();
+    }
+
+    @ApiOperation(value = "根据条件获取id区间角色资源集合",notes = "根据条件获取id区间角色资源集合")
+    @GetMapping("/relationRoleMenuPermissions")
+    public List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+        return relationRoleMenuPermissionService.findRelationRoleMenuPermissions(min,max);
     }
 
     @ApiOperation(value = "根据条件分页获取菜单集合",notes = "根据条件分页获取菜单集合",tags = {"SyncController"})
@@ -80,39 +116,10 @@ public class SyncController {
        return menuPermissionService.findMenuPermissions();
     }
 
-    //查询按钮区间
-    @GetMapping("/menuPermissionBetweenIds")
-    List<MenuPermission> menuPermissionBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max){
-        return menuPermissionService.menuPermissionBetweenIds(min,max);
-    }
-
-    //根据MenuPermission的operation_objective_id{menu 的主键哦} 查找menu 信息
-    @GetMapping("/findById")
-    public MenuInfo findById(@RequestParam("id") String id){
-        return singleQueryService.findById(id);
-    }
-
     //角色
     @GetMapping("/roleInfos")
     public List<RoleInfo> roleInfos(){
         return roleInfoService.findRoleInfos();
-    }
-
-    //通过角色id倒推productCode
-    @GetMapping("/findProductCodeByRoleId")
-    public List<String> findProductCodeByRoleId(@RequestParam("roleId") String roleId){
-        return relationRoleMenuPermissionService.findProductCodeByRoleId(roleId);
-    }
-
-    //角色资源同步
-    @GetMapping("/relationRoleMenuPermissions")
-    public List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
-        return relationRoleMenuPermissionService.findRelationRoleMenuPermissions(min,max);
-    }
-    //获取角色资源总条数
-    @GetMapping("/findCountRelationRoleMenuPermissions")
-    public List<Integer> findCountRelationRoleMenuPermissions(){
-        return relationRoleMenuPermissionService.findCountRelationRoleMenuPermissions();
     }
 
     //同步用户和角色
@@ -131,11 +138,6 @@ public class SyncController {
     @GetMapping("/findMenuPermissionId")
     public MenuPermission findMenuPermissionId(@RequestParam("id")String id){
       return singleQueryService.findByMenuPermissionId(id);
-    }
-
-    @GetMapping("/findRoleBetweenIds")
-    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max){
-        return roleInfoService.findRoleBetweenIds(min,max);
     }
 
     @GetMapping("/findCountRelationUserRoles")

@@ -84,5 +84,11 @@ public interface MenuPermissionDao extends BaseMapper<MenuPermission> {
 
     List<Integer> findCountPermission();
 
+    /**
+     * 根据条件获取id区间按钮集合
+     * @param min
+     * @param max
+     * @return
+     */
     List<MenuPermission> menuPermissionBetweenIds(@Param("min") Integer min,@Param("max") Integer max);
 }

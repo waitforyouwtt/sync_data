@@ -62,5 +62,11 @@ public interface MenuPermissionService {
      */
     List<Integer> findCountPermission();
 
+    /**
+     * 根据条件获取id区间按钮集合
+     * @param min
+     * @param max
+     * @return
+     */
     List<MenuPermission> menuPermissionBetweenIds(Integer min, Integer max);
 }

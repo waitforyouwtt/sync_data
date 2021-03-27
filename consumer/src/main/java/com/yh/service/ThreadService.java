@@ -27,7 +27,7 @@ public interface ThreadService {
     String roleResource();
 
     /**
-     *
+     * 用户角色关联同步
      * @return
      */
     String syncRelationUserRoles();

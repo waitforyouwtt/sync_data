@@ -27,13 +27,33 @@ public interface DataSynchronizeFeign {
     @GetMapping("/findCountPermission")
     List<Integer> findCountPermission();
 
+    @ApiOperation(value = "根据条件获取id区间按钮集合",notes = "根据条件获取id区间按钮集合")
+    @GetMapping("/menuPermissionBetweenIds")
+    List<MenuPermission> menuPermissionBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max);
+
+    @ApiOperation(value = "按照operation_objective_id查找父级菜单",notes = "按照operation_objective_id查找父级菜单")
+    @GetMapping("/findById")
+    MenuInfo findById(@RequestParam("id") String id);
+
     @ApiOperation(value = "获取角色的总条数",notes = "获取角色的总条数")
     @GetMapping("/findCountRoles")
     List<String> findCountRoles();
 
+    @ApiOperation(value = "根据条件获取id区间角色集合",notes = "根据条件获取id区间角色集合")
+    @GetMapping("/findRoleBetweenIds")
+    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max);
+
+    @ApiOperation(value = "通过角色id倒推productCode",notes = "通过角色id倒推productCode")
+    @GetMapping("/findProductCodeByRoleId")
+    List<String> findProductCodeByRoleId(@RequestParam("roleId") String roleId);
+
     @ApiOperation(value = "获取角色资源总条数",notes = "获取角色资源总条数")
     @GetMapping("/findCountRelationRoleMenuPermissions")
     List<Integer> findCountRelationRoleMenuPermissions();
+
+    @ApiOperation(value = "根据条件获取id区间角色资源集合",notes = "根据条件获取id区间角色资源集合")
+    @GetMapping("/relationRoleMenuPermissions")
+    List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
 
     @ApiOperation(value = "获取用户角色总条数",notes = "获取用户角色总条数")
     @GetMapping("/findCountRelationUserRoles")
@@ -50,25 +70,10 @@ public interface DataSynchronizeFeign {
     //按钮
     @GetMapping("/menuPermissions")
     List<MenuPermission> menuPermissions();
-    //按钮
-    @GetMapping("/menuPermissionBetweenIds")
-    List<MenuPermission> menuPermissionBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max);
-
-    //按照id 查找菜单
-    @GetMapping("/findById")
-    MenuInfo findById(@RequestParam("id") String id);
 
     //角色
     @GetMapping("/roleInfos")
     List<RoleInfo> roleInfos();
-
-    //通过角色id倒推productCode
-    @GetMapping("/findProductCodeByRoleId")
-    List<String> findProductCodeByRoleId(@RequestParam("roleId") String roleId);
-
-    //角色资源同步
-    @GetMapping("/relationRoleMenuPermissions")
-    List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
 
     //同步用户和角色
     @GetMapping("/relationUserRoles")
@@ -79,8 +84,4 @@ public interface DataSynchronizeFeign {
 
     @GetMapping("/findIds")
     List<Integer> findIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
-
-    //查询区间角色
-    @GetMapping("/findRoleBetweenIds")
-    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max);
 }

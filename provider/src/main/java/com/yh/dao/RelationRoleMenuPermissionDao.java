@@ -82,7 +82,17 @@ public interface RelationRoleMenuPermissionDao extends BaseMapper<RelationRoleMe
      */
     int deleteById(Integer id);
 
+    /**
+     * 根据条件获取id区间角色资源集合
+     * @param min
+     * @param max
+     * @return
+     */
     List<RelationRoleMenuPermission> queryBetweenId(@Param("min")Integer min,@Param("max")Integer max);
 
+    /**
+     * 获取角色资源总条数
+     * @return
+     */
     List<Integer> findCountRelationRoleMenuPermissions();
 }

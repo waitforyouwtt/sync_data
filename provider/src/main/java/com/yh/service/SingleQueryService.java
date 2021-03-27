@@ -13,10 +13,26 @@ public interface SingleQueryService {
 
     List<MenuInfo> findByAppCodeAndParentId(String code, String parentId);
 
+    /**
+     * 按照operation_objective_id查找父级菜单:
+     * 根据MenuPermission的operation_objective_id{menu 的主键哦} 查找menu 信息
+     * @param id
+     * @return
+     */
     MenuInfo findById(String id);
 
+    /**
+     * 通过角色id 倒推productCode
+     * @param roleId
+     * @return
+     */
     List<RelationRoleMenuPermission> queryRelationRoleMenuPermission(String roleId);
 
+    /**
+     * 通过角色id 倒推productCode
+     * @param menuPermissionIds
+     * @return
+     */
     List<String> findProductCodes (List<Integer> menuPermissionIds);
 
     MenuPermission findByMenuPermissionId(String menuPermissionId);

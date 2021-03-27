@@ -82,7 +82,17 @@ public interface RoleInfoDao extends BaseMapper<RoleInfo> {
      */
     int deleteById(Long id);
 
+    /**
+     * 获取角色的总条数
+     * @return
+     */
     List<String> findCountRoles();
 
+    /**
+     * 根据条件获取id区间角色集合
+     * @param min
+     * @param max
+     * @return
+     */
     List<RoleInfo> findRoleBetweenIds(@Param("min") Integer min,@Param("max") Integer max);
 }

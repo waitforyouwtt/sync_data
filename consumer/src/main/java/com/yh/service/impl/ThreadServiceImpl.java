@@ -102,40 +102,6 @@ public class ThreadServiceImpl implements ThreadService {
         return "成功";
     }
 
-    class ImportMenuTask implements Runnable {
-        Integer start;
-        Integer end;
-        private CountDownLatch countDownLatch;
-        private AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
-
-        public ImportMenuTask(Integer start,Integer end,CountDownLatch countDownLatch){
-            this.start = start;
-            this.end   = end;
-            this.countDownLatch = countDownLatch;
-        }
-
-        @Override
-        public void run() {
-            List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
-            if (CollectionUtils.isEmpty(menuInfos)){
-                log.info("此区间没有数据");
-                return;
-            }
-            log.info("需要同步的区间总体条数:{}",menuInfos.size());
-
-            if (!CollectionUtils.isEmpty(menuInfos)){
-                List<AppProductResource> productResources = convertMenuToResource(menuInfos);
-                if (!CollectionUtils.isEmpty(productResources)){
-                    log.info("开始插入数据库");
-                    resourceDao.insertOrUpdateBatch(productResources);
-                }
-            }
-            log.info("发出线程任务完成的信号");
-            countDownLatch.countDown();
-        }
-    }
-
-
     @Async
     @Override
     public String roleSync() {
@@ -172,6 +138,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "成功";
     }
 
+    @Async
     @Override
     public String roleResource() {
         List<Integer> countRoleResource = feign.findCountRelationRoleMenuPermissions();
@@ -203,6 +170,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "成功";
     }
 
+    @Async
     @Override
     public String syncRelationUserRoles() {
         List<Integer> countRelationUserRoles = feign.findCountRelationUserRoles();
@@ -233,6 +201,138 @@ public class ThreadServiceImpl implements ThreadService {
         }
         return "成功";
     }
+
+    //* 任务执行器----------------------------------------------------------------------------------------------------------*/
+
+    class ImportMenuTask implements Runnable {
+        Integer start;
+        Integer end;
+        private CountDownLatch countDownLatch;
+        private AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
+
+        public ImportMenuTask(Integer start,Integer end,CountDownLatch countDownLatch){
+            this.start = start;
+            this.end   = end;
+            this.countDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void run() {
+            List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
+            if (CollectionUtils.isEmpty(menuInfos)){
+                log.info("此区间没有数据");
+                return;
+            }
+            log.info("需要同步的区间总体条数:{}",menuInfos.size());
+
+            if (!CollectionUtils.isEmpty(menuInfos)){
+                List<AppProductResource> productResources = convertMenuToResource(menuInfos);
+                if (!CollectionUtils.isEmpty(productResources)){
+                    log.info("开始插入数据库");
+                    resourceDao.insertOrUpdateBatch(productResources);
+                }
+            }
+            log.info("发出线程任务完成的信号");
+            countDownLatch.countDown();
+        }
+    }
+
+    class ImportMenuPermissionTask implements Runnable{
+        Integer start;
+        Integer end;
+        private CountDownLatch countDownLatch;
+        private AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
+
+        public ImportMenuPermissionTask(Integer start,Integer end,CountDownLatch countDownLatch){
+            this.start = start;
+            this.end   = end;
+            this.countDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void run() {
+            List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start,end);
+            log.info("需要同步的区间总体条数:{}",menuPermissions.size());
+            if (CollectionUtils.isEmpty(menuPermissions)){
+                log.info("此区间没有数据");
+                return;
+            }
+            log.info("需要同步的区间总体条数:{}",menuPermissions.size());
+
+            if (!CollectionUtils.isEmpty(menuPermissions)){
+                List<AppProductResource> productResources = convertMenuPermissionResource(menuPermissions);
+                if (!CollectionUtils.isEmpty(productResources)){
+                    log.info("开始插入数据库");
+                    resourceDao.insertOrUpdateBatch(productResources);
+                }
+            }
+            log.info("发出线程任务完成的信号");
+            countDownLatch.countDown();
+        }
+    }
+
+    class ImportRoleTask implements Runnable{
+        Integer start;
+        Integer end;
+        private CountDownLatch countDownLatch;
+        private AppProductRoleDao resourceDao   = SpringContextHolder.getBean(AppProductRoleDao.class);
+
+        public ImportRoleTask(Integer start,Integer end,CountDownLatch countDownLatch){
+            this.start = start;
+            this.end   = end;
+            this.countDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void run() {
+            List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
+            if (CollectionUtils.isEmpty(roleInfos)){
+                log.info("此区间没有数据");
+                return;
+            }
+            log.info("需要同步的区间总体条数:{}",roleInfos.size());
+
+            if (!CollectionUtils.isEmpty(roleInfos)){
+                List<AppProductRole> roles = convertRoles(roleInfos);
+                if (!CollectionUtils.isEmpty(roles)){
+                    log.info("开始插入数据库");
+                    resourceDao.insertOrUpdateBatch(roles);
+                }
+            }
+            log.info("发出线程任务完成的信号");
+            countDownLatch.countDown();
+        }
+    }
+
+    class ImportRoleResourceTask implements Runnable{
+        Integer start;
+        Integer end;
+        private CountDownLatch countDownLatch;
+        private AppRoleResourceDao roleResourceDao  = SpringContextHolder.getBean(AppRoleResourceDao.class);
+        public ImportRoleResourceTask(Integer start,Integer end,CountDownLatch countDownLatch){
+            this.start = start;
+            this.end   = end;
+            this.countDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void run() {
+            List<RelationRoleMenuPermission> relationRoleMenuPermissions = feign.relationRoleMenuPermissions(start,end);
+            if (CollectionUtils.isEmpty(relationRoleMenuPermissions)){
+                log.info("此区间没有数据");
+                return;
+            }
+            log.info("需要同步的区间总体条数:{}",relationRoleMenuPermissions.size());
+            if (!CollectionUtils.isEmpty(relationRoleMenuPermissions)){
+                List<AppRoleResource> roleResources = convertRoleResource(relationRoleMenuPermissions);
+                if (!CollectionUtils.isEmpty(roleResources)){
+                    roleResourceDao.insertOrUpdateBatch( roleResources );
+                }
+            }
+            countDownLatch.countDown();
+        }
+    }
+
 
     class ImportRelationUserRoleTask implements Runnable{
         Integer start;
@@ -306,269 +406,6 @@ public class ThreadServiceImpl implements ThreadService {
         return roleResources;
     }
 
-    class ImportRoleResourceTask implements Runnable{
-        Integer start;
-        Integer end;
-        private CountDownLatch countDownLatch;
-        private AppRoleResourceDao roleResourceDao  = SpringContextHolder.getBean(AppRoleResourceDao.class);
-        public ImportRoleResourceTask(Integer start,Integer end,CountDownLatch countDownLatch){
-            this.start = start;
-            this.end   = end;
-            this.countDownLatch = countDownLatch;
-        }
-
-        @Override
-        public void run() {
-            List<RelationRoleMenuPermission> relationRoleMenuPermissions = feign.relationRoleMenuPermissions(start,end);
-            if (CollectionUtils.isEmpty(relationRoleMenuPermissions)){
-                log.info("此区间没有数据");
-                return;
-            }
-            log.info("需要同步的区间总体条数:{}",relationRoleMenuPermissions.size());
-            if (!CollectionUtils.isEmpty(relationRoleMenuPermissions)){
-                List<AppRoleResource> roleResources = convertRoleResource(relationRoleMenuPermissions);
-                if (!CollectionUtils.isEmpty(roleResources)){
-                    roleResourceDao.insertOrUpdateBatch( roleResources );
-                }
-            }
-            countDownLatch.countDown();
-        }
-    }
-
-    public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions){
-        SingleFindService singleFindService = SpringContextHolder.getBean(SingleFindService.class);
-        DataSynchronizeFeign feign = SpringContextHolder.getBean(DataSynchronizeFeign.class);
-
-        List<AppRoleResource> roleResources = new ArrayList<>();
-
-        for (RelationRoleMenuPermission  info : roleMenuPermissions){
-            AppRoleResource view = new AppRoleResource();
-            if (info.getRoleId() == null){
-                continue;
-            }
-            MenuPermission menuPermission = feign.findMenuPermissionId(info.getMenuPermissionId().toString());
-            if (Objects.isNull(menuPermission)){
-                continue;
-            }
-            MenuInfo menuInfo = feign.findById(String.valueOf(menuPermission.getOperationObjectiveId()));
-            if (Objects.isNull(menuInfo)){
-                continue;
-            }
-
-            String tenantCode = singleFindService.findTenantCode(menuPermission.getBusinessType());
-
-            //判定重复
-            AppRoleResource roleResourceResult = singleFindService.roleResourceDetails(menuPermission.getBusinessType(),tenantCode,menuPermission.getPermissionCode(),info.getRoleId().toString());
-            if (!Objects.isNull(roleResourceResult)){
-                continue;
-            }
-            view.setProductCode(menuPermission.getBusinessType());
-            view.setProductName(menuPermission.getBusinessType());
-            view.setRoleCode(info.getRoleId().toString());
-            view.setResourceCode(String.valueOf(menuInfo.getId()));
-            view.setResourceName(menuPermission.getPermissionName());
-            view.setTenantCode(tenantCode);
-            view.setPlatform("purchase");
-            view.setIsDelete(0);
-            if (StringUtils.isBlank(info.getCreatedBy())){
-                view.setCreatedBy("admin");
-            }else{
-                view.setCreatedBy(info.getCreatedBy());
-            }
-            if (StringUtils.isBlank(info.getUpdatedBy())){
-                view.setUpdatedBy("admin");
-            }else{
-                view.setUpdatedBy(info.getUpdatedBy());
-            }
-
-            view.setCreatedTime(new Date());
-            view.setUpdatedTime(new Date());
-            roleResources.add(view);
-        }
-        return roleResources;
-    }
-
-
-
-    class ImportMenuPermissionTask implements Runnable{
-        Integer start;
-        Integer end;
-        private CountDownLatch countDownLatch;
-        private AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
-
-        public ImportMenuPermissionTask(Integer start,Integer end,CountDownLatch countDownLatch){
-            this.start = start;
-            this.end   = end;
-            this.countDownLatch = countDownLatch;
-        }
-
-        @Override
-        public void run() {
-            List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start,end);
-            log.info("需要同步的区间总体条数:{}",menuPermissions.size());
-            if (CollectionUtils.isEmpty(menuPermissions)){
-                log.info("此区间没有数据");
-                return;
-            }
-            log.info("需要同步的区间总体条数:{}",menuPermissions.size());
-
-            if (!CollectionUtils.isEmpty(menuPermissions)){
-                List<AppProductResource> productResources = convertMenuPermissionResource(menuPermissions);
-                if (!CollectionUtils.isEmpty(productResources)){
-                    log.info("开始插入数据库");
-                    resourceDao.insertOrUpdateBatch(productResources);
-                }
-            }
-            log.info("发出线程任务完成的信号");
-            countDownLatch.countDown();
-        }
-    }
-
-    class ImportRoleTask implements Runnable{
-        Integer start;
-        Integer end;
-        private AppProductRoleDao resourceDao   = SpringContextHolder.getBean(AppProductRoleDao.class);
-        private CountDownLatch countDownLatch;
-
-        public ImportRoleTask(Integer start,Integer end,CountDownLatch countDownLatch){
-            this.start = start;
-            this.end   = end;
-            this.countDownLatch = countDownLatch;
-        }
-
-        @Override
-        public void run() {
-            List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
-            if (CollectionUtils.isEmpty(roleInfos)){
-                log.info("此区间没有数据");
-                return;
-            }
-            log.info("需要同步的区间总体条数:{}",roleInfos.size());
-
-            if (!CollectionUtils.isEmpty(roleInfos)){
-                List<AppProductRole> roles = convertRoles(roleInfos);
-                if (!CollectionUtils.isEmpty(roles)){
-                    log.info("开始插入数据库");
-                    resourceDao.insertOrUpdateBatch(roles);
-                }
-            }
-            log.info("发出线程任务完成的信号");
-            countDownLatch.countDown();
-        }
-    }
-
-    public List<AppProductRole> convertRoles(List<RoleInfo> roleInfos){
-        // DataSynchronizeFeign feign   = SpringContextHolder.getBean(DataSynchronizeFeign.class);
-
-        List<AppProductRole> roles = new ArrayList<>();
-        for (RoleInfo  info : roleInfos){
-            List<String> productCodes = feign.findProductCodeByRoleId(info.getId().toString());
-            if (!CollectionUtils.isEmpty(productCodes)){
-                for (String code : productCodes){
-                    if (info.getId() == null){
-                        continue;
-                    }
-                    String tenantCode  =  singleFindService.findTenantCode(code);
-
-                    AppProductRole queryResult = singleFindService.roleDetails(code, tenantCode, info.getId().toString());
-                    if (!Objects.isNull(queryResult)){
-                        continue;
-                    }
-
-                    AppProductRole role = new AppProductRole();
-                    role.setProductCode(code);
-                    role.setUniqueCode(StringCustomizedUtils.uniqueCode());
-                    role.setTenantCode(tenantCode);
-                    role.setRoleCode(info.getId().toString());
-                    role.setRoleName(info.getRoleName());
-
-                    role.setDescription(info.getRoleTypeCode());
-                    role.setOutRoleCode(info.getRoleCode());
-
-                    role.setRoleStatus("Y");
-                    role.setPlatform("purchase");
-                    //存放父级编码
-                    role.setExtension1(String.valueOf(info.getParentId()));
-                    //存放path
-                    role.setExtension2(info.getRolePath());
-                    role.setIsDelete(0);
-                    if (info.getCreatedBy() == null){
-                        role.setCreatedBy("admin");
-                    }else{
-                        role.setCreatedBy(info.getCreatedBy());
-                    }
-                    if (info.getUpdatedBy() == null){
-                        role.setUpdatedBy("admin");
-                    }else{
-                        role.setUpdatedBy(info.getUpdatedBy());
-                    }
-                    role.setCreatedTime(new Date());
-                    role.setUpdatedTime(new Date());
-                    roles.add(role);
-                }
-            }
-        }
-        return roles;
-    }
-
-    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data) {
-        /*DataSynchronizeFeign feign   = SpringContextHolder.getBean(DataSynchronizeFeign.class);*/
-
-        List<AppProductResource> resources = new ArrayList<>();
-        for (MenuPermission info: data){
-            AppProductResource resource = new AppProductResource();
-            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setProductCode(info.getBusinessType());
-            resource.setTenantCode(singleFindService.findTenantCode(info.getBusinessType()));
-            /**
-             * operation_objective_id
-             * select * from menu_info where id = '26';
-             */
-            MenuInfo menu = feign.findById(info.getOperationObjectiveId().toString());
-            if (Objects.isNull(menu)){
-                resource.setParentCode("0");
-            }else{
-                resource.setParentCode(menu.getCode());
-            }
-            String resource_fix = Constant.BUTTON+info.getId()+"_";
-
-            resource.setResourceCode(resource_fix+info.getPermissionCode());
-            resource.setResourceName(resource_fix+info.getPermissionName());
-            resource.setPath(info.getApiUrl());
-            //固定为菜单
-            resource.setType("2");
-            if (info.getRank() == null){
-                resource.setOrderNum(0);
-            }else{
-                resource.setOrderNum(info.getRank());
-            }
-            resource.setCreatedTime(new Date());
-            resource.setUpdatedTime(new Date());
-            if (info.getCreatedBy() == null){
-                resource.setCreatedBy("admin");
-            }else{
-                resource.setCreatedBy(info.getCreatedBy());
-            }
-            if (info.getUpdatedBy() == null){
-                resource.setUpdatedBy("admin");
-            }else{
-                resource.setUpdatedBy(info.getUpdatedBy());
-            }
-            if (Objects.isNull(menu) || StringUtils.isBlank(menu.getId().toString())){
-                break;
-            }else{
-                resource.setParentCode(String.valueOf(menu.getId()));
-            }
-            resource.setExpand2(String.valueOf(info.getId()));
-            resource.setStatus("Y");
-            resource.setIsDelete(0);
-            resource.setPlatform("purchase");
-            resources.add(resource);
-        }
-        return resources;
-    }
-
-
    //实体转换器-----------------------------------------------------------------------------------------------------
     private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus){
         List<AppProductResource> resources = new ArrayList<>();
@@ -629,5 +466,172 @@ public class ThreadServiceImpl implements ThreadService {
             resources.add(resource);
         }
         return resources;
+    }
+
+    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data) {
+
+        List<AppProductResource> resources = new ArrayList<>();
+        for (MenuPermission info: data){
+            //获取租户编码
+            String tenantCode = singleFindService.findTenantCode(info.getBusinessType());
+
+            AppProductResource resource = new AppProductResource();
+            resource.setProductCode(info.getBusinessType());
+            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
+            resource.setTenantCode(tenantCode);
+            /**
+             * operation_objective_id
+             * select * from menu_info where id = '26';
+             */
+            MenuInfo menu = feign.findById(info.getOperationObjectiveId().toString());
+            if (Objects.isNull(menu)){
+                resource.setParentCode("0");
+            }else{
+                resource.setParentCode(menu.getCode());
+            }
+            String resource_fix = Constant.BUTTON+info.getId()+"_";
+
+            resource.setResourceCode(resource_fix+info.getPermissionCode());
+            resource.setResourceName(resource_fix+info.getPermissionName());
+            resource.setPath(info.getApiUrl());
+            //固定为按钮
+            resource.setType("2");
+            if (info.getRank() == null){
+                resource.setOrderNum(0);
+            }else{
+                resource.setOrderNum(info.getRank());
+            }
+
+            resource.setCreatedTime(new Date());
+            resource.setUpdatedTime(new Date());
+            if (info.getCreatedBy() == null){
+                resource.setCreatedBy("admin");
+            }else{
+                resource.setCreatedBy(info.getCreatedBy());
+            }
+            if (info.getUpdatedBy() == null){
+                resource.setUpdatedBy("admin");
+            }else{
+                resource.setUpdatedBy(info.getUpdatedBy());
+            }
+            //存放菜单ID
+            resource.setExpand2(String.valueOf(info.getId()));
+            //存放菜单父级id
+            resource.setExpand3(String.valueOf(menu.getId()));
+
+            resource.setStatus("Y");
+            resource.setIsDelete(0);
+            resource.setPlatform("purchase");
+            resources.add(resource);
+        }
+        return resources;
+    }
+
+    public List<AppProductRole> convertRoles(List<RoleInfo> roleInfos){
+        List<AppProductRole> roles = new ArrayList<>();
+        for (RoleInfo  info : roleInfos){
+            //通过角色id倒推productCode
+            List<String> productCodes = feign.findProductCodeByRoleId(info.getId().toString());
+            if (!CollectionUtils.isEmpty(productCodes)){
+                for (String code : productCodes){
+                    if (info.getId() == null){
+                        continue;
+                    }
+                    //获取租户编码
+                    String tenantCode  =  singleFindService.findTenantCode(code);
+                    //判断是否重复
+                    AppProductRole queryResult = singleFindService.roleDetails(code, tenantCode, info.getId().toString());
+                    if (!Objects.isNull(queryResult)){
+                        continue;
+                    }
+
+                    AppProductRole role = new AppProductRole();
+                    role.setProductCode(code);
+                    role.setUniqueCode(StringCustomizedUtils.uniqueCode());
+                    role.setTenantCode(tenantCode);
+                    role.setRoleCode(info.getId().toString());
+                    role.setRoleName(info.getRoleName());
+                    //存放角色
+                    role.setDescription(info.getRoleTypeCode());
+                    //存储第三方role_code
+                    role.setOutRoleCode(info.getRoleCode());
+
+                    role.setRoleStatus("Y");
+                    role.setPlatform("purchase");
+                    //存放父级编码
+                    role.setExtension1(String.valueOf(info.getParentId()));
+                    //存放path
+                    role.setExtension2(info.getRolePath());
+                    role.setIsDelete(0);
+                    if (info.getCreatedBy() == null){
+                        role.setCreatedBy("admin");
+                    }else{
+                        role.setCreatedBy(info.getCreatedBy());
+                    }
+                    if (info.getUpdatedBy() == null){
+                        role.setUpdatedBy("admin");
+                    }else{
+                        role.setUpdatedBy(info.getUpdatedBy());
+                    }
+                    role.setCreatedTime(new Date());
+                    role.setUpdatedTime(new Date());
+                    roles.add(role);
+                }
+            }
+        }
+        return roles;
+    }
+
+    public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions){
+        /*SingleFindService singleFindService = SpringContextHolder.getBean(SingleFindService.class);
+        DataSynchronizeFeign feign = SpringContextHolder.getBean(DataSynchronizeFeign.class);*/
+
+        List<AppRoleResource> roleResources = new ArrayList<>();
+
+        for (RelationRoleMenuPermission  info : roleMenuPermissions){
+            AppRoleResource view = new AppRoleResource();
+            if (info.getRoleId() == null){
+                continue;
+            }
+            MenuPermission menuPermission = feign.findMenuPermissionId(info.getMenuPermissionId().toString());
+            if (Objects.isNull(menuPermission)){
+                continue;
+            }
+            MenuInfo menuInfo = feign.findById(String.valueOf(menuPermission.getOperationObjectiveId()));
+            if (Objects.isNull(menuInfo)){
+                continue;
+            }
+
+            String tenantCode = singleFindService.findTenantCode(menuPermission.getBusinessType());
+
+            //判定重复
+            AppRoleResource roleResourceResult = singleFindService.roleResourceDetails(menuPermission.getBusinessType(),tenantCode,menuPermission.getPermissionCode(),info.getRoleId().toString());
+            if (!Objects.isNull(roleResourceResult)){
+                continue;
+            }
+            view.setProductCode(menuPermission.getBusinessType());
+            view.setProductName(menuPermission.getBusinessType());
+            view.setRoleCode(info.getRoleId().toString());
+            view.setResourceCode(String.valueOf(menuInfo.getId()));
+            view.setResourceName(menuPermission.getPermissionName());
+            view.setTenantCode(tenantCode);
+            view.setPlatform("purchase");
+            view.setIsDelete(0);
+            if (StringUtils.isBlank(info.getCreatedBy())){
+                view.setCreatedBy("admin");
+            }else{
+                view.setCreatedBy(info.getCreatedBy());
+            }
+            if (StringUtils.isBlank(info.getUpdatedBy())){
+                view.setUpdatedBy("admin");
+            }else{
+                view.setUpdatedBy(info.getUpdatedBy());
+            }
+
+            view.setCreatedTime(new Date());
+            view.setUpdatedTime(new Date());
+            roleResources.add(view);
+        }
+        return roleResources;
     }
 }
