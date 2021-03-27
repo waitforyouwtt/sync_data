@@ -55,9 +55,17 @@ public interface DataSynchronizeFeign {
     @GetMapping("/relationRoleMenuPermissions")
     List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
 
+    @ApiOperation(value = "根据permissionId获取菜单信息",notes = "根据permissionId获取菜单信息")
+    @GetMapping("/findMenuPermissionId")
+    MenuPermission findMenuPermissionId(@RequestParam("id")String id);
+
     @ApiOperation(value = "获取用户角色总条数",notes = "获取用户角色总条数")
     @GetMapping("/findCountRelationUserRoles")
     List<Integer> findCountRelationUserRoles();
+
+    @ApiOperation(value = "根据条件获取id区间用户角色集合",notes = "根据条件获取id区间用户角色集合")
+    @GetMapping("/relationUserRoles")
+    List<RelationUserRole> relationUserRoles(@RequestParam("min")Integer min, @RequestParam("max")Integer max);
 
     //根据条件分页获取菜单集合
     @GetMapping("/findMenuPage")
@@ -74,13 +82,6 @@ public interface DataSynchronizeFeign {
     //角色
     @GetMapping("/roleInfos")
     List<RoleInfo> roleInfos();
-
-    //同步用户和角色
-    @GetMapping("/relationUserRoles")
-    List<RelationUserRole> relationUserRoles(@RequestParam("min")Integer min, @RequestParam("max")Integer max);
-
-    @GetMapping("/findMenuPermissionId")
-    MenuPermission findMenuPermissionId(@RequestParam("id")String id);
 
     @GetMapping("/findIds")
     List<Integer> findIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max);

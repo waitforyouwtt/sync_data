@@ -1,6 +1,7 @@
 package com.yh.service;
 
 import com.yh.entity.*;
+import com.yh.view.Product;
 
 import java.util.List;
 
@@ -60,4 +61,8 @@ public interface SingleFindService {
     List<String> findProductCodes(Long roleCode);
 
     AppUserRole roleUserDetails(String productCode,String tenantCode, String userCode, String roleCode);
+
+    AppProduct findProductInfoCode(String businessType);
+
+    List<UserBase> queryByUserId(long id);
 }

@@ -53,9 +53,19 @@ public interface RelationUserRoleService {
      */
     boolean deleteById(Integer id);
 
+    /**
+     * 根据条件获取id区间用户角色集合
+     * @param min
+     * @param max
+     * @return
+     */
     List<RelationUserRole> findRelationUserRoles(Integer min, Integer max);
 
     List<Integer> findIds(Integer min, Integer max);
 
+    /**
+     * 获取用户角色总条数
+     * @return
+     */
     List<Integer> findCountRelationUserRoles();
 }

@@ -82,9 +82,19 @@ public interface RelationUserRoleDao extends BaseMapper<RelationUserRole> {
      */
     int deleteById(Integer id);
 
+    /**
+     * 根据条件获取id区间用户角色集合
+     * @param min
+     * @param max
+     * @return
+     */
     List<RelationUserRole> queryBetweenId(@Param("min") Integer min,@Param("max") Integer max);
 
     List<Integer> queryIds(@Param("min") Integer min,@Param("max") Integer max);
 
+    /**
+     * 获取用户角色总条数
+     * @return
+     */
     List<Integer> findCountRelationUserRoles();
 }

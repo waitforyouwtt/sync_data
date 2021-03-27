@@ -98,6 +98,24 @@ public class SyncController {
         return relationRoleMenuPermissionService.findRelationRoleMenuPermissions(min,max);
     }
 
+    @ApiOperation(value = "根据permissionId获取菜单信息(根据id 查询按钮信息)",notes = "根据permissionId获取菜单信息(根据id 查询按钮信息)")
+    @GetMapping("/findMenuPermissionId")
+    public MenuPermission findMenuPermissionId(@RequestParam("id")String id){
+        return singleQueryService.findByMenuPermissionId(id);
+    }
+
+    @ApiOperation(value = "获取用户角色总条数",notes = "获取用户角色总条数")
+    @GetMapping("/findCountRelationUserRoles")
+    List<Integer> findCountRelationUserRoles(){
+        return relationUserRoleService.findCountRelationUserRoles();
+    }
+
+    @ApiOperation(value = "根据条件获取id区间用户角色集合",notes = "根据条件获取id区间用户角色集合")
+    @GetMapping("/relationUserRoles")
+    public List<RelationUserRole> relationUserRoles(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+        return relationUserRoleService.findRelationUserRoles(min,max);
+    }
+
     @ApiOperation(value = "根据条件分页获取菜单集合",notes = "根据条件分页获取菜单集合",tags = {"SyncController"})
     @GetMapping("/findMenuPage")
     List<MenuInfo> findMenuPage(@RequestParam("offset")Integer offset,@RequestParam("num")Integer num){
@@ -123,27 +141,8 @@ public class SyncController {
     }
 
     //同步用户和角色
-    @GetMapping("/relationUserRoles")
-    public List<RelationUserRole> relationUserRoles(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
-        return relationUserRoleService.findRelationUserRoles(min,max);
-    }
-
-    //同步用户和角色
     @GetMapping("/findIds")
     public List<Integer> findIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
         return relationUserRoleService.findIds(min,max);
     }
-
-    //根据id 查询按钮信息
-    @GetMapping("/findMenuPermissionId")
-    public MenuPermission findMenuPermissionId(@RequestParam("id")String id){
-      return singleQueryService.findByMenuPermissionId(id);
-    }
-
-    @GetMapping("/findCountRelationUserRoles")
-    List<Integer> findCountRelationUserRoles(){
-        return relationUserRoleService.findCountRelationUserRoles();
-    }
-
-
 }

@@ -364,48 +364,6 @@ public class ThreadServiceImpl implements ThreadService {
         }
     }
 
-    private List<AppUserRole> convertRoleUser(List<RelationUserRole> relationUserRoles) {
-        List<AppUserRole> roleResources = new ArrayList<>();
-        for (RelationUserRole info : relationUserRoles){
-            if (info.getUserId() == null){
-                continue;
-            }
-            UserInfo user = singleFindService.findUserInfoById(info.getUserId().toString());
-            if (Objects.isNull(user) || StringUtils.isBlank(user.getUserCode())){
-                continue;
-            }
-            List<String> productCodes = singleFindService.findProductCodes(info.getRoleId());
-            if (CollectionUtils.isEmpty(productCodes)){
-                continue;
-            }
-            for (String productCode: productCodes){
-                AppUserRole view = new AppUserRole();
-                view.setProductCode(productCode);
-                view.setTenantCode(singleFindService.findTenantCode(productCode));
-                view.setUserCode(user.getUserNumber());
-                view.setUserName(user.getName());
-                view.setRoleCode(info.getRoleId().toString());
-                view.setPlatform("purchase");
-                view.setIsDelete(0);
-                if (StringUtils.isBlank(info.getCreatedBy())){
-                    view.setCreatedBy("admin");
-                }else{
-                    view.setCreatedBy(info.getCreatedBy());
-                }
-                if (StringUtils.isBlank(info.getUpdatedBy())){
-                    view.setUpdatedBy("admin");
-                }else{
-                    view.setUpdatedBy(info.getUpdatedBy());
-                }
-
-                view.setCreatedTime(new Date());
-                view.setUpdatedTime(new Date());
-                roleResources.add(view);
-            }
-        }
-        return roleResources;
-    }
-
    //实体转换器-----------------------------------------------------------------------------------------------------
     private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus){
         List<AppProductResource> resources = new ArrayList<>();
@@ -589,32 +547,40 @@ public class ThreadServiceImpl implements ThreadService {
         List<AppRoleResource> roleResources = new ArrayList<>();
 
         for (RelationRoleMenuPermission  info : roleMenuPermissions){
-            AppRoleResource view = new AppRoleResource();
             if (info.getRoleId() == null){
                 continue;
             }
+            //根据permissionId获取菜单按钮信息
             MenuPermission menuPermission = feign.findMenuPermissionId(info.getMenuPermissionId().toString());
             if (Objects.isNull(menuPermission)){
                 continue;
             }
+            //根据operationObjectiveId获取菜单信息
             MenuInfo menuInfo = feign.findById(String.valueOf(menuPermission.getOperationObjectiveId()));
             if (Objects.isNull(menuInfo)){
                 continue;
             }
-
+            //获取租户编码
             String tenantCode = singleFindService.findTenantCode(menuPermission.getBusinessType());
-
+            //根据应用编码查询应用信息
+            AppProduct product = singleFindService.findProductInfoCode(menuPermission.getBusinessType());
+            if (Objects.isNull(product)){
+                continue;
+            }
             //判定重复
-            AppRoleResource roleResourceResult = singleFindService.roleResourceDetails(menuPermission.getBusinessType(),tenantCode,menuPermission.getPermissionCode(),info.getRoleId().toString());
+            AppRoleResource roleResourceResult = singleFindService.roleResourceDetails(menuPermission.getBusinessType(),tenantCode,String.valueOf(menuPermission.getId()),info.getRoleId().toString());
             if (!Objects.isNull(roleResourceResult)){
                 continue;
             }
+
+            AppRoleResource view = new AppRoleResource();
             view.setProductCode(menuPermission.getBusinessType());
-            view.setProductName(menuPermission.getBusinessType());
-            view.setRoleCode(info.getRoleId().toString());
-            view.setResourceCode(String.valueOf(menuInfo.getId()));
-            view.setResourceName(menuPermission.getPermissionName());
+            view.setProductName(product.getProductName());
             view.setTenantCode(tenantCode);
+            view.setRoleCode(info.getRoleId().toString());
+            //存放的是按钮的id 哦
+            view.setResourceCode(String.valueOf(menuPermission.getId()));
+            view.setResourceName(menuPermission.getPermissionName());
             view.setPlatform("purchase");
             view.setIsDelete(0);
             if (StringUtils.isBlank(info.getCreatedBy())){
@@ -633,5 +599,54 @@ public class ThreadServiceImpl implements ThreadService {
             roleResources.add(view);
         }
         return roleResources;
+    }
+
+    private List<AppUserRole> convertRoleUser(List<RelationUserRole> relationUserRoles) {
+        List<AppUserRole> userRoles = new ArrayList<>();
+        for (RelationUserRole info : relationUserRoles){
+            if (info.getUserId() == null){
+                continue;
+            }
+            List<UserBase> users = singleFindService.queryByUserId(info.getUserId());
+            if (Objects.isNull(users)){
+                continue;
+            }
+            UserBase user = users.get(0);
+            List<String> productCodes = singleFindService.findProductCodes(info.getRoleId());
+            if (CollectionUtils.isEmpty(productCodes)){
+                continue;
+            }
+            for (String productCode: productCodes){
+                //查询租户编码
+                String tenantCode = singleFindService.findTenantCode(productCode);
+                AppUserRole userRole = singleFindService.roleUserDetails(productCode,tenantCode,user.getUserCode(),info.getRoleId().toString());
+                if (!Objects.isNull(userRole)){
+                    break;
+                }
+                AppUserRole view = new AppUserRole();
+                view.setProductCode(productCode);
+                view.setTenantCode(tenantCode);
+                view.setUserCode(user.getUserCode());
+                view.setUserName(user.getRealName());
+                view.setRoleCode(info.getRoleId().toString());
+                view.setPlatform("purchase");
+                view.setIsDelete(0);
+                if (StringUtils.isBlank(info.getCreatedBy())){
+                    view.setCreatedBy("admin");
+                }else{
+                    view.setCreatedBy(info.getCreatedBy());
+                }
+                if (StringUtils.isBlank(info.getUpdatedBy())){
+                    view.setUpdatedBy("admin");
+                }else{
+                    view.setUpdatedBy(info.getUpdatedBy());
+                }
+
+                view.setCreatedTime(new Date());
+                view.setUpdatedTime(new Date());
+                userRoles.add(view);
+            }
+        }
+        return userRoles;
     }
 }

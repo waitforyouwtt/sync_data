@@ -5,6 +5,7 @@ import com.yh.dao.*;
 import com.yh.entity.*;
 import com.yh.service.SingleFindService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -50,6 +51,8 @@ public class SingleFindServiceImpl implements SingleFindService {
     UserInfoDao userInfoDao;
     @Resource
     AppUserRoleDao userRoleDao;
+    @Autowired
+    UserBaseDao userBaseDao;
 
     @Override
     public AppProductResource resourceDetails(String productCode,String tenantCode, String resourceCode) {
@@ -236,5 +239,20 @@ public class SingleFindServiceImpl implements SingleFindService {
         wrapper.eq("user_code",userCode);
         wrapper.eq("is_delete",0);
         return userRoleDao.selectOne(wrapper);
+    }
+
+    @Override
+    public AppProduct findProductInfoCode(String businessType){
+        QueryWrapper<AppProduct> wrapper = new QueryWrapper<>();
+        wrapper.eq("product_code",businessType);
+        wrapper.eq("is_delete",0);
+        return productDao.selectOne(wrapper);
+    }
+
+    @Override
+    public List<UserBase> queryByUserId(long id){
+        QueryWrapper<UserBase> wrapper = new QueryWrapper<>();
+        wrapper.eq("user_info_id",id);
+        return userBaseDao.selectList(wrapper);
     }
 }
