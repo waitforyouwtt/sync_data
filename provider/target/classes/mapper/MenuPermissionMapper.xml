@@ -25,7 +25,7 @@
     <select id="queryById" resultMap="MenuPermissionMap">
         select
           id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id
-        from yh_srm_usercenter_test.menu_permission
+        from menu_permission
         where id = #{id}
     </select>
 
@@ -33,7 +33,7 @@
     <select id="queryAllByLimit" resultMap="MenuPermissionMap">
         select
           id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id
-        from yh_srm_usercenter_test.menu_permission
+        from menu_permission
         limit #{offset}, #{limit}
     </select>
 
@@ -43,7 +43,7 @@
         id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code,
         permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id,
         out_menu_permission_id
-        from yh_srm_usercenter_test.menu_permission
+        from menu_permission
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -98,12 +98,12 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.menu_permission(business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id)
+        insert into menu_permission(business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id)
         values (#{businessType}, #{operationObjectiveId}, #{operationObjectiveName}, #{apiUrl}, #{apiMethod}, #{permissionCode}, #{permissionName}, #{rank}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}, #{outMenuId}, #{outMenuPermissionId})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.menu_permission(business_type, operation_objective_id,
+        insert into menu_permission(business_type, operation_objective_id,
         operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time,
         updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id)
         values
@@ -116,7 +116,7 @@
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.menu_permission(business_type, operation_objective_id,
+        insert into menu_permission(business_type, operation_objective_id,
         operation_objective_name, api_url, api_method, permission_code, permission_name, rank, is_delete, created_time,
         updated_time, created_by, updated_by, out_menu_id, out_menu_permission_id)
         values
@@ -137,7 +137,7 @@
 
     <!--通过主键修改数据-->
     <update id="update">
-        update yh_srm_usercenter_test.menu_permission
+        update menu_permission
         <set>
             <if test="businessType != null and businessType != ''">
                 business_type = #{businessType},
@@ -190,11 +190,11 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from yh_srm_usercenter_test.menu_permission where id = #{id}
+        delete from menu_permission where id = #{id}
     </delete>
 
     <select id="findCountPermission" resultType="integer">
-        select id from yh_srm_usercenter_test.menu_permission where is_delete = 0
+        select id from menu_permission where is_delete = 0
     </select>
 
     <select id="menuPermissionBetweenIds" resultMap="MenuPermissionMap">
@@ -202,7 +202,7 @@
         id, business_type, operation_objective_id, operation_objective_name, api_url, api_method, permission_code,
         permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id,
         out_menu_permission_id
-        from yh_srm_usercenter_test.menu_permission
+        from menu_permission
         where 1 = 1 and is_delete = 0
         and id &gt;= #{min} and id &lt;= #{max}
     </select>

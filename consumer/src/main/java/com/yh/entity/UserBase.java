@@ -13,6 +13,7 @@ import java.io.Serializable;
  */
 @Data
 public class UserBase implements Serializable {
+
     private static final long serialVersionUID = 246170424834859782L;
     /**
     * 用户ID
@@ -66,14 +67,8 @@ public class UserBase implements Serializable {
     * 头像
     */
     private String headImage;
-    /**
-    * 生日
-    */
-    private Date birthDate;
-    /**
-    * 员工 empIn custom 自定义比如供应商
-    */
-    private Integer userType;
+
+
     /**
     * 是否员工
     */
@@ -89,43 +84,22 @@ public class UserBase implements Serializable {
     
     private String updateBy;
     
-    private Date createTime;
-    
-    private Date updateTime;
+
     /**
     * 是否禁用
     */
     private Integer isDisable;
-    /**
-    * 是否更改了密码
-    */
-    private Integer isChangePwd;
+
     /**
     * 员工固定的组织编码
     */
     private String organizationCode;
     /**
-    * 员工状态 on 在职 off 离值 
-    */
-    private Integer empStatus;
-    /**
     * 员工类型 official 正式 assignment 外派
     */
     private String empType;
-    /**
-    * 密码更新时间
-    */
-    private Date updatePasswordTime;
-    /**
-    * 登录失效时间 临时账号用
-    */
-    private Date loginDeadTime;
 
     private Integer appCode;
-    /**
-    * 账户有效期
-    */
-    private Integer endTime;
 
     private String remark;
     /**

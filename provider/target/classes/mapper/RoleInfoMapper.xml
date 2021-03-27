@@ -24,7 +24,7 @@
     <select id="queryById" resultMap="RoleInfoMap">
         select
           id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
-        from yh_srm_usercenter_test.role_info
+        from role_info
         where id = #{id}
     </select>
 
@@ -32,7 +32,7 @@
     <select id="queryAllByLimit" resultMap="RoleInfoMap">
         select
           id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
-        from yh_srm_usercenter_test.role_info
+        from role_info
         limit #{offset}, #{limit}
     </select>
 
@@ -41,7 +41,7 @@
         select
         id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by,
         updated_by, role_path, business_type, out_role_id, out_role_id_test
-        from yh_srm_usercenter_test.role_info
+        from role_info
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -93,12 +93,12 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.role_info(role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test)
+        insert into role_info(role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test)
         values (#{roleTypeCode}, #{roleCode}, #{roleName}, #{isLeaf}, #{parentId}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}, #{rolePath}, #{businessType}, #{outRoleId}, #{outRoleIdTest})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
+        insert into role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
         is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id,
         out_role_id_test)
         values
@@ -110,7 +110,7 @@
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into yh_srm_usercenter_test.role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
+        insert into role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
         is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id,
         out_role_id_test)
         values
@@ -129,7 +129,7 @@
 
     <!--通过主键修改数据-->
     <update id="update">
-        update yh_srm_usercenter_test.role_info
+        update role_info
         <set>
             <if test="roleTypeCode != null and roleTypeCode != ''">
                 role_type_code = #{roleTypeCode},
@@ -179,18 +179,18 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from yh_srm_usercenter_test.role_info where id = #{id}
+        delete from role_info where id = #{id}
     </delete>
 
     <select id="findCountRoles" resultType="string">
-        select id from yh_srm_usercenter_test.role_info
+        select id from role_info
         where 1 = 1 and is_delete = 0
     </select>
 
     <select id="findRoleBetweenIds" resultMap="RoleInfoMap">
         select
           id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
-        from yh_srm_usercenter_test.role_info
+        from role_info
         where 1 = 1 and is_delete = 0
         and id &gt;= #{min} and id &lt;= #{max}
     </select>

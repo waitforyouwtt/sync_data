@@ -4,7 +4,7 @@
 
     <resultMap id="BaseResultMap" type="com.yh.entity.UserBase">
         <!--@Table user_base-->
-        <result property="id" column="id" jdbcType="OTHER"/>
+        <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="userCode" column="user_code" jdbcType="VARCHAR"/>
         <result property="realName" column="real_name" jdbcType="VARCHAR"/>
         <result property="phoneNum" column="phone_num" jdbcType="VARCHAR"/>
@@ -17,24 +17,15 @@
         <result property="gender" column="gender" jdbcType="VARCHAR"/>
         <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
         <result property="headImage" column="head_image" jdbcType="VARCHAR"/>
-        <result property="birthDate" column="birth_date" jdbcType="OTHER"/>
-        <result property="userType" column="user_type" jdbcType="OTHER"/>
-        <result property="isEmployee" column="is_employee" jdbcType="OTHER"/>
-        <result property="isSyncData" column="is_sync_data" jdbcType="OTHER"/>
-        <result property="isDelete" column="is_delete" jdbcType="OTHER"/>
+        <result property="isEmployee" column="is_employee" jdbcType="INTEGER"/>
+        <result property="isSyncData" column="is_sync_data" jdbcType="INTEGER"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
         <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
         <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
-        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
-        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-        <result property="isDisable" column="is_disable" jdbcType="OTHER"/>
-        <result property="isChangePwd" column="is_change_pwd" jdbcType="OTHER"/>
+        <result property="isDisable" column="is_disable" jdbcType="INTEGER"/>
         <result property="organizationCode" column="organization_code" jdbcType="VARCHAR"/>
-        <result property="empStatus" column="emp_status" jdbcType="OTHER"/>
         <result property="empType" column="emp_type" jdbcType="VARCHAR"/>
-        <result property="updatePasswordTime" column="update_password_time" jdbcType="TIMESTAMP"/>
-        <result property="loginDeadTime" column="login_dead_time" jdbcType="TIMESTAMP"/>
-        <result property="appCode" column="app_code" jdbcType="OTHER"/>
-        <result property="endTime" column="end_time" jdbcType="OTHER"/>
+        <result property="appCode" column="app_code" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
         <result property="userInfoId" column="user_info_id" jdbcType="INTEGER"/>
     </resultMap>
@@ -42,7 +33,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="BaseResultMap">
         select
-          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, birth_date, user_type, is_employee, is_sync_data, is_delete, create_by, update_by, create_time, update_time, is_disable, is_change_pwd, organization_code, emp_status, emp_type, update_password_time, login_dead_time, app_code, end_time, remark, user_info_id
+          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, is_employee, is_sync_data, is_delete, create_by, update_by,   is_disable,  organization_code,  emp_type, app_code, remark, user_info_id
         from user_base
         where id = #{id}
     </select>
@@ -50,7 +41,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="BaseResultMap">
         select
-          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, birth_date, user_type, is_employee, is_sync_data, is_delete, create_by, update_by, create_time, update_time, is_disable, is_change_pwd, organization_code, emp_status, emp_type, update_password_time, login_dead_time, app_code, end_time, remark, user_info_id
+          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, is_employee, is_sync_data, is_delete, create_by, update_by,  is_disable,  organization_code,  emp_type,  app_code,  remark, user_info_id
         from user_base
         limit #{offset}, #{limit}
     </select>
@@ -58,7 +49,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="BaseResultMap">
         select
-          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, birth_date, user_type, is_employee, is_sync_data, is_delete, create_by, update_by, create_time, update_time, is_disable, is_change_pwd, organization_code, emp_status, emp_type, update_password_time, login_dead_time, app_code, end_time, remark, user_info_id
+          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, is_employee, is_sync_data, is_delete, create_by, update_by,  is_disable, organization_code, emp_type,   app_code,  remark, user_info_id
         from user_base
         <where>
             <if test="id != null">
@@ -100,12 +91,6 @@
             <if test="headImage != null and headImage != ''">
                 and head_image = #{headImage}
             </if>
-            <if test="birthDate != null">
-                and birth_date = #{birthDate}
-            </if>
-            <if test="userType != null">
-                and user_type = #{userType}
-            </if>
             <if test="isEmployee != null">
                 and is_employee = #{isEmployee}
             </if>
@@ -121,39 +106,22 @@
             <if test="updateBy != null and updateBy != ''">
                 and update_by = #{updateBy}
             </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
+
             <if test="isDisable != null">
                 and is_disable = #{isDisable}
             </if>
-            <if test="isChangePwd != null">
-                and is_change_pwd = #{isChangePwd}
-            </if>
+
             <if test="organizationCode != null and organizationCode != ''">
                 and organization_code = #{organizationCode}
             </if>
-            <if test="empStatus != null">
-                and emp_status = #{empStatus}
-            </if>
+
             <if test="empType != null and empType != ''">
                 and emp_type = #{empType}
-            </if>
-            <if test="updatePasswordTime != null">
-                and update_password_time = #{updatePasswordTime}
-            </if>
-            <if test="loginDeadTime != null">
-                and login_dead_time = #{loginDeadTime}
             </if>
             <if test="appCode != null">
                 and app_code = #{appCode}
             </if>
-            <if test="endTime != null">
-                and end_time = #{endTime}
-            </if>
+
             <if test="remark != null and remark != ''">
                 and remark = #{remark}
             </if>
@@ -165,8 +133,8 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into user_base(user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, birth_date, user_type, is_employee, is_sync_data, is_delete, create_by, update_by, create_time, update_time, is_disable, is_change_pwd, organization_code, emp_status, emp_type, update_password_time, login_dead_time, app_code, end_time, remark, user_info_id)
-        values (#{userCode}, #{realName}, #{phoneNum}, #{customLoginName}, #{email}, #{idNumber}, #{idType}, #{password}, #{encodeType}, #{gender}, #{nickName}, #{headImage}, #{birthDate}, #{userType}, #{isEmployee}, #{isSyncData}, #{isDelete}, #{createBy}, #{updateBy}, #{createTime}, #{updateTime}, #{isDisable}, #{isChangePwd}, #{organizationCode}, #{empStatus}, #{empType}, #{updatePasswordTime}, #{loginDeadTime}, #{appCode}, #{endTime}, #{remark}, #{userInfoId})
+        insert into user_base(user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image,is_employee, is_sync_data, is_delete, create_by, update_by,  is_disable, organization_code, emp_type, app_code, remark, user_info_id)
+        values (#{userCode}, #{realName}, #{phoneNum}, #{customLoginName}, #{email}, #{idNumber}, #{idType}, #{password}, #{encodeType}, #{gender}, #{nickName}, #{headImage},  #{isEmployee}, #{isSyncData}, #{isDelete}, #{createBy}, #{updateBy}, #{createTime}, #{isDisable}, #{organizationCode}, #{empType}, #{appCode},  #{remark}, #{userInfoId})
     </insert>
 
     <!--通过主键修改数据-->
@@ -209,12 +177,6 @@
             <if test="headImage != null and headImage != ''">
                 head_image = #{headImage},
             </if>
-            <if test="birthDate != null">
-                birth_date = #{birthDate},
-            </if>
-            <if test="userType != null">
-                user_type = #{userType},
-            </if>
             <if test="isEmployee != null">
                 is_employee = #{isEmployee},
             </if>
@@ -230,38 +192,20 @@
             <if test="updateBy != null and updateBy != ''">
                 update_by = #{updateBy},
             </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
+
             <if test="isDisable != null">
                 is_disable = #{isDisable},
             </if>
-            <if test="isChangePwd != null">
-                is_change_pwd = #{isChangePwd},
-            </if>
+
             <if test="organizationCode != null and organizationCode != ''">
                 organization_code = #{organizationCode},
             </if>
-            <if test="empStatus != null">
-                emp_status = #{empStatus},
-            </if>
+
             <if test="empType != null and empType != ''">
                 emp_type = #{empType},
             </if>
-            <if test="updatePasswordTime != null">
-                update_password_time = #{updatePasswordTime},
-            </if>
-            <if test="loginDeadTime != null">
-                login_dead_time = #{loginDeadTime},
-            </if>
             <if test="appCode != null">
                 app_code = #{appCode},
-            </if>
-            <if test="endTime != null">
-                end_time = #{endTime},
             </if>
             <if test="remark != null and remark != ''">
                 remark = #{remark},
