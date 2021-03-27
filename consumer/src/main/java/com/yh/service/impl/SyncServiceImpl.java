@@ -45,14 +45,6 @@ public class SyncServiceImpl implements SyncService {
     AppRoleResourceDao roleResourceDao;
     @Resource
     SingleUpdateService singleUpdateService;
-    @Resource
-    DaDataRuleDao daDataRuleDao;
-    @Resource
-    DaRoleDataAuthDao daRoleDataAuthDao;
-    @Resource
-    DaRuleDetailDao daRuleDetailDao;
-    @Resource
-    DaRuleProjectDao daRuleProjectDao;
 
     @Resource
     AppUserRoleDao appUserRoleDao;
