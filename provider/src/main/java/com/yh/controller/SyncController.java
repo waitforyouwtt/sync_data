@@ -38,6 +38,17 @@ public class SyncController {
     public List<Integer> findCountMenus(){
         return menuInfoService.findCountMenus();
     }
+    @ApiOperation(value = "根据条件获取id区间菜单集合",notes = "根据条件获取id区间菜单集合",tags = {"SyncController"})
+    @GetMapping("/findMenuBetweenIds")
+    List<MenuInfo> findMenuBetweenIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+        return menuInfoService.findMenuBetweenIds(min,max);
+    }
+
+    @ApiOperation(value = "根据应用编码&父级id查询菜单",notes = "根据应用编码&父级id查询菜单",tags = {"SyncController"})
+    @GetMapping("/findByAppCodeAndParentId")
+    public List<MenuInfo> findByAppCodeAndParentId(@RequestParam("code") String code,@RequestParam("parentId") String parentId){
+        return singleQueryService.findByAppCodeAndParentId(code,parentId);
+    }
 
     @ApiOperation(value = "获取按钮的总条数",notes = "获取按钮的总条数",tags = {"SyncController"})
     @GetMapping("/findCountPermission")
@@ -51,12 +62,6 @@ public class SyncController {
         return roleInfoService.findCountRoles();
     }
 
-    @ApiOperation(value = "根据条件获取id区间菜单集合",notes = "根据条件获取id区间菜单集合",tags = {"SyncController"})
-    @GetMapping("/findMenuBetweenIds")
-    List<MenuInfo> findMenuBetweenIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
-        return menuInfoService.findMenuBetweenIds(min,max);
-    }
-
     @ApiOperation(value = "根据条件分页获取菜单集合",notes = "根据条件分页获取菜单集合",tags = {"SyncController"})
     @GetMapping("/findMenuPage")
     List<MenuInfo> findMenuPage(@RequestParam("offset")Integer offset,@RequestParam("num")Integer num){
@@ -67,12 +72,6 @@ public class SyncController {
     @GetMapping("/list")
     public List<MenuInfo> findMenus(){
         return menuInfoService.findMenus();
-    }
-
-    //菜单单条记录
-    @GetMapping("/findByAppCodeAndParentId")
-    public MenuInfo findByAppCodeAndParentId(@RequestParam("code") String code,@RequestParam("parentId") String parentId){
-        return singleQueryService.findByAppCodeAndParentId(code,parentId);
     }
 
     //按钮

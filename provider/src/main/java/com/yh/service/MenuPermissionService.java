@@ -56,7 +56,10 @@ public interface MenuPermissionService {
 
     List<MenuPermission> findMenuPermissions();
 
-
+    /**
+     * 获取按钮总条数
+     * @return
+     */
     List<Integer> findCountPermission();
 
     List<MenuPermission> menuPermissionBetweenIds(Integer min, Integer max);

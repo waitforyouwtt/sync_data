@@ -619,11 +619,11 @@ public class ThreadServiceImpl2 implements ThreadService2 {
              * select code from xxx where parendid = ‘aaa’
              *     Code —> parentCode
              */
-            MenuInfo queryMenu = feign.findByAppCodeAndParentId(info.getBusinessType(), info.getParentId() + "");
-            if (Objects.isNull(queryMenu)){
+            List<MenuInfo> queryMenus = feign.findByAppCodeAndParentId(info.getBusinessType(), info.getParentId() + "");
+            if (Objects.isNull(queryMenus)){
                 resource.setParentCode("0");
             }else{
-                resource.setParentCode(queryMenu.getId().toString());
+                resource.setParentCode(queryMenus.get(0).getId().toString());
             }
             resource.setResourceCode("menu_"+info.getCode());
             resource.setResourceName("menu_"+info.getName());

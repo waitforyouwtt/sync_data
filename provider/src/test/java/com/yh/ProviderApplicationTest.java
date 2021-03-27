@@ -63,7 +63,7 @@ public class ProviderApplicationTest {
         String code = "100";
         String xx   = "1669" ;
         String xxx  = "1558";
-        MenuInfo info = singleQueryService.findByAppCodeAndParentId(code, xx);
+        List<MenuInfo> info = singleQueryService.findByAppCodeAndParentId(code, xx);
         log.info("得到的信息：{}",info);
 
     }

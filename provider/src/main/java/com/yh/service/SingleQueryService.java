@@ -11,7 +11,7 @@ public interface SingleQueryService {
 
     List<MenuVO> menus();
 
-    MenuInfo findByAppCodeAndParentId(String code, String parentId);
+    List<MenuInfo> findByAppCodeAndParentId(String code, String parentId);
 
     MenuInfo findById(String id);
 

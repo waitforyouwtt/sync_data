@@ -33,7 +33,7 @@
     <select id="queryById" resultMap="AppProductResourceMap">
         select
           id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_product_resource
+        from app_product_resource
         where id = #{id}
     </select>
 
@@ -41,7 +41,7 @@
     <select id="queryAllByLimit" resultMap="AppProductResourceMap">
         select
           id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_product_resource
+        from app_product_resource
         limit #{offset}, #{limit}
     </select>
 
@@ -51,7 +51,7 @@
         id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type,
         resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by,
         updated_by, created_time, updated_time
-        from o2o_support_idaas.app_product_resource
+        from app_product_resource
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -124,12 +124,12 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_product_resource(unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5,status,platform ,is_delete, created_by, updated_by, created_time, updated_time)
+        insert into app_product_resource(unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5,status,platform ,is_delete, created_by, updated_by, created_time, updated_time)
         values (#{uniqueCode}, #{productCode}, #{tenantCode}, #{parentCode}, #{resourceCode}, #{resourceName}, #{path}, #{type}, #{resourceType}, #{orderNum}, #{description}, #{expand1}, #{expand2}, #{expand3}, #{expand4}, #{expand5},#{status},#{platform}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_product_resource(unique_code, product_code, tenant_code, parent_code,
+        insert into app_product_resource(unique_code, product_code, tenant_code, parent_code,
         resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3,
         expand4, expand5,status,platform, is_delete, created_by, updated_by, created_time, updated_time)
         values
@@ -143,7 +143,7 @@
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_product_resource(unique_code, product_code, tenant_code, parent_code,
+        insert into app_product_resource(unique_code, product_code, tenant_code, parent_code,
         resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3,
         expand4, expand5, is_delete,status,platform, created_by, updated_by, created_time, updated_time)
         values
@@ -162,7 +162,7 @@
 
     <!--通过主键修改数据-->
     <update id="update">
-        update o2o_support_idaas.app_product_resource
+        update app_product_resource
         <set>
             <if test="uniqueCode != null and uniqueCode != ''">
                 unique_code = #{uniqueCode},
@@ -233,13 +233,13 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from o2o_support_idaas.app_product_resource where id = #{id}
+        delete from app_product_resource where id = #{id}
     </delete>
 
     <select id="selectOne2" resultMap="AppProductResourceMap">
          select
           id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type, resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_product_resource
+        from app_product_resource
         where 1 = 1 and is_delete = 0
         and product_code = #{productCode}
         and tenant_code  = #{tenantCode}

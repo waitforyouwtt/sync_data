@@ -102,6 +102,40 @@ public class ThreadServiceImpl implements ThreadService {
         return "成功";
     }
 
+    class ImportMenuTask implements Runnable {
+        Integer start;
+        Integer end;
+        private CountDownLatch countDownLatch;
+        private AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
+
+        public ImportMenuTask(Integer start,Integer end,CountDownLatch countDownLatch){
+            this.start = start;
+            this.end   = end;
+            this.countDownLatch = countDownLatch;
+        }
+
+        @Override
+        public void run() {
+            List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
+            if (CollectionUtils.isEmpty(menuInfos)){
+                log.info("此区间没有数据");
+                return;
+            }
+            log.info("需要同步的区间总体条数:{}",menuInfos.size());
+
+            if (!CollectionUtils.isEmpty(menuInfos)){
+                List<AppProductResource> productResources = convertMenuToResource(menuInfos);
+                if (!CollectionUtils.isEmpty(productResources)){
+                    log.info("开始插入数据库");
+                    resourceDao.insertOrUpdateBatch(productResources);
+                }
+            }
+            log.info("发出线程任务完成的信号");
+            countDownLatch.countDown();
+        }
+    }
+
+
     @Async
     @Override
     public String roleSync() {
@@ -354,38 +388,7 @@ public class ThreadServiceImpl implements ThreadService {
         return roleResources;
     }
 
-    class ImportMenuTask implements Runnable {
-        Integer start;
-        Integer end;
-        private CountDownLatch countDownLatch;
-        private AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
 
-        public ImportMenuTask(Integer start,Integer end,CountDownLatch countDownLatch){
-            this.start = start;
-            this.end   = end;
-            this.countDownLatch = countDownLatch;
-        }
-
-        @Override
-        public void run() {
-            List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
-            if (CollectionUtils.isEmpty(menuInfos)){
-                log.info("此区间没有数据");
-                return;
-            }
-            log.info("需要同步的区间总体条数:{}",menuInfos.size());
-
-            if (!CollectionUtils.isEmpty(menuInfos)){
-                List<AppProductResource> productResources = convertMenuToResource(menuInfos);
-                if (!CollectionUtils.isEmpty(productResources)){
-                    log.info("开始插入数据库");
-                    resourceDao.insertOrUpdateBatch(productResources);
-                }
-            }
-            log.info("发出线程任务完成的信号");
-            countDownLatch.countDown();
-        }
-    }
 
     class ImportMenuPermissionTask implements Runnable{
         Integer start;
@@ -566,13 +569,16 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
 
+   //实体转换器-----------------------------------------------------------------------------------------------------
     private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus){
         List<AppProductResource> resources = new ArrayList<>();
         for (MenuInfo info: menus){
             if (StringUtils.isBlank(info.getBusinessType()) || StringUtils.isBlank(info.getCode())){
                 continue;
             }
+            //根据应用获取租户信息
             String tenantCode = singleFindService.findTenantCode(info.getBusinessType());
+            //前缀menu
             String resource_fix = Constant.MENU+info.getId()+"_";
 
             AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,resource_fix+info.getCode());
@@ -584,15 +590,11 @@ public class ThreadServiceImpl implements ThreadService {
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(tenantCode);
-            /**
-             * select code from xxx where parendid = ‘aaa’
-             *     Code —> parentCode
-             */
-            MenuInfo queryMenu = feign.findByAppCodeAndParentId(info.getBusinessType(), info.getParentId() + "");
-            if (Objects.isNull(queryMenu)){
+
+            if (info.getParentId() == null || info.getParentId() ==0){
                 resource.setParentCode("0");
             }else{
-                resource.setParentCode(queryMenu.getId().toString());
+                resource.setParentCode(String.valueOf(info.getParentId()));
             }
             resource.setResourceCode(resource_fix+info.getCode());
             resource.setResourceName(resource_fix+info.getName());
@@ -600,10 +602,11 @@ public class ThreadServiceImpl implements ThreadService {
             //固定为菜单
             resource.setType("1");
             resource.setOrderNum(info.getRank());
+            //根据生产环境而来
             if (info.getStatus() == 0){
-                resource.setStatus("N");
-            }else{
                 resource.setStatus("Y");
+            }else{
+                resource.setStatus("N");
             }
             resource.setIsDelete(0);
             if (StringUtils.isBlank(info.getCreatedBy())){
@@ -616,7 +619,9 @@ public class ThreadServiceImpl implements ThreadService {
             }else{
                 resource.setUpdatedBy(info.getUpdatedBy());
             }
+            //存放菜单id
             resource.setExpand2(String.valueOf(info.getId()));
+            //存放菜单父级id
             resource.setExpand3(String.valueOf(info.getParentId()));
             resource.setPlatform("purchase");
             resource.setUpdatedTime(new Date());

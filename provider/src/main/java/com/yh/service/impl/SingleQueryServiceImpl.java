@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,18 +39,18 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     }
 
     @Override
-    public MenuInfo findByAppCodeAndParentId(String code, String parentId) {
+    public List<MenuInfo> findByAppCodeAndParentId(String code, String parentId) {
         log.info("根据应用编码&父级编码&删除状态查找菜单信息：{},{},{}",code,parentId);
         QueryWrapper<MenuInfo> params = new QueryWrapper<>();
         params.eq("business_type",code);
-        params.eq("id",parentId);
+        params.eq("parent_id",parentId);
         params.eq("is_delete",0);
 
         List<MenuInfo> result = singleQueryDao.selectList(params);
         if (!CollectionUtils.isEmpty(result)){
-            return  result.get(0);
+            return  new ArrayList<>();
         }
-        return null;
+        return result;
     }
 
     @Override

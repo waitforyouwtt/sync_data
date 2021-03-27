@@ -15,6 +15,14 @@ public interface DataSynchronizeFeign {
     @GetMapping("/findCountMenus")
     List<Integer> findCountMenus();
 
+    @ApiOperation(value = "根据条件获取id区间菜单集合",notes = "根据条件获取id区间菜单集合")
+    @GetMapping("/findMenuBetweenIds")
+    List<MenuInfo> findMenuBetweenIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
+
+    @ApiOperation(value = "根据应用编码&父级id查询菜单",notes = "根据父级id查询菜单")
+    @GetMapping("/findByAppCodeAndParentId")
+    List<MenuInfo> findByAppCodeAndParentId(@RequestParam("code") String code, @RequestParam("parentId") String parentId);
+
     @ApiOperation(value = "获取按钮的总条数",notes = "获取按钮的总条数")
     @GetMapping("/findCountPermission")
     List<Integer> findCountPermission();
@@ -31,12 +39,6 @@ public interface DataSynchronizeFeign {
     @GetMapping("/findCountRelationUserRoles")
     List<Integer> findCountRelationUserRoles();
 
-
-
-    //根据条件获取id区间菜单集合
-    @GetMapping("/findMenuBetweenIds")
-    List<MenuInfo> findMenuBetweenIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
-
     //根据条件分页获取菜单集合
     @GetMapping("/findMenuPage")
     List<MenuInfo> findMenuPage(@RequestParam("offset")Integer offset,@RequestParam("num")Integer num);
@@ -44,10 +46,6 @@ public interface DataSynchronizeFeign {
     //菜单
     @GetMapping("/list")
     List<MenuInfo> findMenus();
-
-    //单条菜单
-    @GetMapping("/findByAppCodeAndParentId")
-    MenuInfo findByAppCodeAndParentId(@RequestParam("code") String code, @RequestParam("parentId") String parentId);
 
     //按钮
     @GetMapping("/menuPermissions")

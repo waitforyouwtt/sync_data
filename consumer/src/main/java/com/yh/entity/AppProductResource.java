@@ -65,11 +65,11 @@ public class AppProductResource implements Serializable {
      */
     private String expand1;
     /**
-     * 扩展字段2
+     * 扩展字段2：存放菜单id
      */
     private String expand2;
     /**
-     * 扩展字段3
+     * 扩展字段3：存放菜单父级id
      */
     private String expand3;
     /**

@@ -558,11 +558,16 @@ public class SyncServiceImpl implements SyncService {
              * select code from xxx where parendid = ‘aaa’
              *     Code —> parentCode
              */
-            MenuInfo queryMenu = productResourceFeign.findByAppCodeAndParentId(info.getBusinessType(), info.getParentId() + "");
-            if (Objects.isNull(queryMenu)){
+           /* List<MenuInfo> queryMenus = productResourceFeign.findByAppCodeAndParentId(info.getBusinessType(), info.getParentId() + "");
+            if (Objects.isNull(queryMenus)){
                 resource.setParentCode("0");
             }else{
                 resource.setParentCode(queryMenu.getId().toString());
+            }*/
+            if (info.getParentId() == null || info.getParentId() ==0){
+                resource.setParentCode("0");
+            }else{
+                resource.setParentCode(String.valueOf(info.getParentId()));
             }
             resource.setResourceCode(info.getCode());
             resource.setResourceName(info.getName());
@@ -575,9 +580,9 @@ public class SyncServiceImpl implements SyncService {
             resource.setCreatedBy(info.getCreatedBy());
             resource.setUpdatedBy(info.getUpdatedBy());
             if (info.getStatus() == 0){
-                resource.setStatus("N");
-            }else{
                 resource.setStatus("Y");
+            }else{
+                resource.setStatus("N");
             }
             resource.setIsDelete(info.getIsDelete());
             resource.setPlatform("purchase");

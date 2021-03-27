@@ -64,7 +64,6 @@ public class SingleFindServiceImpl implements SingleFindService {
             return productResources.get(0);
         }
         return null;
-        //return resourceDao.selectOne(wrapper);
     }
 
     @Override
