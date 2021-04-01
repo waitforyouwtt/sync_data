@@ -15,11 +15,15 @@ import com.yh.utils.SpringContextHolder;
 import com.yh.utils.StringCustomizedUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.jws.Oneway;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -35,8 +39,12 @@ public class ThreadServiceImpl2 implements ThreadService2 {
 
     @Autowired
     SingleFindService singleFindService;
+    @Autowired
+    private SqlSessionFactory sqlSessionFactory;
 
 
+    //第一：----------------------------------------------------------------------------------------------------------------
+    @Async
     @Override
     public String menuSyncResource() {
         List<Integer> countMenus = feign.findCountMenus();
@@ -45,8 +53,8 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         }
         log.info("需要同步数据的总体条数:{}",countMenus.size());
 
-        int batchNum = 2000;
-        List<List<Integer>> partition = Lists.partition(countMenus, 1000);
+        int batchNum = 500;
+        List<List<Integer>> partition = Lists.partition(countMenus, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         for (List<Integer> lists : partition){
@@ -66,9 +74,9 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         }
         log.info("需要同步数据的总体条数:{}",countMenus.size());
 
-        int batchNum = 2000;
+        int batchNum = 500;
 
-        List<List<Integer>> partition = Lists.partition(countMenus, 1000);
+        List<List<Integer>> partition = Lists.partition(countMenus, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         for (List<Integer> lists : partition){
@@ -79,20 +87,17 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         return "成功";
     }
 
+    @Async
     @Override
     public String roleSync() {
         List<String> countRoles = feign.findCountRoles();
         if (CollectionUtils.isEmpty(countRoles)){
             return "暂无数据需要同步";
         }
-
         List<Integer> codesInteger = countRoles.stream().map(Integer::parseInt).collect(Collectors.toList());
-
         log.info("需要同步数据的总体条数:{}",codesInteger.size());
-
-        int batchNum = 2000;
-
-        List<List<Integer>> partition = Lists.partition(codesInteger, 1000);
+        int batchNum = 500;
+        List<List<Integer>> partition = Lists.partition(codesInteger, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         for (List<Integer> lists : partition){
@@ -103,6 +108,7 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         return "成功";
     }
 
+    @Async
     @Override
     public String roleResource() {
         List<Integer> countRoleResource = feign.findCountRelationRoleMenuPermissions();
@@ -110,27 +116,15 @@ public class ThreadServiceImpl2 implements ThreadService2 {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countRoleResource.size());
-        List<List<Integer>> partition = Lists.partition(countRoleResource, 1000);
+        int batchNum = 500;
+        List<List<Integer>> partition = Lists.partition(countRoleResource, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-        CountDownLatch countDownLatch = new CountDownLatch(countRoleResource.size()/1000);
-        try {
 
-            for (List<Integer> lists : partition){
-                Integer start = Collections.min(lists);
-                Integer end = Collections.max(lists);
-                log.info("每段的开始值&结束值：{},{}",start,end);
-
-                ImportRoleResourceTask task = new ImportRoleResourceTask(start,end, countDownLatch);
-                executor.execute(task);
-            }
-            countDownLatch.await();
-            log.info("数据操作完成!可以在此开始其它业务");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally {
-            // 关闭线程池，释放资源
-            executor.shutdown();
+        for (List<Integer> lists : partition){
+            Integer start = Collections.min(lists);
+            Integer end = Collections.max(lists);
+            log.info("每段的开始值&结束值：{},{}",start,end);
+            threadRunRoleResource(start,end,batchNum);
         }
         return "成功";
     }
@@ -165,111 +159,6 @@ public class ThreadServiceImpl2 implements ThreadService2 {
             executor.shutdown();
         }
         return "成功";
-    }
-
-    private void threadRunRole(Integer start, Integer end, int batchNum) {
-        log.info("每段的开始值&结束值：{},{}",start,end);
-        List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
-        log.info("需要同步的区间总体条数:{}",roleInfos.size());
-        if (CollectionUtils.isEmpty(roleInfos)){
-            log.info("此区间没有数据");
-            return;
-        }
-
-        int totalNum = roleInfos.size();
-        int pageNum = totalNum % batchNum == 0 ? totalNum / batchNum : totalNum / batchNum + 1;
-        ExecutorService executor = Executors.newFixedThreadPool(pageNum);
-        CountDownLatch countDownLatch = new CountDownLatch(pageNum);
-        List subData = null;
-        int fromIndex, toIndex;
-        for (int i = 0; i < pageNum; i++) {
-            fromIndex = i * batchNum;
-            toIndex = Math.min(totalNum, fromIndex + batchNum);
-            subData = roleInfos.subList(fromIndex, toIndex);
-            ImportRoleTask task = new ImportRoleTask(subData, countDownLatch);
-            executor.execute(task);
-        }
-
-        try {
-            countDownLatch.await();
-            log.info("数据操作完成!可以在此开始其它业务");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally {
-            // 关闭线程池，释放资源
-            executor.shutdown();
-        }
-    }
-
-    private void threadRunPermission(Integer start, Integer end, int batchNum) {
-        log.info("每段的开始值&结束值：{},{}",start,end);
-        List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start,end);
-        log.info("需要同步的区间总体条数:{}",menuPermissions.size());
-        if (CollectionUtils.isEmpty(menuPermissions)){
-            log.info("此区间没有数据");
-            return;
-        }
-
-        int totalNum = menuPermissions.size();
-        int pageNum = totalNum % batchNum == 0 ? totalNum / batchNum : totalNum / batchNum + 1;
-        ExecutorService executor = Executors.newFixedThreadPool(pageNum);
-        CountDownLatch countDownLatch = new CountDownLatch(pageNum);
-        List subData = null;
-        int fromIndex, toIndex;
-        for (int i = 0; i < pageNum; i++) {
-            fromIndex = i * batchNum;
-            toIndex = Math.min(totalNum, fromIndex + batchNum);
-            subData = menuPermissions.subList(fromIndex, toIndex);
-            ImportMenuPermissionTask task = new ImportMenuPermissionTask(subData, countDownLatch);
-            executor.execute(task);
-        }
-
-        try {
-            countDownLatch.await();
-            log.info("数据操作完成!可以在此开始其它业务");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally {
-            // 关闭线程池，释放资源
-            executor.shutdown();
-        }
-    }
-
-    private void threadRunMenu(Integer start,Integer end,Integer batchNum){
-        log.info("每段的开始值&结束值：{},{}",start,end);
-        List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
-        log.info("需要同步的区间总体条数:{}",menuInfos.size());
-        if (CollectionUtils.isEmpty(menuInfos)){
-            log.info("此区间没有数据");
-            return;
-        }
-
-        int totalNum = menuInfos.size();
-        int pageNum = totalNum % batchNum == 0 ? totalNum / batchNum : totalNum / batchNum + 1;
-        ExecutorService executor = Executors.newFixedThreadPool(pageNum);
-        CountDownLatch countDownLatch = new CountDownLatch(pageNum);
-        List subData = null;
-        int fromIndex, toIndex;
-        for (int i = 0; i < pageNum; i++) {
-            fromIndex = i * batchNum;
-            toIndex = Math.min(totalNum, fromIndex + batchNum);
-            subData = menuInfos.subList(fromIndex, toIndex);
-            ImportMenuTask task = new ImportMenuTask(subData, countDownLatch);
-            executor.execute(task);
-        }
-
-        try {
-            // 主线程必须在启动其它线程后立即调用CountDownLatch.await()方法，
-            // 这样主线程的操作就会在这个方法上阻塞，直到其它线程完成各自的任务。
-            // 计数器的值等于0时，主线程就能通过await()方法恢复执行自己的任务。
-            countDownLatch.await();
-            log.info("数据操作完成!可以在此开始其它业务");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally {
-            // 关闭线程池，释放资源
-            executor.shutdown();
-        }
     }
 
     class ImportRelationUserRoleTask implements Runnable{
@@ -346,86 +235,145 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         return roleResources;
     }
 
-    class ImportRoleResourceTask implements Runnable{
-        private AppRoleResourceDao roleResourceDao  = SpringContextHolder.getBean(AppRoleResourceDao.class);
-
-        Integer start;
-        Integer end;
-        private CountDownLatch countDownLatch;
-        public ImportRoleResourceTask(Integer start,Integer end,CountDownLatch countDownLatch){
-            this.start = start;
-            this.end   = end;
-            this.countDownLatch = countDownLatch;
+    //第二------------------------------------------------------------------------------------------------------------------------------------------------
+    private void threadRunMenu(Integer start,Integer end,Integer batchNum){
+        log.info("每段的开始值&结束值：{},{}",start,end);
+        List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
+        log.info("需要同步的区间总体条数:{}",menuInfos.size());
+        if (CollectionUtils.isEmpty(menuInfos)){
+            log.info("此区间没有数据");
+            return;
         }
 
-        @Override
-        public void run() {
-            List<RelationRoleMenuPermission> relationRoleMenuPermissions = feign.relationRoleMenuPermissions(start,end);
-            if (CollectionUtils.isEmpty(relationRoleMenuPermissions)){
-                log.info("此区间没有数据");
-                return;
-            }
-            log.info("需要同步的区间总体条数:{}",relationRoleMenuPermissions.size());
-            if (!CollectionUtils.isEmpty(relationRoleMenuPermissions)){
-                List<AppRoleResource> roleResources = convertRoleResource(relationRoleMenuPermissions);
-                if (!CollectionUtils.isEmpty(roleResources)){
-                    roleResourceDao.insertOrUpdateBatch( roleResources );
-                }
-            }
-            log.info("发出线程任务完成的信号"+Thread.currentThread().getName());
-            countDownLatch.countDown();
+        int totalNum = menuInfos.size();
+        int pageNum = totalNum % batchNum == 0 ? totalNum / batchNum : totalNum / batchNum + 1;
+        ExecutorService executor = Executors.newFixedThreadPool(pageNum);
+        CountDownLatch countDownLatch = new CountDownLatch(pageNum);
+        List subData = null;
+        int fromIndex, toIndex;
+        for (int i = 0; i < pageNum; i++) {
+            fromIndex = i * batchNum;
+            toIndex = Math.min(totalNum, fromIndex + batchNum);
+            subData = menuInfos.subList(fromIndex, toIndex);
+            ImportMenuTask task = new ImportMenuTask(subData, countDownLatch);
+            executor.execute(task);
+        }
 
+        try {
+            // 主线程必须在启动其它线程后立即调用CountDownLatch.await()方法，
+            // 这样主线程的操作就会在这个方法上阻塞，直到其它线程完成各自的任务。
+            // 计数器的值等于0时，主线程就能通过await()方法恢复执行自己的任务。
+            countDownLatch.await();
+            log.info("数据操作完成!可以在此开始其它业务");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally {
+            // 关闭线程池，释放资源
+            executor.shutdown();
         }
     }
 
-    public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions){
-        SingleFindService singleFindService = SpringContextHolder.getBean(SingleFindService.class);
-        DataSynchronizeFeign feign = SpringContextHolder.getBean(DataSynchronizeFeign.class);
-
-        List<AppRoleResource> roleResources = new ArrayList<>();
-
-        for (RelationRoleMenuPermission  info : roleMenuPermissions){
-            AppRoleResource view = new AppRoleResource();
-            if (info.getRoleId() == null){
-                continue;
-            }
-            MenuPermission menuPermission = feign.findMenuPermissionId(info.getMenuPermissionId().toString());
-            if (Objects.isNull(menuPermission)){
-                continue;
-            }
-            String tenantCode = singleFindService.findTenantCode(menuPermission.getBusinessType());
-
-            //判定重复
-            AppRoleResource roleResourceResult = singleFindService.roleResourceDetails(menuPermission.getBusinessType(),tenantCode,menuPermission.getPermissionCode(),info.getRoleId().toString());
-            if (!Objects.isNull(roleResourceResult)){
-                continue;
-            }
-            view.setProductCode(menuPermission.getBusinessType());
-            view.setProductName(menuPermission.getBusinessType());
-            view.setRoleCode(info.getRoleId().toString());
-            view.setResourceCode(menuPermission.getPermissionCode());
-            view.setResourceName(menuPermission.getPermissionName());
-            view.setTenantCode(tenantCode);
-            view.setPlatform("purchase");
-            view.setIsDelete(0);
-            if (StringUtils.isBlank(info.getCreatedBy())){
-                view.setCreatedBy("admin");
-            }else{
-                view.setCreatedBy(info.getCreatedBy());
-            }
-            if (StringUtils.isBlank(info.getUpdatedBy())){
-                view.setUpdatedBy("admin");
-            }else{
-                view.setUpdatedBy(info.getUpdatedBy());
-            }
-
-            view.setCreatedTime(new Date());
-            view.setUpdatedTime(new Date());
-            roleResources.add(view);
+    private void threadRunPermission(Integer start, Integer end, int batchNum) {
+        log.info("每段的开始值&结束值：{},{}",start,end);
+        List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start,end);
+        log.info("需要同步的区间总体条数:{}",menuPermissions.size());
+        if (CollectionUtils.isEmpty(menuPermissions)){
+            log.info("此区间没有数据");
+            return;
         }
-        return roleResources;
+
+        int totalNum = menuPermissions.size();
+        int pageNum = totalNum % batchNum == 0 ? totalNum / batchNum : totalNum / batchNum + 1;
+        ExecutorService executor = Executors.newFixedThreadPool(pageNum);
+        CountDownLatch countDownLatch = new CountDownLatch(pageNum);
+        List subData = null;
+        int fromIndex, toIndex;
+        for (int i = 0; i < pageNum; i++) {
+            fromIndex = i * batchNum;
+            toIndex = Math.min(totalNum, fromIndex + batchNum);
+            subData = menuPermissions.subList(fromIndex, toIndex);
+            log.info("按钮-fromIndex,toIndex:{},{}",fromIndex,toIndex);
+            ImportMenuPermissionTask task = new ImportMenuPermissionTask(subData, countDownLatch);
+            executor.execute(task);
+        }
+        try {
+            countDownLatch.await();
+            log.info("数据操作完成!可以在此开始其它业务");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally {
+            // 关闭线程池，释放资源
+            executor.shutdown();
+        }
     }
 
+    private void threadRunRole(Integer start, Integer end, int batchNum) {
+        log.info("每段的开始值&结束值：{},{}",start,end);
+        List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
+        log.info("需要同步的区间总体条数:{}",roleInfos.size());
+        if (CollectionUtils.isEmpty(roleInfos)){
+            log.info("此区间没有数据");
+            return;
+        }
+
+        int totalNum = roleInfos.size();
+        int pageNum = totalNum % batchNum == 0 ? totalNum / batchNum : totalNum / batchNum + 1;
+        ExecutorService executor = Executors.newFixedThreadPool(pageNum);
+        CountDownLatch countDownLatch = new CountDownLatch(pageNum);
+        List subData = null;
+        int fromIndex, toIndex;
+        for (int i = 0; i < pageNum; i++) {
+            fromIndex = i * batchNum;
+            toIndex = Math.min(totalNum, fromIndex + batchNum);
+            subData = roleInfos.subList(fromIndex, toIndex);
+            ImportRoleTask task = new ImportRoleTask(subData, countDownLatch);
+            executor.execute(task);
+        }
+
+        try {
+            countDownLatch.await();
+            log.info("数据操作完成!可以在此开始其它业务");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally {
+            // 关闭线程池，释放资源
+            executor.shutdown();
+        }
+    }
+
+    private void threadRunRoleResource(Integer start, Integer end, int batchNum) {
+        log.info("每段的开始值&结束值：{},{}",start,end);
+        List<RelationRoleMenuPermission> roleResources = feign.relationRoleMenuPermissions(start,end);
+        log.info("需要同步的区间总体条数:{}",roleResources.size());
+        if (CollectionUtils.isEmpty(roleResources)){
+            log.info("此区间没有数据");
+            return;
+        }
+        int totalNum = roleResources.size();
+        int pageNum = totalNum % batchNum == 0 ? totalNum / batchNum : totalNum / batchNum + 1;
+        ExecutorService executor = Executors.newFixedThreadPool(pageNum);
+        CountDownLatch countDownLatch = new CountDownLatch(pageNum);
+        List<RelationRoleMenuPermission> subData;
+        int fromIndex, toIndex;
+        for (int i = 0; i < pageNum; i++) {
+            fromIndex = i * batchNum;
+            toIndex = Math.min(totalNum, fromIndex + batchNum);
+            subData = roleResources.subList(fromIndex, toIndex);
+            ImportRoleResourceTask task = new ImportRoleResourceTask(subData, countDownLatch);
+            executor.execute(task);
+        }
+        try {
+            countDownLatch.await();
+            log.info("数据操作完成!可以在此开始其它业务");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally {
+            // 关闭线程池，释放资源
+            executor.shutdown();
+        }
+    }
+
+    //第三-----------------------------------------------------------------------------------------------------------------------
     class ImportMenuTask implements Runnable {
         private AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
         List<MenuInfo> data;
@@ -442,7 +390,9 @@ public class ThreadServiceImpl2 implements ThreadService2 {
                 if (!CollectionUtils.isEmpty(productResources)){
                     for (AppProductResource info: productResources){
                         log.info("开始插入数据库");
-                        resourceDao.insert(info);
+                        List<AppProductResource> resources = new ArrayList<>();
+                        resources.add(info);
+                        resourceDao.insertOrUpdateBatch(resources);
                     }
                 }
             }
@@ -465,10 +415,19 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         public void run() {
             if (!CollectionUtils.isEmpty(data)){
                 List<AppProductResource> productResources = convertMenuPermissionResource(data);
+                SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
                 if (!CollectionUtils.isEmpty(productResources)){
+                    int result = 0;
                     for (AppProductResource info: productResources){
                         log.info("开始插入数据库");
-                        resourceDao.insert(info);
+                        List<AppProductResource> params = new ArrayList<>();
+                        params.add(info);
+                        resourceDao.insertOrUpdateBatch(params);
+                        result ++;
+                        if(result == 100){//每100条提交一次防止内存溢出
+                            session.commit();
+                            session.clearCache();
+                        }
                     }
                 }
             }
@@ -478,11 +437,10 @@ public class ThreadServiceImpl2 implements ThreadService2 {
     }
 
     class ImportRoleTask implements Runnable{
-
-        private AppProductRoleDao resourceDao   = SpringContextHolder.getBean(AppProductRoleDao.class);
         List<RoleInfo> data;
-
         private CountDownLatch countDownLatch;
+        private AppProductRoleDao resourceDao   = SpringContextHolder.getBean(AppProductRoleDao.class);
+
         public ImportRoleTask(List<RoleInfo> data,CountDownLatch countDownLatch){
             this.data = data;
             this.countDownLatch = countDownLatch;
@@ -492,11 +450,19 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         public void run() {
             if (!CollectionUtils.isEmpty(data)){
                 List<AppProductRole> roles = convertRoles(data);
+                SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
                 if (!CollectionUtils.isEmpty(roles)){
+                    int result = 0;
                     for (AppProductRole info: roles){
                         log.info("开始插入数据库");
-                        List<AppProductRole> params = Arrays.asList(info);
+                        List<AppProductRole> params = new ArrayList<>();
+                        params.add(info);
                         resourceDao.insertBatch(params);
+                        result ++;
+                        if(result == 100){//每100条提交一次防止内存溢出
+                            session.commit();
+                            session.clearCache();
+                        }
                     }
                 }
             }
@@ -505,128 +471,64 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         }
     }
 
-    public List<AppProductRole> convertRoles(List<RoleInfo> roleInfos){
-
-        DataSynchronizeFeign feign   = SpringContextHolder.getBean(DataSynchronizeFeign.class);
-
-        List<AppProductRole> roles = new ArrayList<>();
-        for (RoleInfo  info : roleInfos){
-            List<String> productCodes = feign.findProductCodeByRoleId(info.getId().toString());
-            if (!CollectionUtils.isEmpty(productCodes)){
-                for (String code : productCodes){
-                    AppProductRole role = new AppProductRole();
-                    role.setProductCode(code);
-                    role.setUniqueCode(StringCustomizedUtils.uniqueCode());
-                    role.setTenantCode(singleFindService.findTenantCode(code));
-                    role.setRoleCode(info.getId().toString());
-                    role.setRoleName(info.getRoleName());
-
-                    role.setDescription(info.getRoleTypeCode());
-                    role.setOutRoleCode(info.getRoleCode());
-
-                    role.setRoleStatus("Y");
-                    role.setPlatform("purchase");
-                    role.setIsDelete(0);
-                    if (info.getCreatedBy() == null){
-                        role.setCreatedBy("admin");
-                    }else{
-                        role.setCreatedBy(info.getCreatedBy());
+    class ImportRoleResourceTask implements Runnable{
+        List<RelationRoleMenuPermission> data;
+        private CountDownLatch countDownLatch;
+        private AppRoleResourceDao roleResourceDao  = SpringContextHolder.getBean(AppRoleResourceDao.class);
+        public ImportRoleResourceTask(List<RelationRoleMenuPermission> data,CountDownLatch countDownLatch){
+            this.data = data;
+            this.countDownLatch = countDownLatch;
+        }
+        @Override
+        public void run() {
+            if (!CollectionUtils.isEmpty(data)){
+                List<AppRoleResource> roleResources = convertRoleResource(data);
+                SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH,false);
+                if (!CollectionUtils.isEmpty(roleResources)){
+                    int result = 0;
+                    for (AppRoleResource info : roleResources){
+                        List<AppRoleResource> params = new ArrayList<>();
+                        params.add(info);
+                        roleResourceDao.insertOrUpdateBatch( params);
+                        result ++;
+                        if(result == 100){//每100条提交一次防止内存溢出
+                            session.commit();
+                            session.clearCache();
+                        }
                     }
-                    if (info.getUpdatedBy() == null){
-                        role.setUpdatedBy("admin");
-                    }else{
-                        role.setUpdatedBy(info.getUpdatedBy());
-                    }
-                    role.setCreatedTime(new Date());
-                    role.setUpdatedTime(new Date());
-                    roles.add(role);
                 }
             }
+            log.info("发出线程任务完成的信号"+Thread.currentThread().getName());
+            countDownLatch.countDown();
         }
-        return roles;
     }
 
-    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data) {
-        DataSynchronizeFeign feign   = SpringContextHolder.getBean(DataSynchronizeFeign.class);
-
-        List<AppProductResource> resources = new ArrayList<>();
-        for (MenuPermission info: data){
-            AppProductResource resource = new AppProductResource();
-            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setId(100000+info.getId());
-            resource.setProductCode(info.getBusinessType());
-            resource.setTenantCode(singleFindService.findTenantCode(info.getBusinessType()));
-            /**
-             * operation_objective_id
-             * select * from menu_info where id = '26';
-             */
-            MenuInfo menu = feign.findById(info.getOperationObjectiveId().toString());
-            if (Objects.isNull(menu)){
-                resource.setParentCode("0");
-            }else{
-                resource.setParentCode(menu.getId().toString());
-            }
-            resource.setResourceCode(Constant.BUTTON+info.getPermissionCode());
-            resource.setResourceName(info.getPermissionName());
-            resource.setPath(info.getApiUrl());
-            //固定为菜单
-            resource.setType("2");
-            if (info.getRank() == null){
-                resource.setOrderNum(0);
-            }else{
-                resource.setOrderNum(info.getRank());
-            }
-            resource.setCreatedTime(new Date());
-            resource.setUpdatedTime(new Date());
-            if (info.getCreatedBy() == null){
-                resource.setCreatedBy("admin");
-            }else{
-                resource.setCreatedBy(info.getCreatedBy());
-            }
-            if (info.getUpdatedBy() == null){
-                resource.setUpdatedBy("admin");
-            }else{
-                resource.setUpdatedBy(info.getUpdatedBy());
-            }
-            resource.setStatus("Y");
-            resource.setIsDelete(0);
-            resource.setPlatform("purchase");
-            resources.add(resource);
-        }
-        return resources;
-    }
-
-
+    //第四：-----------------------------------------------------------------------------------------------------------------------
     private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus){
         List<AppProductResource> resources = new ArrayList<>();
         for (MenuInfo info: menus){
-            if (StringUtils.isBlank(info.getBusinessType()) || StringUtils.isBlank(info.getCode())){
+            if (StringUtils.isBlank(info.getBusinessType())){
                 continue;
             }
             String tenantCode = singleFindService.findTenantCode(info.getBusinessType());
 
-            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,info.getCode());
+            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,info.getId().toString());
             if (!Objects.isNull(queryResult)){
                 continue;
             }
 
             AppProductResource resource = new AppProductResource();
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setId(100000+info.getId());
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(tenantCode);
-            /**
-             * select code from xxx where parendid = ‘aaa’
-             *     Code —> parentCode
-             */
-            List<MenuInfo> queryMenus = feign.findByAppCodeAndParentId(info.getBusinessType(), info.getParentId() + "");
-            if (Objects.isNull(queryMenus)){
+
+            if (Objects.isNull(info.getParentId().toString())){
                 resource.setParentCode("0");
             }else{
-                resource.setParentCode(queryMenus.get(0).getId().toString());
+                resource.setParentCode(info.getParentId().toString());
             }
-            resource.setResourceCode("menu_"+info.getCode());
-            resource.setResourceName("menu_"+info.getName());
+            resource.setResourceCode(info.getId().toString());
+            resource.setResourceName(info.getName());
             resource.setPath(info.getDisplayUrl());
             //固定为菜单
             resource.setType("1");
@@ -647,11 +549,153 @@ public class ThreadServiceImpl2 implements ThreadService2 {
             }else{
                 resource.setUpdatedBy(info.getUpdatedBy());
             }
+            resource.setExpand2(info.getCode());
             resource.setPlatform("purchase");
             resource.setUpdatedTime(new Date());
             resource.setCreatedTime(new Date());
             resources.add(resource);
         }
         return resources;
+    }
+
+    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data) {
+        DataSynchronizeFeign feign   = SpringContextHolder.getBean(DataSynchronizeFeign.class);
+
+        List<AppProductResource> resources = new ArrayList<>();
+        for (MenuPermission info: data){
+            AppProductResource resource = new AppProductResource();
+            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
+            resource.setProductCode(info.getBusinessType());
+            resource.setTenantCode(singleFindService.findTenantCode(info.getBusinessType()));
+            /**
+             * operation_objective_id
+             * select * from menu_info where id = '26';
+             */
+            MenuInfo menu = feign.findById(info.getOperationObjectiveId().toString());
+            if (Objects.isNull(menu)){
+                resource.setParentCode("0");
+            }else{
+                resource.setParentCode(menu.getId().toString());
+                resource.setExpand3(menu.getId().toString());
+            }
+            resource.setResourceCode(info.getId().toString());
+            resource.setResourceName(info.getPermissionName());
+            resource.setPath(info.getApiUrl());
+            //固定为按钮
+            resource.setType("2");
+            if (info.getRank() == null){
+                resource.setOrderNum(0);
+            }else{
+                resource.setOrderNum(info.getRank());
+            }
+            resource.setCreatedTime(new Date());
+            resource.setUpdatedTime(new Date());
+            if (info.getCreatedBy() == null){
+                resource.setCreatedBy("admin");
+            }else{
+                resource.setCreatedBy(info.getCreatedBy());
+            }
+            if (info.getUpdatedBy() == null){
+                resource.setUpdatedBy("admin");
+            }else{
+                resource.setUpdatedBy(info.getUpdatedBy());
+            }
+            resource.setExpand2(info.getPermissionCode());
+            resource.setStatus("Y");
+            resource.setIsDelete(0);
+            resource.setPlatform("purchase");
+            resources.add(resource);
+        }
+        return resources;
+    }
+
+    public List<AppProductRole> convertRoles(List<RoleInfo> roleInfos){
+        DataSynchronizeFeign feign = SpringContextHolder.getBean(DataSynchronizeFeign.class);
+        List<AppProductRole> roles = new ArrayList<>();
+        for (RoleInfo  info : roleInfos){
+            List<String> productCodes = feign.findProductCodeByRoleId(info.getId().toString());
+            if (!CollectionUtils.isEmpty(productCodes)){
+                for (String code : productCodes){
+                    String tenantCode = singleFindService.findTenantCode(code);
+                    AppProductRole appProductRole = singleFindService.roleDetails(code, tenantCode, info.getId().toString());
+                    if (!Objects.isNull(appProductRole)){
+                        continue;
+                    }
+                    AppProductRole role = new AppProductRole();
+                    role.setProductCode(code);
+                    role.setUniqueCode(StringCustomizedUtils.uniqueCode());
+                    role.setTenantCode(tenantCode);
+                    role.setRoleCode(info.getId().toString());
+                    role.setRoleName(info.getRoleName());
+                    role.setDescription(info.getRoleTypeCode());
+                    role.setOutRoleCode(info.getRoleCode());
+                    role.setRoleStatus("Y");
+                    role.setPlatform("purchase");
+                    role.setIsDelete(0);
+                    if (info.getCreatedBy() == null){
+                        role.setCreatedBy("admin");
+                    }else{
+                        role.setCreatedBy(info.getCreatedBy());
+                    }
+                    if (info.getUpdatedBy() == null){
+                        role.setUpdatedBy("admin");
+                    }else{
+                        role.setUpdatedBy(info.getUpdatedBy());
+                    }
+                    role.setExtension1(info.getParentId().toString());
+                    role.setExtension2(info.getRolePath());
+                    role.setCreatedTime(new Date());
+                    role.setUpdatedTime(new Date());
+                    roles.add(role);
+                }
+            }
+        }
+        return roles;
+    }
+
+    public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions){
+        SingleFindService singleFindService = SpringContextHolder.getBean(SingleFindService.class);
+        DataSynchronizeFeign feign = SpringContextHolder.getBean(DataSynchronizeFeign.class);
+        List<AppRoleResource> roleResources = new ArrayList<>();
+        for (RelationRoleMenuPermission  info : roleMenuPermissions){
+            if (info.getRoleId() == null){
+                continue;
+            }
+            MenuPermission menuPermission = feign.findMenuPermissionId(info.getMenuPermissionId().toString());
+            if (Objects.isNull(menuPermission)){
+                continue;
+            }
+            String tenantCode = singleFindService.findTenantCode(menuPermission.getBusinessType());
+
+            //判定重复
+            AppRoleResource roleResourceResult = singleFindService.roleResourceDetails(menuPermission.getBusinessType(),tenantCode,info.getMenuPermissionId().toString(),info.getRoleId().toString());
+            if (!Objects.isNull(roleResourceResult)){
+                continue;
+            }
+
+            AppRoleResource view = new AppRoleResource();
+            view.setProductCode(menuPermission.getBusinessType());
+            view.setProductName(menuPermission.getBusinessType());
+            view.setRoleCode(info.getRoleId().toString());
+            view.setResourceCode(info.getMenuPermissionId().toString());
+            view.setResourceName(menuPermission.getPermissionName());
+            view.setTenantCode(tenantCode);
+            view.setPlatform("purchase");
+            view.setIsDelete(0);
+            if (StringUtils.isBlank(info.getCreatedBy())){
+                view.setCreatedBy("admin");
+            }else{
+                view.setCreatedBy(info.getCreatedBy());
+            }
+            if (StringUtils.isBlank(info.getUpdatedBy())){
+                view.setUpdatedBy("admin");
+            }else{
+                view.setUpdatedBy(info.getUpdatedBy());
+            }
+            view.setCreatedTime(new Date());
+            view.setUpdatedTime(new Date());
+            roleResources.add(view);
+        }
+        return roleResources;
     }
 }

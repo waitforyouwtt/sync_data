@@ -9,10 +9,10 @@ spring:
   #数据库连接池
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/o2o_support_idaas?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/o2o_support_idaas?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     #HOME PC
-    username: 000000
-    password: 000000
+    username: root
+    password: root123456
   # 格式化日期
   jackson:
     time-zone: GMT+8

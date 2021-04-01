@@ -23,6 +23,7 @@ public interface SingleFindService {
      * @return
      */
     String findTenantCode(String productCode);
+    List<AppTenantInfo> findTenantCodes(List<String> productCodes);
 
     /**
      * 根据应用编码查询资源信息

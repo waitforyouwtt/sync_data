@@ -1,13 +1,13 @@
 package com.yh.service.impl;
 
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.yh.dao.AppProductResourceDao;
 import com.yh.dao.AppProductRoleDao;
 import com.yh.dao.AppRoleResourceDao;
 import com.yh.dao.AppUserRoleDao;
 import com.yh.entity.*;
 import com.yh.feign.DataSynchronizeFeign;
-import com.yh.handlepool.Constant;
 import com.yh.service.SingleFindService;
 import com.yh.service.ThreadService;
 import com.yh.utils.SpringContextHolder;
@@ -20,9 +20,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,27 +52,68 @@ public class ThreadServiceImpl implements ThreadService {
         log.info("需要同步数据的总体条数:{}",countMenus.size());
         List<List<Integer>> partition = Lists.partition(countMenus, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-        CountDownLatch countDownLatch = new CountDownLatch(countMenus.size()/1000);
+        int start = 0;
+        int end   = 0;
 
-        try {
-            for (List<Integer> lists : partition){
-                Integer start = Collections.min(lists);
-                Integer end = Collections.max(lists);
-                log.info("每段的开始值&结束值：{},{}",start,end);
+        //使用线程池来发送各个用户的消息/通知任务集合
+        ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
+        ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L,
+                TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(1024), importThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
 
-                ImportMenuTask task = new ImportMenuTask(start,end, countDownLatch);
-                executor.execute(task);
-            }
-            countDownLatch.await();
-            log.info("数据操作完成!可以在此开始其它业务");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally {
-            // 关闭线程池，释放资源
-            executor.shutdown();
-        }
+        //执行多个带返回结果的发送任务,并取得多个消息/通知发送返回结果
+        CompletionService<String> sendMultiMsgSvc = new ExecutorCompletionService(importThreadPool);
+                partition.forEach(p -> {
+                    sendMultiMsgSvc.submit(new Callable<String>() {
+                        @Override
+                        public String call() throws Exception {
+                            List<Integer> lists = p;
+                            int start = Collections.min(lists);
+                            int end = Collections.max(lists);
+                            log.info("每段的开始值&结束值：{},{}", start, end);
+                            return doWork(start, end);
+                        }
+                    });
+                });
+
+//        //获取总体操作结果
+//        StringBuilder processResult = new StringBuilder();
+//        msgBodyRequest.getReceiveUsersList().parallelStream().forEach(rcvUser -> {
+//            try {
+//                processResult.append(sendMultiMsgSvc.take().get());
+//            } catch (InterruptedException | ExecutionException e) {
+//                throw new BusinessException(MsgCenterErrorCodeEnum.MSG_SEND_PROCESS_COMPLETE_FAILED.getCode(),
+//                        MsgCenterErrorCodeEnum.MSG_SEND_PROCESS_COMPLETE_FAILED.getMessage() + e.getStackTrace());
+//            }
+//        });
+//
+//        if (StringUtils.isNotBlank(processResult.toString())) {
+//            throw new BusinessException(MsgCenterErrorCodeEnum.MSG_SEND_PROCESS_COMPLETE_FAILED.getCode(),
+//                    processResult.toString());
+//        }
+        importThreadPool.shutdown();
         return "成功";
+    }
+
+
+    private String doWork(Integer start, Integer end){
+        AppProductResourceDao resourceDao   = SpringContextHolder.getBean(AppProductResourceDao.class);
+        List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
+        if (CollectionUtils.isEmpty(menuInfos)){
+            log.info("此区间没有数据");
+            return "false";
+        }
+        log.info("需要同步的区间总体条数:{}",menuInfos.size());
+
+        if (!CollectionUtils.isEmpty(menuInfos)){
+            List<AppProductResource> productResources = convertMenuToResource(menuInfos);
+            if (!CollectionUtils.isEmpty(productResources)){
+                log.info("开始插入数据库");
+                resourceDao.insertOrUpdateBatch(productResources);
+            }
+        }
+        log.info("发出线程任务完成的信号");
+        return "true";
     }
 
     @Async
@@ -180,26 +228,62 @@ public class ThreadServiceImpl implements ThreadService {
         log.info("需要同步数据的总体条数:{}",countRelationUserRoles.size());
         List<List<Integer>> partition = Lists.partition(countRelationUserRoles, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-        CountDownLatch countDownLatch = new CountDownLatch(countRelationUserRoles.size()/1000);
-        try {
-            for (List<Integer> lists : partition){
-                Integer start = Collections.min(lists);
-                Integer end = Collections.max(lists);
-                log.info("每段的开始值&结束值：{},{}",start,end);
+        int start = 0;
+        int end   = 0;
 
-                ImportRelationUserRoleTask task = new ImportRelationUserRoleTask(start,end, countDownLatch);
-                executor.execute(task);
-            }
-            countDownLatch.await();
-            log.info("数据操作完成!可以在此开始其它业务");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally {
-            // 关闭线程池，释放资源
-            executor.shutdown();
-        }
+        //使用线程池来发送各个用户的消息/通知任务集合
+        ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
+        ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L,
+                TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(1024), importThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
+
+        //执行多个带返回结果的发送任务,并取得多个消息/通知发送返回结果
+        CompletionService<String> sendMultiMsgSvc = new ExecutorCompletionService(importThreadPool);
+        partition.forEach(p -> {
+            sendMultiMsgSvc.submit(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    List<Integer> lists = p;
+                    int start = Collections.min(lists);
+                    int end = Collections.max(lists);
+                    log.info("每段的开始值&结束值：{},{}", start, end);
+                    return doWork2(start, end);
+                }
+            });
+        });
         return "成功";
+    }
+
+    private String doWork2(Integer start, Integer end){
+        AppUserRoleDao appUserRoleDao  = SpringContextHolder.getBean(AppUserRoleDao.class);
+        List<RelationUserRole> relationUserRoles = feign.relationUserRoles(start, end);
+        if (CollectionUtils.isEmpty(relationUserRoles)){
+            log.info("此区间没有数据");
+            return "fail";
+        }
+        log.info("需要同步的区间总体条数:{}",relationUserRoles.size());
+        List<AppUserRole> roleResources = convertRoleUser(relationUserRoles);
+        if (!CollectionUtils.isEmpty(roleResources)){
+            appUserRoleDao.insertOrUpdateBatch( roleResources );
+        }
+
+
+/*        List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
+        if (CollectionUtils.isEmpty(menuInfos)){
+            log.info("此区间没有数据");
+            return "false";
+        }
+        log.info("需要同步的区间总体条数:{}",menuInfos.size());
+
+        if (!CollectionUtils.isEmpty(menuInfos)){
+            List<AppProductResource> productResources = convertMenuToResource(menuInfos);
+            if (!CollectionUtils.isEmpty(productResources)){
+                log.info("开始插入数据库");
+                resourceDao.insertOrUpdateBatch(productResources);
+            }
+        }*/
+        log.info("发出线程任务完成的信号");
+        return "true";
     }
 
     //* 任务执行器----------------------------------------------------------------------------------------------------------*/
@@ -366,16 +450,38 @@ public class ThreadServiceImpl implements ThreadService {
 
    //实体转换器-----------------------------------------------------------------------------------------------------
     private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus){
-        List<AppProductResource> resources = new ArrayList<>();
+
+        List<String> productCodes = menus.stream().map(MenuInfo::getBusinessType).distinct().collect(Collectors.toList());
+        List<AppTenantInfo> tenantCodes = singleFindService.findTenantCodes(productCodes);
+
+        Map<String, String> dataMap = new HashMap<>();
+
+        menus.forEach(m -> {
+            Optional<AppTenantInfo> appTenantInfoObj =  tenantCodes.stream()
+                    .filter(t -> StringUtils.isNotBlank(m.getBusinessType())
+                            && t.getProductCode().equals(m.getBusinessType()))
+                    .findAny();
+            if(appTenantInfoObj.isPresent()) {
+                dataMap.put(m.getBusinessType(),appTenantInfoObj.get().getCode());
+                return;
+            }
+
+            dataMap.put(m.getBusinessType(), "default");
+        });
+
+        List<AppProductResource> resources = Collections.synchronizedList(new ArrayList());
+        String tenantCode = null;
+        AppProductResource queryResult = null;
         for (MenuInfo info: menus){
-            if (StringUtils.isBlank(info.getBusinessType()) || StringUtils.isBlank(info.getCode())){
+            if (StringUtils.isBlank(info.getBusinessType())){
                 continue;
             }
             //根据应用获取租户信息
-            String tenantCode = singleFindService.findTenantCode(info.getBusinessType());
-
+            if(StringUtils.isNotBlank(dataMap.get(info.getBusinessType()))){
+                tenantCode = dataMap.get(info.getBusinessType());
+            }
             //数据去掉重复
-            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,String.valueOf(info.getId()));
+            queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,String.valueOf(info.getId()));
             if (!Objects.isNull(queryResult)){
                 continue;
             }
@@ -608,7 +714,7 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
     private List<AppUserRole> convertRoleUser(List<RelationUserRole> relationUserRoles) {
-        List<AppUserRole> userRoles = new ArrayList<>();
+        List<AppUserRole> userRoles = Collections.synchronizedList(new ArrayList());
         for (RelationUserRole info : relationUserRoles){
             if (info.getUserId() == null){
                 continue;
