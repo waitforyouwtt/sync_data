@@ -373,10 +373,9 @@ public class ThreadServiceImpl implements ThreadService {
             }
             //根据应用获取租户信息
             String tenantCode = singleFindService.findTenantCode(info.getBusinessType());
-            //前缀menu
-            String resource_fix = Constant.MENU+info.getId()+"_";
 
-            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,resource_fix+info.getCode());
+            //数据去掉重复
+            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,String.valueOf(info.getId()));
             if (!Objects.isNull(queryResult)){
                 continue;
             }
@@ -391,8 +390,8 @@ public class ThreadServiceImpl implements ThreadService {
             }else{
                 resource.setParentCode(String.valueOf(info.getParentId()));
             }
-            resource.setResourceCode(resource_fix+info.getCode());
-            resource.setResourceName(resource_fix+info.getName());
+            resource.setResourceCode(String.valueOf(info.getId()));
+            resource.setResourceName(info.getName());
             resource.setPath(info.getDisplayUrl());
             //固定为菜单
             resource.setType("1");
@@ -414,8 +413,8 @@ public class ThreadServiceImpl implements ThreadService {
             }else{
                 resource.setUpdatedBy(info.getUpdatedBy());
             }
-            //存放菜单id
-            resource.setExpand2(String.valueOf(info.getId()));
+            //存放菜单code
+            resource.setExpand2(String.valueOf(info.getCode()));
             //存放菜单父级id
             resource.setExpand3(String.valueOf(info.getParentId()));
             resource.setPlatform("purchase");
@@ -430,8 +429,14 @@ public class ThreadServiceImpl implements ThreadService {
 
         List<AppProductResource> resources = new ArrayList<>();
         for (MenuPermission info: data){
-            //获取租户编码
+            //根据应用获取租户信息
             String tenantCode = singleFindService.findTenantCode(info.getBusinessType());
+
+            //数据去掉重复
+            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,String.valueOf(info.getId()));
+            if (!Objects.isNull(queryResult)){
+                continue;
+            }
 
             AppProductResource resource = new AppProductResource();
             resource.setProductCode(info.getBusinessType());
@@ -443,14 +448,12 @@ public class ThreadServiceImpl implements ThreadService {
              */
             MenuInfo menu = feign.findById(info.getOperationObjectiveId().toString());
             if (Objects.isNull(menu)){
-                resource.setParentCode("0");
-            }else{
-                resource.setParentCode(menu.getCode());
+                continue;
             }
-            String resource_fix = Constant.BUTTON+info.getId()+"_";
+            resource.setParentCode(String.valueOf(menu.getId()));
 
-            resource.setResourceCode(resource_fix+info.getPermissionCode());
-            resource.setResourceName(resource_fix+info.getPermissionName());
+            resource.setResourceCode(String.valueOf(info.getId()));
+            resource.setResourceName(info.getPermissionName());
             resource.setPath(info.getApiUrl());
             //固定为按钮
             resource.setType("2");
@@ -472,8 +475,8 @@ public class ThreadServiceImpl implements ThreadService {
             }else{
                 resource.setUpdatedBy(info.getUpdatedBy());
             }
-            //存放菜单ID
-            resource.setExpand2(String.valueOf(info.getId()));
+            //存放按钮code
+            resource.setExpand2(info.getPermissionCode());
             //存放菜单父级id
             resource.setExpand3(String.valueOf(menu.getId()));
 
@@ -488,16 +491,19 @@ public class ThreadServiceImpl implements ThreadService {
     public List<AppProductRole> convertRoles(List<RoleInfo> roleInfos){
         List<AppProductRole> roles = new ArrayList<>();
         for (RoleInfo  info : roleInfos){
+
             //通过角色id倒推productCode
             List<String> productCodes = feign.findProductCodeByRoleId(info.getId().toString());
+
             if (!CollectionUtils.isEmpty(productCodes)){
                 for (String code : productCodes){
                     if (info.getId() == null){
                         continue;
                     }
-                    //获取租户编码
+                    //根据应用获取租户信息
                     String tenantCode  =  singleFindService.findTenantCode(code);
-                    //判断是否重复
+
+                    //数据去掉重复
                     AppProductRole queryResult = singleFindService.roleDetails(code, tenantCode, info.getId().toString());
                     if (!Objects.isNull(queryResult)){
                         continue;

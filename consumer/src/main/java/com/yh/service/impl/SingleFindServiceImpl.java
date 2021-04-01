@@ -59,8 +59,8 @@ public class SingleFindServiceImpl implements SingleFindService {
         log.info("查询参数：{},{},{}",productCode,resourceCode,tenantCode);
         QueryWrapper<AppProductResource> wrapper = new QueryWrapper<>();
         wrapper.eq("product_code",productCode);
-        wrapper.eq("resource_code",resourceCode);
         wrapper.eq("tenant_code",tenantCode);
+        wrapper.eq("resource_code",resourceCode);
         wrapper.eq("is_delete",0);
         List<AppProductResource> productResources = resourceDao.selectOne2(productCode, tenantCode, resourceCode);
         if (!CollectionUtils.isEmpty(productResources)){
