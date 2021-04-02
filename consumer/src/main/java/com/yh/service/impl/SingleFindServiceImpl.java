@@ -1,10 +1,13 @@
 package com.yh.service.impl;
 
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yh.dao.*;
 import com.yh.entity.*;
 import com.yh.service.SingleFindService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -120,6 +123,10 @@ public class SingleFindServiceImpl implements SingleFindService {
     }
 
     public List<AppTenantInfo> findTenantCodes(List<String> productCodes){
+        if (CollectionUtils.isEmpty(productCodes)){
+            return new ArrayList<>();
+        }
+        log.info("查询租户信息的请求参数：{}", JSONUtil.toJsonStr(productCodes));
         QueryWrapper<AppTenantInfo> wrapper = new QueryWrapper<>();
         wrapper.in("product_code",productCodes);
         wrapper.eq("is_delete",0);

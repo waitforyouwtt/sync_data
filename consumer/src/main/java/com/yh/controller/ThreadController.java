@@ -1,5 +1,6 @@
 package com.yh.controller;
 
+import com.yh.service.SingleService;
 import com.yh.service.ThreadService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,6 +16,9 @@ public class ThreadController {
 
     @Autowired
     ThreadService threadService;
+
+    @Autowired
+    SingleService singleService;
 
     @ApiOperation(value = "菜单同步资源[数据处理中，请耐心等待]",notes = "菜单同步资源",tags = {"ThreadController"})
     @GetMapping("/menu")
