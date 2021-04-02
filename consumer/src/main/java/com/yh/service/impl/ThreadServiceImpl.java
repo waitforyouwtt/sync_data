@@ -720,85 +720,86 @@ public class ThreadServiceImpl implements ThreadService {
         return roleResources;
     }
 
-    private List<AppUserRole> convertRoleUser(List<RelationUserRole> relationUserRoles,Map<String, AppUserRole> tempMap) {
+    private List<AppUserRole> convertRoleUser(List<RelationUserRole> relationUserRoles, Map<String, AppUserRole> tempMap) {
         SingleFindService singleFindService = SpringContextHolder.getBean(SingleFindService.class);
-        //用户
+        //查询用户信息
         List<Long> userLongs = relationUserRoles.stream().map(RelationUserRole::getUserId).distinct().collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(userLongs)) {
+            return new ArrayList<>();
+        }
         List<UserBase> userBases = singleFindService.queryByUserIds(userLongs);
-
-        Map<Long,UserBase> userMap = new HashMap<>();
-       // relationUserRoles.stream().
-        relationUserRoles.stream().forEach(m->{
-            Optional<UserBase> userObj =  userBases.stream()
-                    .filter(t -> StringUtils.isNotBlank(m.getUserId().toString())
-                            && t.getUserInfoId().equals(m.getUserId()))
-                    .findAny();
-            if(userObj.isPresent()) {
-                userMap.put(m.getUserId(),userObj.get());
-                return;
-            }
-            userMap.put(m.getUserId(),null);
-        });
-      //  Map<Long,UserBase> userMap =userBases.stream().collect(Collectors.toMap(UserBase::getUserInfoId, Function.identity()));
-
         //角色
         List<Long> roleIds = relationUserRoles.stream().map(RelationUserRole::getRoleId).distinct().collect(Collectors.toList());
         List<AppProductRole> roles = singleFindService.findProductCodes2(roleIds);
 
+        Map<Long, UserBase> userMap = new HashMap<>();
+
+        relationUserRoles.stream().forEach(m -> {
+            Optional<UserBase> userObj = userBases.stream()
+                    .filter(t -> StringUtils.isNotBlank(m.getUserId().toString())
+                            && t.getUserInfoId().equals(m.getUserId()))
+                    .findAny();
+            if (userObj.isPresent()) {
+                userMap.put(m.getUserId(), userObj.get());
+                return;
+            }
+            userMap.put(m.getUserId(), null);
+        });
+        //Map<Long,UserBase> userMap =userBases.stream().collect(Collectors.toMap(UserBase::getUserInfoId, Function.identity()));
+
         //应用也来源于角色
         List<String> productCodes = roles.stream().map(AppProductRole::getProductCode).distinct().collect(Collectors.toList());
-        log.info("应用的集合： {}",productCodes);
+        log.info("应用的集合： {}", productCodes);
+        if (CollectionUtils.isEmpty(productCodes)) {
+            return new ArrayList<>();
+        }
         List<AppUserRole> userRoles = new ArrayList<>();
 
-        if (CollectionUtils.isEmpty(productCodes)){
-
-        }else{
-            List<AppTenantInfo> tenants = singleFindService.findTenantCodes(productCodes);
-            //租户
-            Map<String, String> tenantMap = new HashMap<>();
-            for (AppTenantInfo tenant: tenants){
-                tenantMap.put(tenant.getProductCode(), tenant.getCode());
-            }
-            for (RelationUserRole info : relationUserRoles){
-                for (String productCode: productCodes){
-                    //查询租户编码
-                    if (null == userMap.get(info.getUserId())){
-                        continue;
-                    }
-                    String userCode =userMap.get(info.getUserId()).getUserCode();
-                    log.info("userCode ------>:{}",userCode);
-                    String key = productCode.concat("_").concat(tenantMap.get(productCode)).concat("_").concat(userMap.get(info.getUserId()).getUserCode().concat("_").concat(info.getRoleId().toString()));
-                    log.info("key:"+key);
-                    AppUserRole userRole = tempMap.get(key);
-                    if (!Objects.isNull(userRole)){
-                        continue;
-                    }
-                    AppUserRole view = new AppUserRole();
-                    view.setProductCode(productCode);
-                    view.setTenantCode(tenantMap.get(productCode));
-                    view.setUserCode(userMap.get(info.getUserId()).getUserCode());
-                    view.setUserName(userMap.get(info.getUserId()).getRealName());
-                    view.setRoleCode(info.getRoleId().toString());
-                    view.setPlatform("purchase");
-                    view.setIsDelete(0);
-                    if (StringUtils.isBlank(info.getCreatedBy())){
-                        view.setCreatedBy("admin");
-                    }else{
-                        view.setCreatedBy(info.getCreatedBy());
-                    }
-                    if (StringUtils.isBlank(info.getUpdatedBy())){
-                        view.setUpdatedBy("admin");
-                    }else{
-                        view.setUpdatedBy(info.getUpdatedBy());
-                    }
-                    view.setCreatedTime(new Date());
-                    view.setUpdatedTime(new Date());
-                    userRoles.add(view);
-                    log.info("total总条数："+userRoles.size());
-                }
-            }
-            log.info("待插入的数据的总条数：{}",userRoles.size());
+        List<AppTenantInfo> tenants = singleFindService.findTenantCodes(productCodes);
+        //租户
+        Map<String, String> tenantMap = new HashMap<>();
+        for (AppTenantInfo tenant : tenants) {
+            tenantMap.put(tenant.getProductCode(), tenant.getCode());
         }
+        for (RelationUserRole info : relationUserRoles) {
+            for (String productCode : productCodes) {
+                //查询租户编码
+                if (null == userMap.get(info.getUserId())) {
+                    continue;
+                }
+                String userCode = userMap.get(info.getUserId()).getUserCode();
+                log.info("userCode ------>:{}", userCode);
+                String key = productCode.concat("_").concat(tenantMap.get(productCode)).concat("_").concat(userMap.get(info.getUserId()).getUserCode().concat("_").concat(info.getRoleId().toString()));
+                log.info("key:" + key);
+                AppUserRole userRole = tempMap.get(key);
+                if (!Objects.isNull(userRole)) {
+                    continue;
+                }
+                AppUserRole view = new AppUserRole();
+                view.setProductCode(productCode);
+                view.setTenantCode(tenantMap.get(productCode));
+                view.setUserCode(userMap.get(info.getUserId()).getUserCode());
+                view.setUserName(userMap.get(info.getUserId()).getRealName());
+                view.setRoleCode(info.getRoleId().toString());
+                view.setPlatform("purchase");
+                view.setIsDelete(0);
+                if (StringUtils.isBlank(info.getCreatedBy())) {
+                    view.setCreatedBy("admin");
+                } else {
+                    view.setCreatedBy(info.getCreatedBy());
+                }
+                if (StringUtils.isBlank(info.getUpdatedBy())) {
+                    view.setUpdatedBy("admin");
+                } else {
+                    view.setUpdatedBy(info.getUpdatedBy());
+                }
+                view.setCreatedTime(new Date());
+                view.setUpdatedTime(new Date());
+                userRoles.add(view);
+                log.info("total总条数：" + userRoles.size());
+            }
+        }
+        log.info("待插入的数据的总条数：{}", userRoles.size());
         return userRoles;
     }
 }
