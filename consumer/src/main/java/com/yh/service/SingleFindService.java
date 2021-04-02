@@ -25,6 +25,8 @@ public interface SingleFindService {
     String findTenantCode(String productCode);
     List<AppTenantInfo> findTenantCodes(List<String> productCodes);
 
+
+
     /**
      * 根据应用编码查询资源信息
      * @param productCodes
@@ -61,9 +63,15 @@ public interface SingleFindService {
 
     List<String> findProductCodes(Long roleCode);
 
+    List<AppProductRole> findProductCodes2(List<Long> roleCodes);
+
     AppUserRole roleUserDetails(String productCode,String tenantCode, String userCode, String roleCode);
 
     AppProduct findProductInfoCode(String businessType);
 
     List<UserBase> queryByUserId(long id);
+
+    List<UserBase> queryByUserIds(List<Long> ids);
+
+    List<AppUserRole> queryUserroles();
 }

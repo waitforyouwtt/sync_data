@@ -239,6 +239,14 @@ public class SingleFindServiceImpl implements SingleFindService {
         return productCodes;
     }
 
+    public List<AppProductRole> findProductCodes2(List<Long> roleCodes){
+        QueryWrapper<AppProductRole> wrapper = new QueryWrapper();
+        wrapper.in("role_code",roleCodes);
+        wrapper.eq("is_delete",0);
+        List<AppProductRole> roles = productRoleDao.selectList(wrapper);
+        return roles;
+    }
+
     @Override
     public AppUserRole roleUserDetails(String productCode,String tenantCode, String userCode, String roleCode) {
         QueryWrapper<AppUserRole> wrapper = new QueryWrapper<>();
@@ -262,5 +270,17 @@ public class SingleFindServiceImpl implements SingleFindService {
         QueryWrapper<UserBase> wrapper = new QueryWrapper<>();
         wrapper.eq("user_info_id",id);
         return userBaseDao.selectList(wrapper);
+    }
+
+    @Override
+    public List<UserBase> queryByUserIds(List<Long> ids){
+        QueryWrapper<UserBase> wrapper = new QueryWrapper<>();
+        wrapper.in("user_info_id",ids);
+        return userBaseDao.selectList(wrapper);
+    }
+
+    @Override
+    public  List<AppUserRole> queryUserroles(){
+        return userRoleDao.queryAll(null);
     }
 }
