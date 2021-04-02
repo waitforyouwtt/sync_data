@@ -22,7 +22,7 @@
     <select id="queryById" resultMap="AppUserRoleMap">
         select
           id, product_code, tenant_code, user_code, user_name, role_code, role_name, platform, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_user_role
+        from app_user_role
         where id = #{id}
     </select>
 
@@ -30,7 +30,7 @@
     <select id="queryAllByLimit" resultMap="AppUserRoleMap">
         select
           id, product_code, tenant_code, user_code, user_name, role_code, role_name, platform, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_user_role
+        from app_user_role
         limit #{offset}, #{limit}
     </select>
 
@@ -39,7 +39,7 @@
         select
         id, product_code, tenant_code, user_code, user_name, role_code, role_name, platform, is_delete, created_by,
         updated_by, created_time, updated_time
-        from o2o_support_idaas.app_user_role
+        from app_user_role
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -85,12 +85,12 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_user_role(product_code, tenant_code, user_code, user_name, role_code, role_name, platform, is_delete, created_by, updated_by, created_time, updated_time)
+        insert into app_user_role(product_code, tenant_code, user_code, user_name, role_code, role_name, platform, is_delete, created_by, updated_by, created_time, updated_time)
         values (#{productCode}, #{tenantCode}, #{userCode}, #{userName}, #{roleCode}, #{roleName}, #{platform}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_user_role(product_code, tenant_code, user_code, user_name, role_code,
+        insert into app_user_role(product_code, tenant_code, user_code, user_name, role_code,
         role_name, platform, is_delete, created_by, updated_by, created_time, updated_time)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -101,7 +101,7 @@
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_user_role(product_code, tenant_code, user_code, user_name, role_code,
+        insert into app_user_role(product_code, tenant_code, user_code, user_name, role_code,
         role_name, platform, is_delete, created_by, updated_by, created_time, updated_time)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -118,7 +118,7 @@
 
     <!--通过主键修改数据-->
     <update id="update">
-        update o2o_support_idaas.app_user_role
+        update app_user_role
         <set>
             <if test="productCode != null and productCode != ''">
                 product_code = #{productCode},
@@ -162,7 +162,7 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from o2o_support_idaas.app_user_role where id = #{id}
+        delete from app_user_role where id = #{id}
     </delete>
 
 </mapper>

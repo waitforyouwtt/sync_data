@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yh.dao.UserBaseDao">
+
+    <resultMap id="BaseResultMap" type="com.yh.entity.UserBase">
+        <!--@Table user_base-->
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userCode" column="user_code" jdbcType="VARCHAR"/>
+        <result property="realName" column="real_name" jdbcType="VARCHAR"/>
+        <result property="phoneNum" column="phone_num" jdbcType="VARCHAR"/>
+        <result property="customLoginName" column="custom_login_name" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
+        <result property="idType" column="id_type" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="encodeType" column="encode_type" jdbcType="VARCHAR"/>
+        <result property="gender" column="gender" jdbcType="VARCHAR"/>
+        <result property="nickName" column="nick_name" jdbcType="VARCHAR"/>
+        <result property="headImage" column="head_image" jdbcType="VARCHAR"/>
+        <result property="isEmployee" column="is_employee" jdbcType="INTEGER"/>
+        <result property="isSyncData" column="is_sync_data" jdbcType="INTEGER"/>
+        <result property="isDelete" column="is_delete" jdbcType="INTEGER"/>
+        <result property="createBy" column="create_by" jdbcType="VARCHAR"/>
+        <result property="updateBy" column="update_by" jdbcType="VARCHAR"/>
+        <result property="isDisable" column="is_disable" jdbcType="INTEGER"/>
+        <result property="organizationCode" column="organization_code" jdbcType="VARCHAR"/>
+        <result property="empType" column="emp_type" jdbcType="VARCHAR"/>
+        <result property="appCode" column="app_code" jdbcType="INTEGER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="userInfoId" column="user_info_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BaseResultMap">
+        select
+          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, is_employee, is_sync_data, is_delete, create_by, update_by,   is_disable,  organization_code,  emp_type, app_code, remark, user_info_id
+        from user_base
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="BaseResultMap">
+        select
+          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, is_employee, is_sync_data, is_delete, create_by, update_by,  is_disable,  organization_code,  emp_type,  app_code,  remark, user_info_id
+        from user_base
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="BaseResultMap">
+        select
+          id, user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image, is_employee, is_sync_data, is_delete, create_by, update_by,  is_disable, organization_code, emp_type,   app_code,  remark, user_info_id
+        from user_base
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="userCode != null and userCode != ''">
+                and user_code = #{userCode}
+            </if>
+            <if test="realName != null and realName != ''">
+                and real_name = #{realName}
+            </if>
+            <if test="phoneNum != null and phoneNum != ''">
+                and phone_num = #{phoneNum}
+            </if>
+            <if test="customLoginName != null and customLoginName != ''">
+                and custom_login_name = #{customLoginName}
+            </if>
+            <if test="email != null and email != ''">
+                and email = #{email}
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                and id_number = #{idNumber}
+            </if>
+            <if test="idType != null and idType != ''">
+                and id_type = #{idType}
+            </if>
+            <if test="password != null and password != ''">
+                and password = #{password}
+            </if>
+            <if test="encodeType != null and encodeType != ''">
+                and encode_type = #{encodeType}
+            </if>
+            <if test="gender != null and gender != ''">
+                and gender = #{gender}
+            </if>
+            <if test="nickName != null and nickName != ''">
+                and nick_name = #{nickName}
+            </if>
+            <if test="headImage != null and headImage != ''">
+                and head_image = #{headImage}
+            </if>
+            <if test="isEmployee != null">
+                and is_employee = #{isEmployee}
+            </if>
+            <if test="isSyncData != null">
+                and is_sync_data = #{isSyncData}
+            </if>
+            <if test="isDelete != null">
+                and is_delete = #{isDelete}
+            </if>
+            <if test="createBy != null and createBy != ''">
+                and create_by = #{createBy}
+            </if>
+            <if test="updateBy != null and updateBy != ''">
+                and update_by = #{updateBy}
+            </if>
+
+            <if test="isDisable != null">
+                and is_disable = #{isDisable}
+            </if>
+
+            <if test="organizationCode != null and organizationCode != ''">
+                and organization_code = #{organizationCode}
+            </if>
+
+            <if test="empType != null and empType != ''">
+                and emp_type = #{empType}
+            </if>
+            <if test="appCode != null">
+                and app_code = #{appCode}
+            </if>
+
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+            <if test="userInfoId != null">
+                and user_info_id = #{userInfoId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into user_base(user_code, real_name, phone_num, custom_login_name, email, id_number, id_type, password, encode_type, gender, nick_name, head_image,is_employee, is_sync_data, is_delete, create_by, update_by,  is_disable, organization_code, emp_type, app_code, remark, user_info_id)
+        values (#{userCode}, #{realName}, #{phoneNum}, #{customLoginName}, #{email}, #{idNumber}, #{idType}, #{password}, #{encodeType}, #{gender}, #{nickName}, #{headImage},  #{isEmployee}, #{isSyncData}, #{isDelete}, #{createBy}, #{updateBy}, #{createTime}, #{isDisable}, #{organizationCode}, #{empType}, #{appCode},  #{remark}, #{userInfoId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update user_base
+        <set>
+            <if test="userCode != null and userCode != ''">
+                user_code = #{userCode},
+            </if>
+            <if test="realName != null and realName != ''">
+                real_name = #{realName},
+            </if>
+            <if test="phoneNum != null and phoneNum != ''">
+                phone_num = #{phoneNum},
+            </if>
+            <if test="customLoginName != null and customLoginName != ''">
+                custom_login_name = #{customLoginName},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <if test="idType != null and idType != ''">
+                id_type = #{idType},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="encodeType != null and encodeType != ''">
+                encode_type = #{encodeType},
+            </if>
+            <if test="gender != null and gender != ''">
+                gender = #{gender},
+            </if>
+            <if test="nickName != null and nickName != ''">
+                nick_name = #{nickName},
+            </if>
+            <if test="headImage != null and headImage != ''">
+                head_image = #{headImage},
+            </if>
+            <if test="isEmployee != null">
+                is_employee = #{isEmployee},
+            </if>
+            <if test="isSyncData != null">
+                is_sync_data = #{isSyncData},
+            </if>
+            <if test="isDelete != null">
+                is_delete = #{isDelete},
+            </if>
+            <if test="createBy != null and createBy != ''">
+                create_by = #{createBy},
+            </if>
+            <if test="updateBy != null and updateBy != ''">
+                update_by = #{updateBy},
+            </if>
+
+            <if test="isDisable != null">
+                is_disable = #{isDisable},
+            </if>
+
+            <if test="organizationCode != null and organizationCode != ''">
+                organization_code = #{organizationCode},
+            </if>
+
+            <if test="empType != null and empType != ''">
+                emp_type = #{empType},
+            </if>
+            <if test="appCode != null">
+                app_code = #{appCode},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="userInfoId != null">
+                user_info_id = #{userInfoId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from user_base where id = #{id}
+    </delete>
+
+</mapper>

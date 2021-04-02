@@ -262,9 +262,12 @@ public class ThreadServiceImpl implements ThreadService {
             return "fail";
         }
         log.info("需要同步的区间总体条数:{}",relationUserRoles.size());
-        List<AppUserRole> roleResources = convertRoleUser(relationUserRoles);
-        if (!CollectionUtils.isEmpty(roleResources)){
-            appUserRoleDao.insertOrUpdateBatch( roleResources );
+        List<AppUserRole> roleUsers = convertRoleUser(relationUserRoles);
+        if (!CollectionUtils.isEmpty(roleUsers)){
+            List<List<AppUserRole>> partition = Lists.partition(roleUsers, 500);
+            for (List<AppUserRole> list : partition){
+                appUserRoleDao.insertOrUpdateBatch( list );
+            }
         }
 
 
@@ -714,6 +717,13 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
     private List<AppUserRole> convertRoleUser(List<RelationUserRole> relationUserRoles) {
+
+       // List<Long> productCodes = relationUserRoles.stream().map(RelationUserRole::getUserId).distinct().collect(Collectors.toList());
+
+
+        Map<String, String> dataMap = new HashMap<>();
+
+
         List<AppUserRole> userRoles = Collections.synchronizedList(new ArrayList());
         for (RelationUserRole info : relationUserRoles){
             if (info.getUserId() == null){
