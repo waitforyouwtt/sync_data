@@ -567,6 +567,12 @@ public class ThreadServiceImpl implements ThreadService {
                  productMap.put(p.getRoleId(),product);
              }
         }
+        List<AppTenantInfo> tenantInfos = this.singleFindService.findTenants();
+        Map<String,String> tenantMap = new HashMap<>();
+        for (AppTenantInfo info: tenantInfos){
+            tenantMap.put(info.getProductCode(),info.getCode());
+        }
+
         //默认应用
         List<String> productCodes;
         //查询全部应用
@@ -589,7 +595,10 @@ public class ThreadServiceImpl implements ThreadService {
                         continue;
                     }
                     //根据应用获取租户信息
-                    String tenantCode  =  singleFindService.findTenantCode(code);
+                    String tenantCode  = tenantMap.get(code);
+                    if (StringUtils.isBlank(tenantCode)){
+                        tenantCode = "default";
+                    }
                     //数据拼装key
                     String key = code.concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
                     //数据去掉重复

@@ -20,7 +20,7 @@
     <select id="queryById" resultMap="AppTenantInfoMap">
         select
           id, product_code, logo, code, name, status, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_tenant_info
+        from app_tenant_info
         where id = #{id}
     </select>
 
@@ -28,7 +28,7 @@
     <select id="queryAllByLimit" resultMap="AppTenantInfoMap">
         select
           id, product_code, logo, code, name, status, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_tenant_info
+        from app_tenant_info
         limit #{offset}, #{limit}
     </select>
 
@@ -36,7 +36,7 @@
     <select id="queryAll" resultMap="AppTenantInfoMap">
         select
         id, product_code, logo, code, name, status, is_delete, created_by, updated_by, created_time, updated_time
-        from o2o_support_idaas.app_tenant_info
+        from app_tenant_info
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -76,12 +76,12 @@
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_tenant_info(product_code, logo, code, name, status, is_delete, created_by, updated_by, created_time, updated_time)
+        insert into app_tenant_info(product_code, logo, code, name, status, is_delete, created_by, updated_by, created_time, updated_time)
         values (#{productCode}, #{logo}, #{code}, #{name}, #{status}, #{isDelete}, #{createdBy}, #{updatedBy}, #{createdTime}, #{updatedTime})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_tenant_info(product_code, logo, code, name, status, is_delete, created_by,
+        insert into app_tenant_info(product_code, logo, code, name, status, is_delete, created_by,
         updated_by, created_time, updated_time)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -91,7 +91,7 @@
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
-        insert into o2o_support_idaas.app_tenant_info(product_code, logo, code, name, status, is_delete, created_by,
+        insert into app_tenant_info(product_code, logo, code, name, status, is_delete, created_by,
         updated_by, created_time, updated_time)
         values
         <foreach collection="entities" item="entity" separator=",">
@@ -106,7 +106,7 @@
 
     <!--通过主键修改数据-->
     <update id="update">
-        update o2o_support_idaas.app_tenant_info
+        update app_tenant_info
         <set>
             <if test="productCode != null and productCode != ''">
                 product_code = #{productCode},
@@ -144,7 +144,7 @@
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from o2o_support_idaas.app_tenant_info where id = #{id}
+        delete from app_tenant_info where id = #{id}
     </delete>
 
 </mapper>

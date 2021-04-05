@@ -145,6 +145,14 @@ public class SingleFindServiceImpl implements SingleFindService {
     }
 
     @Override
+    public List<AppTenantInfo> findTenants(){
+        AppTenantInfo info = new AppTenantInfo();
+        info.setIsDelete(0);
+        List<AppTenantInfo> tenantInfos = tenantInfoDao.queryAll(info);
+        return tenantInfos;
+    }
+
+    @Override
     public List<AppProductResource> findProductResources(List<String> productCodes) {
         QueryWrapper<AppProductResource> wrapper = new QueryWrapper<>();
         wrapper.in("product_code","103");

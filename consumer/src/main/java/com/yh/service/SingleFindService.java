@@ -26,6 +26,7 @@ public interface SingleFindService {
      */
     String findTenantCode(String productCode);
     List<AppTenantInfo> findTenantCodes(List<String> productCodes);
+    List<AppTenantInfo> findTenants();
 
 
 
