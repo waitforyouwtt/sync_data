@@ -11,8 +11,8 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://10.251.76.94:3306/yh_srm_usercenter_qas?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     #HOME PC
-    username: usercenter_test
-    password: usercenter_test@2020
+    username: root
+    password: root
   # 格式化日期
   jackson:
     time-zone: GMT+8
