@@ -76,4 +76,6 @@ public interface SingleFindService {
     List<UserBase> queryByUserIds(List<Long> ids);
 
     List<AppUserRole> queryUserroles();
+
+    List<AppProductRole> queryAllRoles();
 }

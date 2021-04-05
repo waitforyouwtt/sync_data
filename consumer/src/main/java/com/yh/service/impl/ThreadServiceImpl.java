@@ -145,6 +145,21 @@ public class ThreadServiceImpl implements ThreadService {
         List<List<Integer>> partition = Lists.partition(codesInteger, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
+/*        List<AppUserRole> lists = singleFindService.queryUserroles();
+        Map<String, AppUserRole> tempMap = new HashMap<>();
+        for(AppUserRole appUserRole: lists){
+            String key = appUserRole.getProductCode().concat("_").concat(appUserRole.getTenantCode()).concat("_").concat(appUserRole.getUserCode()).concat("_").concat(appUserRole.getRoleCode());
+            log.info("全量查询的用户角色key:{}",key);
+            tempMap.put(key, appUserRole);
+        }*/
+        List<AppProductRole> lists = singleFindService.queryAllRoles();
+        Map<String, AppProductRole> tempMap = new HashMap<>();
+        for(AppProductRole role: lists){
+            String key = role.getProductCode().concat("_").concat(role.getTenantCode()).concat("_").concat(role.getRoleCode());
+            log.info("全量查询的用户角色key:{}",key);
+            tempMap.put(key, role);
+        }
+
         //使用线程池来发送各个用户的消息/通知任务集合
         ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
         ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L,
@@ -161,11 +176,7 @@ public class ThreadServiceImpl implements ThreadService {
                     int start = Collections.min(lists);
                     int end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
-                    try{
-                        saveRole(start, end);
-                    }catch (Exception e){
-                        log.info("发生异常：{}",e.getMessage());
-                    }
+                    saveRole(start, end,tempMap);
                     return "success";
                 }
             });
@@ -630,7 +641,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveRole(Integer start, Integer end){
+    private String saveRole(Integer start, Integer end,Map<String, AppProductRole> tempMap){
         AppProductRoleDao roleDao = SpringContextHolder.getBean(AppProductRoleDao.class);
         List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
         if (CollectionUtils.isEmpty(roleInfos)){
@@ -640,9 +651,9 @@ public class ThreadServiceImpl implements ThreadService {
         log.info("需要同步的区间总体条数:{}",roleInfos.size());
         List<AppProductRole> data = new ArrayList<>();
         try{
-             data =convertRoles(roleInfos);
+             data = convertRoles(roleInfos,tempMap);
         }catch (Exception e){
-            log.error("转换角色发生异常：{}",e.getMessage());
+            log.error("转换角色发生异常：{}",e.getStackTrace());
         }
 
         if (!CollectionUtils.isEmpty(data)){
@@ -821,7 +832,7 @@ public class ThreadServiceImpl implements ThreadService {
         return resources;
     }
 
-    public List<AppProductRole> convertRoles(List<RoleInfo> data){
+    public List<AppProductRole> convertRoles(List<RoleInfo> data,Map<String, AppProductRole> tempMap){
         List<AppProductRole> result = new ArrayList<>();
 
         List<Long> roleIds = data.stream().map(RoleInfo::getId).distinct().collect(Collectors.toList());
@@ -837,14 +848,19 @@ public class ThreadServiceImpl implements ThreadService {
              }
         }
         //默认应用
-        List<String> collect = this.singleFindService.findProductLists().stream().map(AppProduct::getProductCode).distinct().collect(Collectors.toList());
-
         for (RoleInfo  info : data){
             //通过角色id倒推productCode
             //List<String> productCodes = feign.findProductCodeByRoleIds(info.getId().toString());
-            List<String> productCodes = productMap.get(info.getId());
-            if(CollectionUtils.isEmpty(productCodes)){
-                productCodes.addAll(collect);
+            List<String> productCodes = new ArrayList<>();
+            if(CollectionUtils.isEmpty(productMap.get(info.getId()))){
+                List<AppProduct> productLists = this.singleFindService.findProductLists();
+                List<String> collect = new ArrayList<>();
+                if (!CollectionUtils.isEmpty(productLists)){
+                    collect = productLists.stream().map(AppProduct::getProductCode).distinct().collect(Collectors.toList());
+                }
+                productCodes= collect;
+            }else{
+                productCodes = productMap.get(info.getId());
             }
 
             if (!CollectionUtils.isEmpty(productCodes)){
@@ -855,9 +871,11 @@ public class ThreadServiceImpl implements ThreadService {
                     //根据应用获取租户信息
                     String tenantCode  =  singleFindService.findTenantCode(code);
 
+                    String key = code.concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
+
                     //数据去掉重复
-                    AppProductRole queryResult = singleFindService.roleDetails(code, tenantCode, info.getId().toString());
-                    if (!Objects.isNull(queryResult)){
+                    AppProductRole queryResult = tempMap.get(key);
+                    if (!Objects.isNull(queryResult)) {
                         continue;
                     }
 

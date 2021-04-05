@@ -300,4 +300,9 @@ public class SingleFindServiceImpl implements SingleFindService {
     public  List<AppUserRole> queryUserroles(){
         return userRoleDao.queryAll(null);
     }
+
+    @Override
+    public List<AppProductRole> queryAllRoles(){
+        return productRoleDao.queryAll(null);
+    }
 }
