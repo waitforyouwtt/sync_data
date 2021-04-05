@@ -1,6 +1,7 @@
 package com.yh.feign;
 
 import com.yh.entity.*;
+import com.yh.view.ProductRoleVO;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,6 +51,10 @@ public interface DataSynchronizeFeign {
     @ApiOperation(value = "通过角色id倒推productCode",notes = "通过角色id倒推productCode")
     @GetMapping("/findProductCodeByRoleId")
     List<String> findProductCodeByRoleId(@RequestParam("roleId") String roleId);
+
+    @ApiOperation(value = "通过角色id倒推productCode",notes = "通过角色id倒推productCode")
+    @GetMapping("/findProductCodeByRoleIds")
+    List<ProductRoleVO> findProductCodeByRoleIds(@RequestParam("roleIds") String roleIds);
 
     @ApiOperation(value = "获取角色资源总条数",notes = "获取角色资源总条数")
     @GetMapping("/findCountRelationRoleMenuPermissions")

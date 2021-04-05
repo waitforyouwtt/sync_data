@@ -4,13 +4,19 @@ import com.yh.dao.RelationRoleMenuPermissionDao;
 import com.yh.entity.RelationRoleMenuPermission;
 import com.yh.service.RelationRoleMenuPermissionService;
 import com.yh.service.SingleQueryService;
+import com.yh.view.ProductRoleVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -87,13 +93,42 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
 
     @Override
     public List<String> findProductCodeByRoleId(String roleId) {
-        List<RelationRoleMenuPermission> relationRoleMenuPermissions = this.singleQueryService.queryRelationRoleMenuPermission(roleId);
+        List<String> roleCodes = Arrays.asList(roleId.split(","));
+        List<RelationRoleMenuPermission> relationRoleMenuPermissions = this.singleQueryService.queryRelationRoleMenuPermission(roleCodes);
         if (CollectionUtils.isEmpty(relationRoleMenuPermissions)){
             return Collections.EMPTY_LIST;
         }
         List<Integer> menuPermissionIds = relationRoleMenuPermissions.stream().map(RelationRoleMenuPermission::getMenuPermissionId).collect(Collectors.toList());
         List<String> productCodes = this.singleQueryService.findProductCodes(menuPermissionIds);
         return productCodes;
+    }
+
+    @Override
+    public List<ProductRoleVO> findProductCodeByRoleIds(String roleIds) {
+        if (StringUtils.isBlank(roleIds)){
+            return new ArrayList<>();
+        }
+        List<String> roleCodes = Arrays.asList(roleIds.split(","));
+        List<RelationRoleMenuPermission> relationRoleMenuPermissions = this.singleQueryService.queryRelationRoleMenuPermission(roleCodes);
+        if (CollectionUtils.isEmpty(relationRoleMenuPermissions)){
+            return Collections.EMPTY_LIST;
+        }
+        Map<Integer, List<RelationRoleMenuPermission>> integerListMap = relationRoleMenuPermissions.stream().collect(Collectors.groupingBy(RelationRoleMenuPermission::getRoleId));
+        List<ProductRoleVO> products = new ArrayList<>();
+        integerListMap.forEach((k, v) -> {
+            System.out.println("key:value = " + k + ":" + v);
+            List<Integer> menuPermissionIds = v.stream().map(RelationRoleMenuPermission::getMenuPermissionId).distinct().collect(Collectors.toList());
+            List<String>  productCodes = this.singleQueryService.findProductCodes(menuPermissionIds);
+            ProductRoleVO vo = new ProductRoleVO();
+            vo.setRoleId(k.toString());
+            vo.setProductCode(String.join(",",productCodes));
+            products.add(vo);
+        });
+        return products;
+    }
+
+    private List<ProductRoleVO> product(){
+        return new ArrayList<>();
     }
 
     @Override

@@ -25,10 +25,10 @@ public interface SingleQueryService {
 
     /**
      * 通过角色id 倒推productCode
-     * @param roleId
+     * @param roleIds
      * @return
      */
-    List<RelationRoleMenuPermission> queryRelationRoleMenuPermission(String roleId);
+    List<RelationRoleMenuPermission> queryRelationRoleMenuPermission(List<String> roleIds);
 
     /**
      * 通过角色id 倒推productCode

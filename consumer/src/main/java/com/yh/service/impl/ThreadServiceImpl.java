@@ -12,6 +12,7 @@ import com.yh.service.SingleFindService;
 import com.yh.service.ThreadService;
 import com.yh.utils.SpringContextHolder;
 import com.yh.utils.StringCustomizedUtils;
+import com.yh.view.ProductRoleVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.mockito.internal.invocation.RealMethod;
@@ -43,8 +44,7 @@ public class ThreadServiceImpl implements ThreadService {
     @Autowired
     SingleFindService singleFindService;
 
-    //第一步--------------------------------------------------------------------------------------------------------------
-
+    //第一步方法区：--------------------------------------------------------------------------------------------------------------
     @Async
     @Override
     public String menuSyncResource() {
@@ -144,10 +144,28 @@ public class ThreadServiceImpl implements ThreadService {
         List<List<Integer>> partition = Lists.partition(codesInteger, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
-        ExecutorService executor = Executors.newFixedThreadPool(4);
-        CountDownLatch countDownLatch = new CountDownLatch(countRoles.size()/1000);
+        //使用线程池来发送各个用户的消息/通知任务集合
+        ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
+        ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L,
+                TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(1024), importThreadFactory,
+                new ThreadPoolExecutor.AbortPolicy());
 
-        try {
+        //执行多个带返回结果的发送任务,并取得多个消息/通知发送返回结果
+        CompletionService<String> sendMultiMsgSvc = new ExecutorCompletionService(importThreadPool);
+        partition.forEach(p -> {
+            sendMultiMsgSvc.submit(new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    List<Integer> lists = p;
+                    int start = Collections.min(lists);
+                    int end = Collections.max(lists);
+                    log.info("每段的开始值&结束值：{},{}", start, end);
+                    return saveRole(start, end);
+                }
+            });
+        });
+
+/*        try {
             for (List<Integer> lists : partition){
                 Integer start = Collections.min(lists);
                 Integer end = Collections.max(lists);
@@ -163,7 +181,7 @@ public class ThreadServiceImpl implements ThreadService {
         }finally {
             // 关闭线程池，释放资源
             executor.shutdown();
-        }
+        }*/
         return "成功";
     }
 
@@ -343,38 +361,7 @@ public class ThreadServiceImpl implements ThreadService {
         }
     }
 
-    class ImportRoleTask implements Runnable{
-        Integer start;
-        Integer end;
-        private CountDownLatch countDownLatch;
-        private AppProductRoleDao resourceDao   = SpringContextHolder.getBean(AppProductRoleDao.class);
 
-        public ImportRoleTask(Integer start,Integer end,CountDownLatch countDownLatch){
-            this.start = start;
-            this.end   = end;
-            this.countDownLatch = countDownLatch;
-        }
-
-        @Override
-        public void run() {
-            List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
-            if (CollectionUtils.isEmpty(roleInfos)){
-                log.info("此区间没有数据");
-                return;
-            }
-            log.info("需要同步的区间总体条数:{}",roleInfos.size());
-
-            if (!CollectionUtils.isEmpty(roleInfos)){
-                List<AppProductRole> roles = convertRoles(roleInfos);
-                if (!CollectionUtils.isEmpty(roles)){
-                    log.info("开始插入数据库");
-                    resourceDao.insertOrUpdateBatch(roles);
-                }
-            }
-            log.info("发出线程任务完成的信号");
-            countDownLatch.countDown();
-        }
-    }
 
 
    // class ImportRelationUserRoleTask implements Runnable{
@@ -406,129 +393,6 @@ public class ThreadServiceImpl implements ThreadService {
             countDownLatch.countDown();
         }*/
   //  }
-
-
-
-    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data) {
-
-        List<AppProductResource> resources = new ArrayList<>();
-        for (MenuPermission info: data){
-            //根据应用获取租户信息
-            String tenantCode = singleFindService.findTenantCode(info.getBusinessType());
-
-            //数据去掉重复
-            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,String.valueOf(info.getId()));
-            if (!Objects.isNull(queryResult)){
-                continue;
-            }
-
-            AppProductResource resource = new AppProductResource();
-            resource.setProductCode(info.getBusinessType());
-            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setTenantCode(tenantCode);
-            /**
-             * operation_objective_id
-             * select * from menu_info where id = '26';
-             */
-            MenuInfo menu = feign.findById(info.getOperationObjectiveId().toString());
-            if (Objects.isNull(menu)){
-                continue;
-            }
-            resource.setParentCode(String.valueOf(menu.getId()));
-
-            resource.setResourceCode(String.valueOf(info.getId()));
-            resource.setResourceName(info.getPermissionName());
-            resource.setPath(info.getApiUrl());
-            //固定为按钮
-            resource.setType("2");
-            if (info.getRank() == null){
-                resource.setOrderNum(0);
-            }else{
-                resource.setOrderNum(info.getRank());
-            }
-
-            resource.setCreatedTime(new Date());
-            resource.setUpdatedTime(new Date());
-            if (info.getCreatedBy() == null){
-                resource.setCreatedBy("admin");
-            }else{
-                resource.setCreatedBy(info.getCreatedBy());
-            }
-            if (info.getUpdatedBy() == null){
-                resource.setUpdatedBy("admin");
-            }else{
-                resource.setUpdatedBy(info.getUpdatedBy());
-            }
-            //存放按钮code
-            resource.setExpand2(info.getPermissionCode());
-            //存放菜单父级id
-            resource.setExpand3(String.valueOf(menu.getId()));
-
-            resource.setStatus("Y");
-            resource.setIsDelete(0);
-            resource.setPlatform("purchase");
-            resources.add(resource);
-        }
-        return resources;
-    }
-
-    public List<AppProductRole> convertRoles(List<RoleInfo> roleInfos){
-        List<AppProductRole> roles = new ArrayList<>();
-        for (RoleInfo  info : roleInfos){
-
-            //通过角色id倒推productCode
-            List<String> productCodes = feign.findProductCodeByRoleId(info.getId().toString());
-
-            if (!CollectionUtils.isEmpty(productCodes)){
-                for (String code : productCodes){
-                    if (info.getId() == null){
-                        continue;
-                    }
-                    //根据应用获取租户信息
-                    String tenantCode  =  singleFindService.findTenantCode(code);
-
-                    //数据去掉重复
-                    AppProductRole queryResult = singleFindService.roleDetails(code, tenantCode, info.getId().toString());
-                    if (!Objects.isNull(queryResult)){
-                        continue;
-                    }
-
-                    AppProductRole role = new AppProductRole();
-                    role.setProductCode(code);
-                    role.setUniqueCode(StringCustomizedUtils.uniqueCode());
-                    role.setTenantCode(tenantCode);
-                    role.setRoleCode(info.getId().toString());
-                    role.setRoleName(info.getRoleName());
-                    //存放角色
-                    role.setDescription(info.getRoleTypeCode());
-                    //存储第三方role_code
-                    role.setOutRoleCode(info.getRoleCode());
-
-                    role.setRoleStatus("Y");
-                    role.setPlatform("purchase");
-                    //存放父级编码
-                    role.setExtension1(String.valueOf(info.getParentId()));
-                    //存放path
-                    role.setExtension2(info.getRolePath());
-                    role.setIsDelete(0);
-                    if (info.getCreatedBy() == null){
-                        role.setCreatedBy("admin");
-                    }else{
-                        role.setCreatedBy(info.getCreatedBy());
-                    }
-                    if (info.getUpdatedBy() == null){
-                        role.setUpdatedBy("admin");
-                    }else{
-                        role.setUpdatedBy(info.getUpdatedBy());
-                    }
-                    role.setCreatedTime(new Date());
-                    role.setUpdatedTime(new Date());
-                    roles.add(role);
-                }
-            }
-        }
-        return roles;
-    }
 
     public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions,Map<String,AppRoleResource> tempMap){
         List<AppRoleResource> roleResources = new ArrayList<>();
@@ -717,7 +581,7 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
 
-    //第一步------------------------------------------------------------------------------------------------------------------------
+    //第二步：------------------------------------------------------------------------------------------------------------------------
     private String saveResourceByMenu(Integer start, Integer end) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
         List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start, end);
@@ -748,32 +612,54 @@ public class ThreadServiceImpl implements ThreadService {
         }
         log.info("需要同步的区间总体条数:{}",menuPermissions.size());
 
-        List<AppProductResource> productResources = convertMenuPermissionResource(menuPermissions);
-
-        if (!CollectionUtils.isEmpty(productResources)){
-
+        List<AppProductResource> data = convertMenuPermissionResource(menuPermissions);
+        if (!CollectionUtils.isEmpty(data)){
+            List<List<AppProductResource>> partition = Lists.partition(data, 500);
+            for (List<AppProductResource> params : partition) {
+                log.info("开始插入数据库");
+                resourceDao.insertOrUpdateBatch(params);
+            }
         }
-
         log.info("发出线程任务完成的信号");
         return "true";
     }
 
-    //实体转换器-----------------------------------------------------------------------------------------------------
+    private String saveRole(Integer start, Integer end){
+        AppProductRoleDao roleDao = SpringContextHolder.getBean(AppProductRoleDao.class);
+        List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
+        if (CollectionUtils.isEmpty(roleInfos)){
+            log.info("此区间没有数据");
+            return "fail";
+        }
+        log.info("需要同步的区间总体条数:{}",roleInfos.size());
+        List<AppProductRole> data = convertRoles(roleInfos);
+        if (!CollectionUtils.isEmpty(data)){
+            List<List<AppProductRole>> partition = Lists.partition(data, 500);
+            for (List<AppProductRole> params : partition) {
+                log.info("开始插入数据库");
+                roleDao.insertOrUpdateBatch(params);
+            }
+        }
+        log.info("发出线程任务完成的信号");
+        return "true";
+    }
+
+    //第三步：实体转换器-----------------------------------------------------------------------------------------------------
     private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus){
         List<String> productCodes = menus.stream().map(MenuInfo::getBusinessType).distinct().collect(Collectors.toList());
         List<AppTenantInfo> tenantCodes = singleFindService.findTenantCodes(productCodes);
 
-        Map<String, String> dataMap = new HashMap<>();
+        Map<String, String> tenantMap = new HashMap<>();
 
         menus.forEach(m -> {
             Optional<AppTenantInfo> appTenantInfoObj =  tenantCodes.stream()
                     .filter(t -> StringUtils.isNotBlank(m.getBusinessType()) && t.getProductCode().equals(m.getBusinessType()))
                     .findAny();
             if(appTenantInfoObj.isPresent()) {
-                dataMap.put(m.getBusinessType(),appTenantInfoObj.get().getCode());
+                tenantMap.put(m.getBusinessType(),appTenantInfoObj.get().getCode());
                 return;
             }
-            dataMap.put(m.getBusinessType(), "default");
+            tenantMap.put(m.getBusinessType(), "default");
         });
 
         List<AppProductResource> resources = Collections.synchronizedList(new ArrayList());
@@ -784,8 +670,8 @@ public class ThreadServiceImpl implements ThreadService {
                 continue;
             }
             //根据应用获取租户信息
-            if(StringUtils.isNotBlank(dataMap.get(info.getBusinessType()))){
-                tenantCode = dataMap.get(info.getBusinessType());
+            if(StringUtils.isNotBlank(tenantMap.get(info.getBusinessType()))){
+                tenantCode = tenantMap.get(info.getBusinessType());
             }
             //数据去掉重复
             queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,String.valueOf(info.getId()));
@@ -835,6 +721,155 @@ public class ThreadServiceImpl implements ThreadService {
             resources.add(resource);
         }
         return resources;
+    }
+
+    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data) {
+        List<String> productCodes = data.stream().map(MenuPermission::getBusinessType).distinct().collect(Collectors.toList());
+        List<AppTenantInfo> tenantCodes = singleFindService.findTenantCodes(productCodes);
+        Map<String, String> tenantMap = new HashMap<>();
+        data.forEach(m -> {
+            Optional<AppTenantInfo> appTenantInfoObj =  tenantCodes.stream()
+                    .filter(t -> StringUtils.isNotBlank(m.getBusinessType()) && t.getProductCode().equals(m.getBusinessType()))
+                    .findAny();
+            if(appTenantInfoObj.isPresent()) {
+                tenantMap.put(m.getBusinessType(),appTenantInfoObj.get().getCode());
+                return;
+            }
+            tenantMap.put(m.getBusinessType(), "default");
+        });
+
+        List<Integer> operationObjectiveIds = data.stream().map(MenuPermission::getOutMenuPermissionId).distinct().collect(Collectors.toList());
+        String menuIdString = operationObjectiveIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        List<MenuInfo> menus = feign.findMenuByIds(menuIdString);
+        Map<Integer, MenuInfo> menuInfoMap = new HashMap<>();
+        for (MenuInfo menuInfo: menus){
+            menuInfoMap.put(menuInfo.getId(), menuInfo);
+        }
+
+        List<AppProductResource> resources = new ArrayList<>();
+        String tenantCode = null;
+        for (MenuPermission info: data){
+            //根据应用获取租户信息
+            //根据应用获取租户信息
+            if(StringUtils.isNotBlank(tenantMap.get(info.getBusinessType()))){
+                tenantCode = tenantMap.get(info.getBusinessType());
+            }
+
+            //数据去掉重复
+            AppProductResource queryResult = singleFindService.resourceDetails(info.getBusinessType(),tenantCode,String.valueOf(info.getId()));
+            if (!Objects.isNull(queryResult)){
+                continue;
+            }
+
+            AppProductResource resource = new AppProductResource();
+            resource.setProductCode(info.getBusinessType());
+            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
+            resource.setTenantCode(tenantCode);
+            /**
+             * operation_objective_id
+             * select * from menu_info where id = '26';
+             */
+            MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId().toString());
+            if (Objects.isNull(menu)){
+                continue;
+            }
+            resource.setParentCode(String.valueOf(menu.getId()));
+            resource.setResourceCode(String.valueOf(info.getId()));
+            resource.setResourceName(info.getPermissionName());
+            resource.setPath(info.getApiUrl());
+            //固定为按钮
+            resource.setType("2");
+            if (info.getRank() == null){
+                resource.setOrderNum(0);
+            }else{
+                resource.setOrderNum(info.getRank());
+            }
+            resource.setCreatedTime(new Date());
+            resource.setUpdatedTime(new Date());
+            if (info.getCreatedBy() == null){
+                resource.setCreatedBy("admin");
+            }else{
+                resource.setCreatedBy(info.getCreatedBy());
+            }
+            if (info.getUpdatedBy() == null){
+                resource.setUpdatedBy("admin");
+            }else{
+                resource.setUpdatedBy(info.getUpdatedBy());
+            }
+            //存放按钮code
+            resource.setExpand2(info.getPermissionCode());
+            //存放菜单父级id
+            resource.setExpand3(String.valueOf(menu.getId()));
+
+            resource.setStatus("Y");
+            resource.setIsDelete(0);
+            resource.setPlatform("purchase");
+            resources.add(resource);
+        }
+        return resources;
+    }
+
+    public List<AppProductRole> convertRoles(List<RoleInfo> data){
+        List<Long> roleIds = data.stream().map(RoleInfo::getId).distinct().collect(Collectors.toList());
+        String longs = StringUtils.join(roleIds.toArray(),",");
+        List<ProductRoleVO> productRoles = this.feign.findProductCodeByRoleIds(longs);
+        List<AppProductRole> roles = new ArrayList<>();
+
+        List<String> productCodes = new ArrayList<>();
+        for (RoleInfo  info : data){
+
+            //通过角色id倒推productCode
+           // List<String> productCodes = feign.findProductCodeByRoleIds(info.getId().toString());
+
+            if (!CollectionUtils.isEmpty(productCodes)){
+                for (String code : productCodes){
+                    if (info.getId() == null){
+                        continue;
+                    }
+                    //根据应用获取租户信息
+                    String tenantCode  =  singleFindService.findTenantCode(code);
+
+                    //数据去掉重复
+                    AppProductRole queryResult = singleFindService.roleDetails(code, tenantCode, info.getId().toString());
+                    if (!Objects.isNull(queryResult)){
+                        continue;
+                    }
+
+                    AppProductRole role = new AppProductRole();
+                    role.setProductCode(code);
+                    role.setUniqueCode(StringCustomizedUtils.uniqueCode());
+                    role.setTenantCode(tenantCode);
+                    role.setRoleCode(info.getId().toString());
+                    role.setRoleName(info.getRoleName());
+                    //存放角色
+                    role.setDescription(info.getRoleTypeCode());
+                    //存储第三方role_code
+                    role.setOutRoleCode(info.getRoleCode());
+
+                    role.setRoleStatus("Y");
+                    role.setPlatform("purchase");
+                    //存放父级编码
+                    role.setExtension1(String.valueOf(info.getParentId()));
+                    //存放path
+                    role.setExtension2(info.getRolePath());
+                    role.setIsDelete(0);
+                    if (info.getCreatedBy() == null){
+                        role.setCreatedBy("admin");
+                    }else{
+                        role.setCreatedBy(info.getCreatedBy());
+                    }
+                    if (info.getUpdatedBy() == null){
+                        role.setUpdatedBy("admin");
+                    }else{
+                        role.setUpdatedBy(info.getUpdatedBy());
+                    }
+                    role.setCreatedTime(new Date());
+                    role.setUpdatedTime(new Date());
+                    roles.add(role);
+                }
+            }
+        }
+        return roles;
     }
 
 }

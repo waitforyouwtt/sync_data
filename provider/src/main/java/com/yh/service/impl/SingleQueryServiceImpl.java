@@ -78,9 +78,9 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     }
 
     @Override
-    public List<RelationRoleMenuPermission> queryRelationRoleMenuPermission(String roleId) {
+    public List<RelationRoleMenuPermission> queryRelationRoleMenuPermission(List<String> roleIds) {
         QueryWrapper<RelationRoleMenuPermission> wrapper = new QueryWrapper<>();
-        wrapper.eq("role_id",roleId);
+        wrapper.in("role_id",roleIds);
         wrapper.eq("is_delete",0);
         return relationRoleMenuPermissionDao.selectList(wrapper);
     }

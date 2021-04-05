@@ -1,6 +1,7 @@
 package com.yh.service;
 
 import com.yh.entity.RelationRoleMenuPermission;
+import com.yh.view.ProductRoleVO;
 
 import java.util.List;
 
@@ -59,6 +60,7 @@ public interface RelationRoleMenuPermissionService {
      * @return
      */
     List<String> findProductCodeByRoleId(String roleId);
+    List<ProductRoleVO> findProductCodeByRoleIds(String roleIds);
 
     /**
      *根据条件获取id区间角色资源集合
