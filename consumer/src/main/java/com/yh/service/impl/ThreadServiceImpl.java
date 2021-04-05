@@ -275,7 +275,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "成功";
     }
     //第二步落库区：------------------------------------------------------------------------------------------------------------------------
-    private String saveResourceByMenu(Integer start, Integer end,Map<String, AppProductResource> tempMap) {
+    private String saveResourceByMenu(Integer start, Integer end, Map<String, AppProductResource> tempMap) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
         List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start, end);
         if (CollectionUtils.isEmpty(menuInfos)) {
@@ -283,8 +283,12 @@ public class ThreadServiceImpl implements ThreadService {
             return "fail";
         }
         log.info("需要同步的区间总体条数:{}", menuInfos.size());
-
-        List<AppProductResource> data = convertMenuToResource(menuInfos,tempMap);
+        List<AppProductResource> data = new ArrayList<>();
+        try {
+            data = convertMenuToResource(menuInfos, tempMap);
+        } catch (Exception e) {
+            log.error("菜单转换资源发生异常:{}", e.getStackTrace());
+        }
         if (!CollectionUtils.isEmpty(data)) {
             List<List<AppProductResource>> partition = Lists.partition(data, 500);
             for (List<AppProductResource> params : partition) {
@@ -296,17 +300,22 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveResourceByButton(Integer start, Integer end, Map<String, AppProductResource> tempMap){
+    private String saveResourceByButton(Integer start, Integer end, Map<String, AppProductResource> tempMap) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
-        List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start,end);
-        if (CollectionUtils.isEmpty(menuPermissions)){
+        List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start, end);
+        if (CollectionUtils.isEmpty(menuPermissions)) {
             log.info("此区间没有数据");
             return "fail";
         }
-        log.info("需要同步的区间总体条数:{}",menuPermissions.size());
+        log.info("需要同步的区间总体条数:{}", menuPermissions.size());
 
-        List<AppProductResource> data = convertMenuPermissionResource(menuPermissions, tempMap);
-        if (!CollectionUtils.isEmpty(data)){
+        List<AppProductResource> data = new ArrayList<>();
+        try {
+            data = convertMenuPermissionResource(menuPermissions, tempMap);
+        } catch (Exception e) {
+            log.error("菜单按钮转换资源发生异常:{}", e.getStackTrace());
+        }
+        if (!CollectionUtils.isEmpty(data)) {
             List<List<AppProductResource>> partition = Lists.partition(data, 500);
             for (List<AppProductResource> params : partition) {
                 log.info("开始插入数据库");
@@ -343,24 +352,29 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveRoleResource(Integer start, Integer end,Map<String,AppRoleResource> tempMap){
-        AppRoleResourceDao roleResourceDao  = SpringContextHolder.getBean(AppRoleResourceDao.class);
-        List<RelationRoleMenuPermission> data = feign.relationRoleMenuPermissions(start,end);
-        if (CollectionUtils.isEmpty(data)){
+    private String saveRoleResource(Integer start, Integer end, Map<String, AppRoleResource> tempMap) {
+        AppRoleResourceDao roleResourceDao = SpringContextHolder.getBean(AppRoleResourceDao.class);
+        List<RelationRoleMenuPermission> data = feign.relationRoleMenuPermissions(start, end);
+        if (CollectionUtils.isEmpty(data)) {
             log.info("此区间没有数据");
             return "fail";
         }
 
-        log.info("需要同步的区间总体条数:{}",data.size());
-        if (!CollectionUtils.isEmpty(data)){
-            List<AppRoleResource> models = convertRoleResource(data,tempMap);
-            if (!CollectionUtils.isEmpty(models)){
-                List<List<AppRoleResource>> partition = Lists.partition(models, 500);
-                for (List<AppRoleResource> params : partition){
-                    roleResourceDao.insertOrUpdateBatch( params );
-                }
+        log.info("需要同步的区间总体条数:{}", data.size());
+        List<AppRoleResource> models = new ArrayList<>();
+        try{
+            models = convertRoleResource(data, tempMap);
+        }catch (Exception e){
+            log.error("转换角色资源发生异常：{}",e.getStackTrace());
+        }
+
+        if (!CollectionUtils.isEmpty(models)) {
+            List<List<AppRoleResource>> partition = Lists.partition(models, 500);
+            for (List<AppRoleResource> params : partition) {
+                roleResourceDao.insertOrUpdateBatch(params);
             }
         }
+
         log.info("发出线程任务完成的信号");
         return "true";
     }
@@ -374,8 +388,12 @@ public class ThreadServiceImpl implements ThreadService {
             return "fail";
         }
         log.info("需要同步的区间总体条数:{}",relationUserRoles.size());
-        List<AppUserRole> roleUsers = convertRoleUser(relationUserRoles,tempMap);
-
+        List<AppUserRole> roleUsers = new ArrayList<>();
+        try{
+            roleUsers = convertRoleUser(relationUserRoles,tempMap);
+        }catch (Exception e){
+            log.error("转换用户角色发生异常：{}",e.getStackTrace());
+        }
         if (!CollectionUtils.isEmpty(roleUsers)){
             List<List<AppUserRole>> partition = Lists.partition(roleUsers, 500);
             for (List<AppUserRole> list : partition){
