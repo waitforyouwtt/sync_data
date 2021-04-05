@@ -94,11 +94,23 @@ public class SingleFindServiceImpl implements SingleFindService {
     }
 
     @Override
+    public List<AppRoleResource> roleResources(){
+        return roleResourceDao.queryAll(null);
+    }
+
+    @Override
     public List<AppProduct> findProductLists() {
         QueryWrapper<AppProduct> wrapper = new QueryWrapper<>();
         wrapper.eq("protocol",2);
         wrapper.ge("id",243);
         wrapper.le("id",999);
+        return productDao.selectList(wrapper);
+    }
+
+    public List<AppProduct> findProductLists(List<String> productCodes){
+        QueryWrapper<AppProduct> wrapper = new QueryWrapper<>();
+        wrapper.in("product_code",productCodes);
+        wrapper.eq("is_delete",0);
         return productDao.selectList(wrapper);
     }
 

@@ -68,6 +68,12 @@ public class SyncController {
         return singleQueryService.findById(id);
     }
 
+    @ApiOperation(value = "按照operation_objective_id查找父级菜单",notes = "按照operation_objective_id查找父级菜单")
+    @GetMapping("/findMenuByIds")
+    List<MenuInfo> findMenuByIds(@RequestParam("ids") String ids){
+        return singleQueryService.findMenuByIds(ids);
+    }
+
     @ApiOperation(value = "获取角色的总条数",notes = "获取角色的总条数",tags = {"SyncController"})
     @GetMapping("/findCountRoles")
     List<String> findCountRoles(){
@@ -102,6 +108,12 @@ public class SyncController {
     @GetMapping("/findMenuPermissionId")
     public MenuPermission findMenuPermissionId(@RequestParam("id")String id){
         return singleQueryService.findByMenuPermissionId(id);
+    }
+
+    @ApiOperation(value = "根据permissionIds获取菜单信息",notes = "根据permissionIds获取菜单信息")
+    @GetMapping("/findMenuPermissionIds")
+    public List<MenuPermission> findMenuPermissionIds(@RequestParam("ids")String ids){
+        return singleQueryService.findByMenuPermissionIds(ids);
     }
 
     @ApiOperation(value = "获取用户角色总条数",notes = "获取用户角色总条数")

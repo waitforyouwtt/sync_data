@@ -10,11 +10,13 @@ import com.yh.entity.RelationRoleMenuPermission;
 import com.yh.service.SingleQueryService;
 import com.yh.view.MenuVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,6 +65,19 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     }
 
     @Override
+    public List<MenuInfo> findMenuByIds(String id){
+        log.info("根据id查找菜单信息：{},{},{}",id);
+        if (StringUtils.isBlank(id)){
+            return new ArrayList<>();
+        }
+        List<String> ids = Arrays.asList(id.split(","));
+        QueryWrapper<MenuInfo> params = new QueryWrapper<>();
+        params.in("id",ids);
+        params.eq("is_delete",0);
+        return singleQueryDao.selectList(params);
+    }
+
+    @Override
     public List<RelationRoleMenuPermission> queryRelationRoleMenuPermission(String roleId) {
         QueryWrapper<RelationRoleMenuPermission> wrapper = new QueryWrapper<>();
         wrapper.eq("role_id",roleId);
@@ -89,5 +104,17 @@ public class SingleQueryServiceImpl implements SingleQueryService {
         wrapper.in("id",menuPermissionId);
         wrapper.eq("is_delete",0);
         return menuPermissionDao.selectOne(wrapper);
+    }
+
+    @Override
+    public List<MenuPermission> findByMenuPermissionIds(String menuPermissionId){
+        if (StringUtils.isBlank(menuPermissionId)){
+            return new ArrayList<>();
+        }
+        List<String> ids = Arrays.asList(menuPermissionId.split(","));
+        QueryWrapper<MenuPermission> wrapper = new QueryWrapper();
+        wrapper.in("id",ids);
+        wrapper.eq("is_delete",0);
+        return menuPermissionDao.selectList(wrapper);
     }
 }

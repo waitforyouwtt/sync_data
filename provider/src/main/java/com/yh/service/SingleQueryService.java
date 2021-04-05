@@ -21,6 +21,8 @@ public interface SingleQueryService {
      */
     MenuInfo findById(String id);
 
+    List<MenuInfo> findMenuByIds(String ids);
+
     /**
      * 通过角色id 倒推productCode
      * @param roleId
@@ -36,5 +38,7 @@ public interface SingleQueryService {
     List<String> findProductCodes (List<Integer> menuPermissionIds);
 
     MenuPermission findByMenuPermissionId(String menuPermissionId);
+
+    List<MenuPermission> findByMenuPermissionIds(String menuPermissionId);
 
 }

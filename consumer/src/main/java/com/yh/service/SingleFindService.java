@@ -12,8 +12,10 @@ public interface SingleFindService {
     AppProductRole roleDetails(String productCode,String tenantCode, String roleCode);
 
     AppRoleResource roleResourceDetails(String productCode,String tenantCode,String resourceCode,String roleCode);
+    List<AppRoleResource> roleResources();
 
     List<AppProduct> findProductLists();
+    List<AppProduct> findProductLists(List<String> productCodes);
 
     List<AppOrganizationProduct> findOrganizationProducts(List<String> productCodes);
 

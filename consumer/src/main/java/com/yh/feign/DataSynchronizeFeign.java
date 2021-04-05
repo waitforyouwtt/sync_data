@@ -35,6 +35,10 @@ public interface DataSynchronizeFeign {
     @GetMapping("/findById")
     MenuInfo findById(@RequestParam("id") String id);
 
+    @ApiOperation(value = "按照operation_objective_id查找父级菜单",notes = "按照operation_objective_id查找父级菜单")
+    @GetMapping("/findMenuByIds")
+    List<MenuInfo> findMenuByIds(@RequestParam("ids") String ids);
+
     @ApiOperation(value = "获取角色的总条数",notes = "获取角色的总条数")
     @GetMapping("/findCountRoles")
     List<String> findCountRoles();
@@ -58,6 +62,11 @@ public interface DataSynchronizeFeign {
     @ApiOperation(value = "根据permissionId获取菜单信息",notes = "根据permissionId获取菜单信息")
     @GetMapping("/findMenuPermissionId")
     MenuPermission findMenuPermissionId(@RequestParam("id")String id);
+
+    @ApiOperation(value = "根据permissionIds获取菜单信息",notes = "根据permissionIds获取菜单信息")
+    @GetMapping("/findMenuPermissionIds")
+    List<MenuPermission> findMenuPermissionIds(@RequestParam("ids")String ids);
+
 
     @ApiOperation(value = "获取用户角色总条数",notes = "获取用户角色总条数")
     @GetMapping("/findCountRelationUserRoles")
