@@ -13,6 +13,7 @@ import com.yh.service.ThreadService;
 import com.yh.utils.SpringContextHolder;
 import com.yh.utils.StringCustomizedUtils;
 import com.yh.view.ProductRoleVO;
+import com.yh.view.ProductRoleView;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.mockito.internal.invocation.RealMethod;
@@ -155,12 +156,17 @@ public class ThreadServiceImpl implements ThreadService {
         partition.forEach(p -> {
             sendMultiMsgSvc.submit(new Callable<String>() {
                 @Override
-                public String call() throws Exception {
+                public String call() {
                     List<Integer> lists = p;
                     int start = Collections.min(lists);
                     int end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
-                    return saveRole(start, end);
+                    try{
+                        saveRole(start, end);
+                    }catch (Exception e){
+                        log.info("发生异常：{}",e.getMessage());
+                    }
+                    return "success";
                 }
             });
         });
@@ -632,7 +638,13 @@ public class ThreadServiceImpl implements ThreadService {
             return "fail";
         }
         log.info("需要同步的区间总体条数:{}",roleInfos.size());
-        List<AppProductRole> data = convertRoles(roleInfos);
+        List<AppProductRole> data = new ArrayList<>();
+        try{
+             data =convertRoles(roleInfos);
+        }catch (Exception e){
+            log.error("转换角色发生异常：{}",e.getMessage());
+        }
+
         if (!CollectionUtils.isEmpty(data)){
             List<List<AppProductRole>> partition = Lists.partition(data, 500);
             for (List<AppProductRole> params : partition) {
@@ -810,16 +822,30 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
     public List<AppProductRole> convertRoles(List<RoleInfo> data){
+        List<AppProductRole> result = new ArrayList<>();
+
         List<Long> roleIds = data.stream().map(RoleInfo::getId).distinct().collect(Collectors.toList());
         String longs = StringUtils.join(roleIds.toArray(),",");
         List<ProductRoleVO> productRoles = this.feign.findProductCodeByRoleIds(longs);
-        List<AppProductRole> roles = new ArrayList<>();
+        Map<Long, List<String>> productMap = new HashMap<>();
+        for (ProductRoleVO p : productRoles){
+             if (org.apache.commons.lang3.StringUtils.isBlank(p.getProductCode())){
+                 productMap.put(p.getRoleId(),new ArrayList<>());
+             }else{
+                 List<String> product = Arrays.asList(p.getProductCode().split(","));
+                 productMap.put(p.getRoleId(),product);
+             }
+        }
+        //默认应用
+        List<String> collect = this.singleFindService.findProductLists().stream().map(AppProduct::getProductCode).distinct().collect(Collectors.toList());
 
-        List<String> productCodes = new ArrayList<>();
         for (RoleInfo  info : data){
-
             //通过角色id倒推productCode
-           // List<String> productCodes = feign.findProductCodeByRoleIds(info.getId().toString());
+            //List<String> productCodes = feign.findProductCodeByRoleIds(info.getId().toString());
+            List<String> productCodes = productMap.get(info.getId());
+            if(CollectionUtils.isEmpty(productCodes)){
+                productCodes.addAll(collect);
+            }
 
             if (!CollectionUtils.isEmpty(productCodes)){
                 for (String code : productCodes){
@@ -838,38 +864,54 @@ public class ThreadServiceImpl implements ThreadService {
                     AppProductRole role = new AppProductRole();
                     role.setProductCode(code);
                     role.setUniqueCode(StringCustomizedUtils.uniqueCode());
-                    role.setTenantCode(tenantCode);
-                    role.setRoleCode(info.getId().toString());
-                    role.setRoleName(info.getRoleName());
-                    //存放角色
-                    role.setDescription(info.getRoleTypeCode());
-                    //存储第三方role_code
-                    role.setOutRoleCode(info.getRoleCode());
+                    if (StringUtils.isBlank(tenantCode)){
+                        role.setTenantCode("defatult");
+                    }else{
+                        role.setTenantCode(tenantCode);
+                    }
 
+                    role.setRoleCode(info.getId().toString());
+                    if (StringUtils.isNotBlank(info.getRoleName())){
+                        role.setRoleName(info.getRoleName());
+                    }
+                    //存放角色
+                    if (StringUtils.isNotBlank(info.getRoleTypeCode())){
+                        role.setDescription(info.getRoleTypeCode());
+                    }
+                    //存储第三方role_code
+                    if (StringUtils.isNotBlank(info.getRoleCode())){
+                        role.setOutRoleCode(info.getRoleCode());
+                    }
                     role.setRoleStatus("Y");
                     role.setPlatform("purchase");
                     //存放父级编码
-                    role.setExtension1(String.valueOf(info.getParentId()));
+                    if (info.getParentId() != null){
+                        role.setExtension1(String.valueOf(info.getParentId()));
+                    }
                     //存放path
-                    role.setExtension2(info.getRolePath());
+                    if (StringUtils.isNotBlank(info.getRolePath())){
+                        role.setExtension2(info.getRolePath());
+                    }
                     role.setIsDelete(0);
-                    if (info.getCreatedBy() == null){
+                    if (StringUtils.isBlank(info.getCreatedBy())){
                         role.setCreatedBy("admin");
                     }else{
                         role.setCreatedBy(info.getCreatedBy());
                     }
-                    if (info.getUpdatedBy() == null){
+                    if (StringUtils.isBlank(info.getUpdatedBy())){
                         role.setUpdatedBy("admin");
                     }else{
                         role.setUpdatedBy(info.getUpdatedBy());
                     }
                     role.setCreatedTime(new Date());
                     role.setUpdatedTime(new Date());
-                    roles.add(role);
+
+                    result.add(role);
+                    log.info("待插入待总条数：{}",result.size());
                 }
             }
         }
-        return roles;
+        return result;
     }
 
 }

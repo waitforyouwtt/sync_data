@@ -120,7 +120,7 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
             List<Integer> menuPermissionIds = v.stream().map(RelationRoleMenuPermission::getMenuPermissionId).distinct().collect(Collectors.toList());
             List<String>  productCodes = this.singleQueryService.findProductCodes(menuPermissionIds);
             ProductRoleVO vo = new ProductRoleVO();
-            vo.setRoleId(k.toString());
+            vo.setRoleId(Long.valueOf(k));
             vo.setProductCode(String.join(",",productCodes));
             products.add(vo);
         });

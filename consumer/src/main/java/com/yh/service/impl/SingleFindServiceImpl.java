@@ -101,9 +101,7 @@ public class SingleFindServiceImpl implements SingleFindService {
     @Override
     public List<AppProduct> findProductLists() {
         QueryWrapper<AppProduct> wrapper = new QueryWrapper<>();
-        wrapper.eq("protocol",2);
-        wrapper.ge("id",243);
-        wrapper.le("id",999);
+        wrapper.like("description","采购中台");
         return productDao.selectList(wrapper);
     }
 

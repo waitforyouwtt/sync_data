@@ -9,5 +9,5 @@ public class ProductRoleVO implements Serializable {
 
     private String productCode;
 
-    private String roleId;
+    private Long roleId;
 }
