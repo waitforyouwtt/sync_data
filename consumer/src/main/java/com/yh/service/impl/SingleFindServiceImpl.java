@@ -102,6 +102,7 @@ public class SingleFindServiceImpl implements SingleFindService {
     public List<AppProduct> findProductLists() {
         QueryWrapper<AppProduct> wrapper = new QueryWrapper<>();
         wrapper.like("description","采购中台");
+        wrapper.eq("is_delete","0");
         return productDao.selectList(wrapper);
     }
 

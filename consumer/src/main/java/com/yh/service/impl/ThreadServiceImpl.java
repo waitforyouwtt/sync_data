@@ -40,6 +40,9 @@ public class ThreadServiceImpl implements ThreadService {
     @Autowired
     SingleFindService singleFindService;
 
+    @Autowired
+    AppProductResourceDao resourceDao;
+
     //第一步方法区：--------------------------------------------------------------------------------------------------------------
     @Async
     @Override
@@ -274,6 +277,50 @@ public class ThreadServiceImpl implements ThreadService {
         });
         return "成功";
     }
+
+    @Async
+    @Override
+    public String applicationIsResource(){
+        List<AppProduct> productLists = singleFindService.findProductLists();
+        List<AppTenantInfo> tenantInfos = singleFindService.findTenants();
+        Map<String,String>  tenantMap = new HashMap<>();
+        tenantInfos.stream().forEach(v->{
+            tenantMap.put(v.getProductCode(),v.getCode());
+        });
+        if (CollectionUtils.isEmpty(productLists)){
+            return "成功";
+        }
+
+        List<AppProductResource> resources = new ArrayList<>();
+
+        productLists.stream().forEach(v->{
+            int index = 1;
+            AppProductResource resource = new AppProductResource();
+            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
+            resource.setProductCode(v.getProductCode());
+            resource.setTenantCode(tenantMap.get(v.getProductCode()));
+            resource.setParentCode("0");
+            resource.setResourceCode(v.getProductCode());
+            resource.setResourceName(v.getProductName());
+            resource.setPath("");
+            resource.setType("1");
+            resource.setOrderNum(index++);
+            resource.setDescription("应用级别资源");
+            resource.setExpand2(v.getProductCode());
+            resource.setExpand3("0");
+            resource.setStatus("Y");
+            resource.setPlatform("purchase");
+            resource.setIsDelete(0);
+            resource.setCreatedBy("admin");
+            resource.setUpdatedBy("admin");
+            resource.setCreatedTime(new Date());
+            resource.setUpdatedTime(new Date());
+            resources.add(resource);
+        });
+        resourceDao.insertOrUpdateBatch(resources);
+        return "成功";
+    }
+
     //第二步落库区：------------------------------------------------------------------------------------------------------------------------
     private String saveResourceByMenu(Integer start, Integer end, Map<String, AppProductResource> tempMap) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
@@ -651,6 +698,8 @@ public class ThreadServiceImpl implements ThreadService {
                     //存放父级编码
                     if (info.getParentId() != null){
                         role.setExtension1(String.valueOf(info.getParentId()));
+                    }else{
+                        role.setExtension1("0");
                     }
                     //存放path
                     if (StringUtils.isNotBlank(info.getRolePath())){
@@ -838,9 +887,15 @@ public class ThreadServiceImpl implements ThreadService {
                 AppUserRole view = new AppUserRole();
                 view.setProductCode(productCode);
                 view.setTenantCode(tenantMap.get(productCode));
-                view.setUserCode(userMap.get(info.getUserId()).getUserCode());
-                view.setUserName(userMap.get(info.getUserId()).getRealName());
-                view.setRoleCode(info.getRoleId().toString());
+                if (userMap.get(info.getUserId()) != null){
+                    view.setUserCode(userMap.get(info.getUserId()).getUserCode());
+                    view.setUserName(userMap.get(info.getUserId()).getRealName());
+                }
+                if (info.getRoleId() == null){
+                    continue;
+                }else{
+                    view.setRoleCode(info.getRoleId().toString());
+                }
                 view.setPlatform("purchase");
                 view.setIsDelete(0);
                 if (StringUtils.isBlank(info.getCreatedBy())) {
