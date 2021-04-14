@@ -59,7 +59,7 @@ public interface RoleInfoService {
      * 获取角色的总条数
      * @return
      */
-    List<String> findCountRoles();
+    List<Long> findCountRoles();
 
     /**
      * 根据条件获取id区间角色集合
@@ -67,5 +67,5 @@ public interface RoleInfoService {
      * @param max
      * @return
      */
-    List<RoleInfo> findRoleBetweenIds(Integer min, Integer max);
+    List<RoleInfo> findRoleBetweenIds(Long min, Long max);
 }

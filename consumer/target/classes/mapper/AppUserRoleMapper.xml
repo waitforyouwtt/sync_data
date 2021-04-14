@@ -165,4 +165,8 @@
         delete from app_user_role where id = #{id}
     </delete>
 
+    <select id="queryAllData" resultType="com.yh.entity.AppUserRole">
+        select * from app_user_role  where 1 = 1 and platform = 'purchase' and is_delete = 0 and role_name != '数据权限角色';
+    </select>
+
 </mapper>

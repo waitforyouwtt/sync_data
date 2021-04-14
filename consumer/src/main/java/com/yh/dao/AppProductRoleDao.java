@@ -82,4 +82,5 @@ public interface AppProductRoleDao extends BaseMapper<AppProductRole> {
      */
     int deleteById(Integer id);
 
+    List<AppProductRole> queryAll2();
 }

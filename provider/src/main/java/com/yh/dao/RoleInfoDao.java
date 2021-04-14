@@ -86,7 +86,7 @@ public interface RoleInfoDao extends BaseMapper<RoleInfo> {
      * 获取角色的总条数
      * @return
      */
-    List<String> findCountRoles();
+    List<Long> findCountRoles();
 
     /**
      * 根据条件获取id区间角色集合
@@ -94,5 +94,5 @@ public interface RoleInfoDao extends BaseMapper<RoleInfo> {
      * @param max
      * @return
      */
-    List<RoleInfo> findRoleBetweenIds(@Param("min") Integer min,@Param("max") Integer max);
+    List<RoleInfo> findRoleBetweenIds(@Param("min") Long min,@Param("max") Long max);
 }

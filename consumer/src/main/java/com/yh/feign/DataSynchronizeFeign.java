@@ -42,11 +42,11 @@ public interface DataSynchronizeFeign {
 
     @ApiOperation(value = "获取角色的总条数",notes = "获取角色的总条数")
     @GetMapping("/findCountRoles")
-    List<String> findCountRoles();
+    List<Long> findCountRoles();
 
     @ApiOperation(value = "根据条件获取id区间角色集合",notes = "根据条件获取id区间角色集合")
     @GetMapping("/findRoleBetweenIds")
-    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max);
+    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Long min, @RequestParam("max")Long max);
 
     @ApiOperation(value = "通过角色id倒推productCode",notes = "通过角色id倒推productCode")
     @GetMapping("/findProductCodeByRoleId")

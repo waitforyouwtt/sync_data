@@ -80,5 +80,7 @@ public interface SingleFindService {
 
     List<AppProductRole> queryAllRoles();
 
+    List<AppProductRole> queryAllRoles2();
+
     List<AppProductResource> queryAllResources();
 }

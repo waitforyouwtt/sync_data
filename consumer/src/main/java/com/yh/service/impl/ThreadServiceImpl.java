@@ -1,5 +1,6 @@
 package com.yh.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.yh.dao.AppProductResourceDao;
@@ -109,7 +110,7 @@ public class ThreadServiceImpl implements ThreadService {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countMenus.size());
-        List<List<Integer>> partition = Lists.partition(countMenus, 1000);
+        List<List<Integer>> partition = Lists.partition(countMenus, 100);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         List<AppProductResource> lists = singleFindService.queryAllResources();
@@ -145,14 +146,14 @@ public class ThreadServiceImpl implements ThreadService {
     @Async
     @Override
     public String roleSync() {
-        List<String> countRoles = feign.findCountRoles();
+        List<Long> countRoles = feign.findCountRoles();
         if (CollectionUtils.isEmpty(countRoles)){
             return "暂无数据需要同步";
         }
-        List<Integer> codesInteger = countRoles.stream().map(Integer::parseInt).collect(Collectors.toList());
-        log.info("需要同步数据的总体条数:{}",codesInteger.size());
+        //List<Integer> codesInteger = countRoles.stream().map(Integer::parseInt).collect(Collectors.toList());
+        log.info("需要同步数据的总体条数:{}",countRoles.size());
 
-        List<List<Integer>> partition = Lists.partition(codesInteger, 1000);
+        List<List<Long>> partition = Lists.partition(countRoles, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         List<AppProductRole> lists = singleFindService.queryAllRoles();
@@ -173,9 +174,9 @@ public class ThreadServiceImpl implements ThreadService {
             sendMultiMsgSvc.submit(new Callable<String>() {
                 @Override
                 public String call() {
-                    List<Integer> lists = p;
-                    int start = Collections.min(lists);
-                    int end = Collections.max(lists);
+                    List<Long> lists = p;
+                    Long start = Collections.min(lists);
+                    Long end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
                     saveRole(start, end,tempMap);
                     return "success";
@@ -373,7 +374,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveRole(Integer start, Integer end,Map<String, AppProductRole> tempMap){
+    private String saveRole(Long start, Long end,Map<String, AppProductRole> tempMap){
         AppProductRoleDao roleDao = SpringContextHolder.getBean(AppProductRoleDao.class);
         List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
         if (CollectionUtils.isEmpty(roleInfos)){
@@ -383,7 +384,7 @@ public class ThreadServiceImpl implements ThreadService {
         log.info("需要同步的区间总体条数:{}",roleInfos.size());
         List<AppProductRole> data = new ArrayList<>();
         try{
-             data = convertRoles(roleInfos,tempMap);
+             data = convertRoles2(roleInfos,tempMap);
         }catch (Exception e){
             log.error("转换角色发生异常：{}",e.getStackTrace());
         }
@@ -454,9 +455,12 @@ public class ThreadServiceImpl implements ThreadService {
 
     //第三步：实体转换区-----------------------------------------------------------------------------------------------------
     private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus,Map<String, AppProductResource> tempMap){
+
         //查询租户信息
         List<String> productCodes = menus.stream().map(MenuInfo::getBusinessType).distinct().collect(Collectors.toList());
+
         List<AppTenantInfo> tenantCodes = singleFindService.findTenantCodes(productCodes);
+
         //放置租户信息
         Map<String, String> tenantMap = new HashMap<>();
         menus.forEach(m -> {
@@ -473,6 +477,7 @@ public class ThreadServiceImpl implements ThreadService {
         String tenantCode = null;
 
         for (MenuInfo info: menus){
+
             if (StringUtils.isBlank(info.getBusinessType())){
                 continue;
             }
@@ -480,6 +485,7 @@ public class ThreadServiceImpl implements ThreadService {
             if(StringUtils.isNotBlank(tenantMap.get(info.getBusinessType()))){
                 tenantCode = tenantMap.get(info.getBusinessType());
             }
+
             //数据拼装key
             String key = info.getBusinessType().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
             //数据去掉重复
@@ -506,9 +512,9 @@ public class ThreadServiceImpl implements ThreadService {
             resource.setOrderNum(info.getRank());
             //根据生产环境而来
             if (info.getStatus() == 0){
-                resource.setStatus("Y");
-            }else{
                 resource.setStatus("N");
+            }else{
+                resource.setStatus("Y");
             }
             resource.setIsDelete(0);
             if (StringUtils.isBlank(info.getCreatedBy())){
@@ -535,23 +541,19 @@ public class ThreadServiceImpl implements ThreadService {
 
     private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data, Map<String, AppProductResource> tempMap) {
         //查询租户信息
-        List<String> productCodes = data.stream().map(MenuPermission::getBusinessType).distinct().collect(Collectors.toList());
-        List<AppTenantInfo> tenantCodes = singleFindService.findTenantCodes(productCodes);
+        List<AppTenantInfo> tenantCodes = singleFindService.findTenants();
+
         Map<String, String> tenantMap = new HashMap<>();
-        data.forEach(m -> {
-            Optional<AppTenantInfo> appTenantInfoObj =  tenantCodes.stream()
-                    .filter(t -> StringUtils.isNotBlank(m.getBusinessType()) && t.getProductCode().equals(m.getBusinessType())).findAny();
-            if(appTenantInfoObj.isPresent()) {
-                tenantMap.put(m.getBusinessType(),appTenantInfoObj.get().getCode());
-                return;
-            }
-            tenantMap.put(m.getBusinessType(), "default");
+        tenantCodes.stream().forEach(v->{
+            tenantMap.put(v.getProductCode(),v.getCode());
         });
 
         List<Integer> operationObjectiveIds = data.stream().map(MenuPermission::getOperationObjectiveId).distinct().collect(Collectors.toList());
+
         //Integer转string
         String menuIdString = operationObjectiveIds.stream().map(String::valueOf).collect(Collectors.joining(","));
         List<MenuInfo> menus = feign.findMenuByIds(menuIdString);
+
         Map<Integer, MenuInfo> menuInfoMap = new HashMap<>();
         for (MenuInfo menuInfo: menus){
             menuInfoMap.put(menuInfo.getId(), menuInfo);
@@ -564,6 +566,7 @@ public class ThreadServiceImpl implements ThreadService {
             if(StringUtils.isNotBlank(tenantMap.get(info.getBusinessType()))){
                 tenantCode = tenantMap.get(info.getBusinessType());
             }
+
             //数据拼装key
             String key = info.getBusinessType().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
             //数据去掉重复
@@ -577,7 +580,7 @@ public class ThreadServiceImpl implements ThreadService {
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
             resource.setTenantCode(tenantCode);
             //根据OperationObjectiveId菜单
-            MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId().toString());
+            MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId());
             if (Objects.isNull(menu)){
                 continue;
             }
@@ -587,6 +590,18 @@ public class ThreadServiceImpl implements ThreadService {
             resource.setPath(info.getApiUrl());
             //固定为按钮
             resource.setType("2");
+            if ("1".equals(info.getApiMethod())){
+              resource.setResourceType("1");
+            }else if ("2".equals(info.getApiMethod())){
+                resource.setResourceType("2");
+            }else if ("3".equals(info.getApiMethod())){
+                resource.setResourceType("3");
+            }else if ("4".equals(info.getApiMethod())){
+                resource.setResourceCode("4");
+            }else{
+                resource.setResourceCode(" ");
+            }
+
             if (info.getRank() == null){
                 resource.setOrderNum(0);
             }else{
@@ -618,9 +633,11 @@ public class ThreadServiceImpl implements ThreadService {
 
     public List<AppProductRole> convertRoles(List<RoleInfo> data,Map<String, AppProductRole> tempMap){
         List<AppProductRole> result = new ArrayList<>();
+
         //long转string
         List<Long> roleIds = data.stream().map(RoleInfo::getId).distinct().collect(Collectors.toList());
         String longs = StringUtils.join(roleIds.toArray(),",");
+
         //根据角色id倒推productCode
         List<ProductRoleVO> productRoles = this.feign.findProductCodeByRoleIds(longs);
         Map<Long, List<String>> productMap = new HashMap<>();
@@ -632,6 +649,7 @@ public class ThreadServiceImpl implements ThreadService {
                  productMap.put(p.getRoleId(),product);
              }
         }
+
         List<AppTenantInfo> tenantInfos = this.singleFindService.findTenants();
         Map<String,String> tenantMap = new HashMap<>();
         for (AppTenantInfo info: tenantInfos){
@@ -642,7 +660,11 @@ public class ThreadServiceImpl implements ThreadService {
         List<String> productCodes;
         //查询全部应用
         List<AppProduct> productLists = this.singleFindService.findProductLists();
+
+        Map<String,String> logMap = new HashMap<>();
+
         for (RoleInfo  info : data){
+
             //如果根据角色id倒推relation_role_menu_permission未得到应用，则默认全部应用
             if(CollectionUtils.isEmpty(productMap.get(info.getId()))){
                 List<String> collect = new ArrayList<>();
@@ -655,6 +677,7 @@ public class ThreadServiceImpl implements ThreadService {
             }
 
             if (!CollectionUtils.isEmpty(productCodes)){
+
                 for (String code : productCodes){
                     if (info.getId() == null){
                         continue;
@@ -685,21 +708,24 @@ public class ThreadServiceImpl implements ThreadService {
                     if (StringUtils.isNotBlank(info.getRoleName())){
                         role.setRoleName(info.getRoleName());
                     }
+
                     //存放角色
                     if (StringUtils.isNotBlank(info.getRoleTypeCode())){
                         role.setDescription(info.getRoleTypeCode());
                     }
+
                     //存储第三方role_code
                     if (StringUtils.isNotBlank(info.getRoleCode())){
                         role.setOutRoleCode(info.getRoleCode());
                     }
+
                     role.setRoleStatus("Y");
                     role.setPlatform("purchase");
                     //存放父级编码
                     if (info.getParentId() != null){
                         role.setExtension1(String.valueOf(info.getParentId()));
                     }else{
-                        role.setExtension1("0");
+                        logMap.put(info.getId().toString(),info.getRoleName());
                     }
                     //存放path
                     if (StringUtils.isNotBlank(info.getRolePath())){
@@ -724,6 +750,110 @@ public class ThreadServiceImpl implements ThreadService {
                 }
             }
         }
+
+        log.info("未获取到parentId的角色:{}", JSONUtil.toJsonStr(logMap));
+        log.info("打印日志--------------------------------------------");
+        return result;
+    }
+
+    public List<AppProductRole> convertRoles2(List<RoleInfo> data, Map<String, AppProductRole> tempMap) {
+        Map<String,String> dataLogMap = new HashMap<>();
+        data.stream().forEach(v->{
+            dataLogMap.put(v.getId().toString(),v.getRoleName());
+        });
+        log.info("获取到的角色打印日志：{}",JSONUtil.toJsonStr(dataLogMap));
+
+        List<AppProductRole> result = new ArrayList<>();
+
+        List<AppTenantInfo> tenantInfos = this.singleFindService.findTenants();
+        Map<String, String> tenantMap = new HashMap<>();
+        for (AppTenantInfo info : tenantInfos) {
+            tenantMap.put(info.getProductCode(), info.getCode());
+        }
+
+        //查询全部应用
+        List<AppProduct> productLists = this.singleFindService.findProductLists();
+
+        Map<String, String> logMap = new HashMap<>();
+
+        for (RoleInfo info : data) {
+
+            for (AppProduct product : productLists) {
+                if (info.getId() == null) {
+                    continue;
+                }
+                //根据应用获取租户信息
+                String tenantCode = tenantMap.get(product.getProductCode());
+                if (StringUtils.isBlank(tenantCode)) {
+                    tenantCode = "default";
+                }
+                //数据拼装key
+                String key = product.getProductCode().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
+
+                //数据去掉重复
+                AppProductRole queryResult = tempMap.get(key);
+                if (!Objects.isNull(queryResult)) {
+                    continue;
+                }
+
+                AppProductRole role = new AppProductRole();
+                role.setProductCode(product.getProductCode());
+                role.setUniqueCode(StringCustomizedUtils.uniqueCode());
+                if (StringUtils.isBlank(tenantCode)) {
+                    role.setTenantCode("defatult");
+                } else {
+                    role.setTenantCode(tenantCode);
+                }
+
+                role.setRoleCode(info.getId().toString());
+                if (StringUtils.isNotBlank(info.getRoleName())) {
+                    role.setRoleName(info.getRoleName());
+                }
+
+                //存放角色
+                if (StringUtils.isNotBlank(info.getRoleTypeCode())) {
+                    role.setDescription(info.getRoleTypeCode());
+                }
+
+                //存储第三方role_code
+                if (StringUtils.isNotBlank(info.getRoleCode())) {
+                    role.setOutRoleCode(info.getRoleCode());
+                }
+
+                role.setRoleStatus("Y");
+                role.setPlatform("purchase");
+
+                //存放父级编码
+                if (info.getParentId() != null) {
+                    role.setExtension1(String.valueOf(info.getParentId()));
+                } else {
+                    logMap.put(info.getId().toString(), info.getRoleName());
+                }
+                //存放path
+                if (StringUtils.isNotBlank(info.getRolePath())) {
+                    role.setExtension2(info.getRolePath());
+                }
+                role.setIsDelete(0);
+                if (StringUtils.isBlank(info.getCreatedBy())) {
+                    role.setCreatedBy("admin");
+                } else {
+                    role.setCreatedBy(info.getCreatedBy());
+                }
+                if (StringUtils.isBlank(info.getUpdatedBy())) {
+                    role.setUpdatedBy("admin");
+                } else {
+                    role.setUpdatedBy(info.getUpdatedBy());
+                }
+                role.setCreatedTime(new Date());
+                role.setUpdatedTime(new Date());
+
+                result.add(role);
+                log.info("待插入待总条数：{}", result.size());
+            }
+        }
+
+        log.info("未获取到parentId的角色:{}", JSONUtil.toJsonStr(logMap));
+        log.info("打印日志--------------------------------------------");
         return result;
     }
 
@@ -855,7 +985,6 @@ public class ThreadServiceImpl implements ThreadService {
             }
             userMap.put(m.getUserId(), null);
         });
-        //Map<Long,UserBase> userMap =userBases.stream().collect(Collectors.toMap(UserBase::getUserInfoId, Function.identity()));
 
         //应用也来源于角色
         List<String> productCodes = roles.stream().map(AppProductRole::getProductCode).distinct().collect(Collectors.toList());
@@ -871,6 +1000,14 @@ public class ThreadServiceImpl implements ThreadService {
         for (AppTenantInfo tenant : tenants) {
             tenantMap.put(tenant.getProductCode(), tenant.getCode());
         }
+
+        List<AppProductRole> productRoles = this.singleFindService.queryAllRoles2();
+        Map<String,String> roleMap = new HashMap<>();
+        productRoles.stream().forEach(v->{
+            roleMap.put(v.getRoleCode(),v.getRoleName());
+        });
+
+
         for (RelationUserRole info : relationUserRoles) {
             for (String productCode : productCodes) {
                 //查询租户编码
@@ -887,6 +1024,8 @@ public class ThreadServiceImpl implements ThreadService {
                 AppUserRole view = new AppUserRole();
                 view.setProductCode(productCode);
                 view.setTenantCode(tenantMap.get(productCode));
+                view.setRoleName(roleMap.get(info.getRoleId()));
+
                 if (userMap.get(info.getUserId()) != null){
                     view.setUserCode(userMap.get(info.getUserId()).getUserCode());
                     view.setUserName(userMap.get(info.getUserId()).getRealName());

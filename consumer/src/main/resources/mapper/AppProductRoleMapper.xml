@@ -184,4 +184,8 @@
         delete from app_product_role where id = #{id}
     </delete>
 
+    <select id="queryAll2" resultMap="AppProductRoleMap">
+        select * from app_product_role where platform = 'purchase' and role_name != '数据权限角色';
+    </select>
+
 </mapper>

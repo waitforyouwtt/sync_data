@@ -86,12 +86,12 @@ public class RoleInfoServiceImpl implements RoleInfoService {
     }
 
     @Override
-    public List<String> findCountRoles() {
+    public List<Long> findCountRoles() {
         return roleInfoDao.findCountRoles();
     }
 
     @Override
-    public List<RoleInfo> findRoleBetweenIds(Integer min, Integer max) {
+    public List<RoleInfo> findRoleBetweenIds(Long min, Long max) {
         return roleInfoDao.findRoleBetweenIds(min,max);
     }
 }

@@ -7,9 +7,7 @@ import com.yh.dao.AppRoleResourceDao;
 import com.yh.dao.AppUserRoleDao;
 import com.yh.entity.*;
 import com.yh.feign.DataSynchronizeFeign;
-import com.yh.handlepool.Constant;
 import com.yh.service.SingleFindService;
-import com.yh.service.ThreadService;
 import com.yh.service.ThreadService2;
 import com.yh.utils.SpringContextHolder;
 import com.yh.utils.StringCustomizedUtils;
@@ -23,7 +21,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.jws.Oneway;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -90,19 +87,20 @@ public class ThreadServiceImpl2 implements ThreadService2 {
     @Async
     @Override
     public String roleSync() {
-        List<String> countRoles = feign.findCountRoles();
+        List<Long> countRoles = feign.findCountRoles();
         if (CollectionUtils.isEmpty(countRoles)){
             return "暂无数据需要同步";
         }
-        List<Integer> codesInteger = countRoles.stream().map(Integer::parseInt).collect(Collectors.toList());
-        log.info("需要同步数据的总体条数:{}",codesInteger.size());
+        //List<Integer> codesInteger = countRoles.stream().map(Integer::parseInt).collect(Collectors.toList());
+
+        log.info("需要同步数据的总体条数:{}",countRoles.size());
         int batchNum = 500;
-        List<List<Integer>> partition = Lists.partition(codesInteger, 500);
+        List<List<Long>> partition = Lists.partition(countRoles, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
-        for (List<Integer> lists : partition){
-            Integer start = Collections.min(lists);
-            Integer end = Collections.max(lists);
+        for (List<Long> lists : partition){
+            Long start = Collections.min(lists);
+            Long end = Collections.max(lists);
             threadRunRole(start,end,batchNum);
         }
         return "成功";
@@ -307,7 +305,7 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         }
     }
 
-    private void threadRunRole(Integer start, Integer end, int batchNum) {
+    private void threadRunRole(Long start, Long end, int batchNum) {
         log.info("每段的开始值&结束值：{},{}",start,end);
         List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start,end);
         log.info("需要同步的区间总体条数:{}",roleInfos.size());

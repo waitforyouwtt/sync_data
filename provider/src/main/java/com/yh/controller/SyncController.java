@@ -77,13 +77,13 @@ public class SyncController {
 
     @ApiOperation(value = "获取角色的总条数",notes = "获取角色的总条数",tags = {"SyncController"})
     @GetMapping("/findCountRoles")
-    List<String> findCountRoles(){
+    List<Long> findCountRoles(){
         return roleInfoService.findCountRoles();
     }
 
     @ApiOperation(value = "根据条件获取id区间角色集合",notes = "根据条件获取id区间角色集合",tags = {"SyncController"})
     @GetMapping("/findRoleBetweenIds")
-    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max){
+    List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Long min, @RequestParam("max")Long max){
         return roleInfoService.findRoleBetweenIds(min,max);
     }
 

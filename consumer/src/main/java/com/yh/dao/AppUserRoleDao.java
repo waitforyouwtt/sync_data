@@ -82,4 +82,6 @@ public interface AppUserRoleDao extends BaseMapper<AppUserRole> {
      */
     int deleteById(Integer id);
 
+    List<AppUserRole> queryAllData();
+
 }
