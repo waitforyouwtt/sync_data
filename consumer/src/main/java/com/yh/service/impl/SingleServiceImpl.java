@@ -80,11 +80,12 @@ public class SingleServiceImpl implements SingleService {
             log.info("此区间没有数据");
             return "fail";
         }
+
         log.info("需要同步的区间总体条数:{}",relationUserRoles.size());
         List<AppUserRole> roleUsers = convertRoleUser(relationUserRoles,tempMap);
 
         if (!CollectionUtils.isEmpty(roleUsers)){
-            List<List<AppUserRole>> partition = Lists.partition(roleUsers, 500);
+            List<List<AppUserRole>> partition = Lists.partition(roleUsers, 300);
             for (List<AppUserRole> list : partition){
                 appUserRoleDao.insertOrUpdateBatch( list );
             }
@@ -95,16 +96,15 @@ public class SingleServiceImpl implements SingleService {
     }
 
     private List<AppUserRole> convertRoleUser(List<RelationUserRole> relationUserRoles,Map<String, AppUserRole> tempMap) {
+
         //用户
         List<Long> userLongs = relationUserRoles.stream().map(RelationUserRole::getUserId).distinct().collect(Collectors.toList());
         List<UserBase> userBases = this.singleFindService.queryByUserIds(userLongs);
 
         Map<Long,UserBase> userMap = new HashMap<>();
         relationUserRoles.stream().forEach(m->{
-            Optional<UserBase> userObj =  userBases.stream()
-                    .filter(t -> StringUtils.isNotBlank(m.getUserId().toString())
-                            && t.getUserInfoId().equals(m.getUserId()))
-                    .findAny();
+            Optional<UserBase> userObj =  userBases.stream().filter(t -> StringUtils.isNotBlank(m.getUserId().toString())
+                    && (t.getUserInfoId() == m.getUserId())).findAny();
             if(userObj.isPresent()) {
                 userMap.put(m.getUserId(),userObj.get());
                 return;
@@ -115,32 +115,43 @@ public class SingleServiceImpl implements SingleService {
         //角色
         List<Long> roleIds = relationUserRoles.stream().map(RelationUserRole::getRoleId).distinct().collect(Collectors.toList());
         List<AppProductRole> roles = this.singleFindService.findProductCodes2(roleIds);
-        log.info("角色的集合： {}", JSONUtil.toJsonStr(roles.stream().map(AppProductRole::getRoleCode).toString()));
+
         //应用也来源于角色
         List<String> productCodes = roles.stream().map(AppProductRole::getProductCode).distinct().collect(Collectors.toList());
+
+        //租户
+        List<AppTenantInfo> tenants = this.singleFindService.findTenants();
+        //租户
+        Map<String, String> tenantMap = new HashMap<>();
+        tenants.stream().forEach(v->{
+            tenantMap.put(v.getProductCode(), v.getCode());
+        });
+
+        //未同步的用户
+        List<Long> noSysData = new ArrayList<>();
 
         log.info("应用的集合： {}",productCodes);
         List<AppUserRole> userRoles = new ArrayList<>();
         if (!CollectionUtils.isEmpty(productCodes)){
-            //租户
-            List<AppTenantInfo> tenants = this.singleFindService.findTenantCodes(productCodes);
-            //租户
-            Map<String, String> tenantMap = new HashMap<>();
-            for (AppTenantInfo tenant: tenants){
-                tenantMap.put(tenant.getProductCode(), tenant.getCode());
-            }
             for (RelationUserRole info : relationUserRoles){
-
                 for (String productCode: productCodes){
+
+                    if (userMap.get(info.getUserId()) == null){
+                        noSysData.add(info.getUserId());
+                        continue;
+                    }
+
                     //查询租户编码
                     String key = productCode.concat("_").concat(tenantMap.get(productCode)).concat("_")
                             .concat(userMap.get(info.getUserId()).getUserCode().concat("_")
-                                    .concat(info.getRoleId().toString()));
+                            .concat(info.getRoleId().toString()));
                     log.info("key:"+key);
+
                     AppUserRole userRole = tempMap.get(key);
                     if (!Objects.isNull(userRole)){
                         break;
                     }
+
                     AppUserRole view = new AppUserRole();
                     view.setProductCode(productCode);
                     view.setTenantCode(tenantMap.get(productCode));
@@ -168,6 +179,7 @@ public class SingleServiceImpl implements SingleService {
             }
             log.info("待插入的数据的总条数：{}",userRoles.size());
         }
+        log.info("未获取到符合到用户的同步数据有:{}",JSONUtil.toJsonStr(noSysData));
         return userRoles;
     }
 }

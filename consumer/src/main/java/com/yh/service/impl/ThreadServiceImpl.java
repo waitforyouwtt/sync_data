@@ -189,6 +189,7 @@ public class ThreadServiceImpl implements ThreadService {
     @Async
     @Override
     public String roleResource() {
+
         List<Integer> countRoleResource = feign.findCountRelationRoleMenuPermissions();
         if (CollectionUtils.isEmpty(countRoleResource)){
             return "暂无数据需要同步";
@@ -540,6 +541,7 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
     private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data, Map<String, AppProductResource> tempMap) {
+
         //查询租户信息
         List<AppTenantInfo> tenantCodes = singleFindService.findTenants();
 
@@ -561,7 +563,12 @@ public class ThreadServiceImpl implements ThreadService {
 
         List<AppProductResource> resources = new ArrayList<>();
         String tenantCode = null;
+
         for (MenuPermission info: data){
+
+            if (info.getId() == null){
+                continue;
+            }
             //根据应用获取租户信息
             if(StringUtils.isNotBlank(tenantMap.get(info.getBusinessType()))){
                 tenantCode = tenantMap.get(info.getBusinessType());
@@ -569,6 +576,7 @@ public class ThreadServiceImpl implements ThreadService {
 
             //数据拼装key
             String key = info.getBusinessType().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
+
             //数据去掉重复
             AppProductResource queryResult = tempMap.get(key);
             if (!Objects.isNull(queryResult)) {
@@ -585,7 +593,7 @@ public class ThreadServiceImpl implements ThreadService {
                 continue;
             }
             resource.setParentCode(String.valueOf(menu.getId()));
-            resource.setResourceCode(String.valueOf(info.getId()));
+            resource.setResourceCode(info.getId().toString());
             resource.setResourceName(info.getPermissionName());
             resource.setPath(info.getApiUrl());
             //固定为按钮
@@ -597,11 +605,10 @@ public class ThreadServiceImpl implements ThreadService {
             }else if ("3".equals(info.getApiMethod())){
                 resource.setResourceType("3");
             }else if ("4".equals(info.getApiMethod())){
-                resource.setResourceCode("4");
+                resource.setResourceType("4");
             }else{
-                resource.setResourceCode(" ");
+                resource.setResourceType(" ");
             }
-
             if (info.getRank() == null){
                 resource.setOrderNum(0);
             }else{
@@ -865,6 +872,7 @@ public class ThreadServiceImpl implements ThreadService {
         //integer转string
         String menuString = menuIds.stream().map(String::valueOf).collect(Collectors.joining(","));
         List<MenuPermission> menuPermissions = feign.findMenuPermissionIds(menuString);
+
         Map<Integer, MenuPermission > map = new HashMap<>();
         //存放按钮信息
         for (MenuPermission mp: menuPermissions){
@@ -875,6 +883,7 @@ public class ThreadServiceImpl implements ThreadService {
         List<Integer> objectiveIds = menuPermissions.stream().map(MenuPermission::getOperationObjectiveId).distinct().collect(Collectors.toList());
         //integer转string
         String menuIdString = objectiveIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+
         //存放菜单信息
         List<MenuInfo> menus = feign.findMenuByIds(menuIdString);
         Map<Integer, MenuInfo> menuInfoMap = new HashMap<>();
@@ -887,20 +896,22 @@ public class ThreadServiceImpl implements ThreadService {
         if (CollectionUtils.isEmpty(productCodes)){
             return new ArrayList<>();
         }
-        List<AppProduct> products = this.singleFindService.findProductLists(productCodes);
+
+        List<AppProduct> products = this.singleFindService.findProductLists();
         Map<String, AppProduct> productMap = new HashMap<>();
         for (AppProduct product : products) {
             productMap.put(product.getProductCode(), product);
         }
 
         //获取租户信息
-        List<AppTenantInfo> tenants = this.singleFindService.findTenantCodes(productCodes);
+        List<AppTenantInfo> tenants = this.singleFindService.findTenants();
         Map<String, String> tenantMap = new HashMap<>();
         for (AppTenantInfo tenant : tenants) {
             tenantMap.put(tenant.getProductCode(), tenant.getCode());
         }
 
         for (RelationRoleMenuPermission  info : roleMenuPermissions){
+
             if (info.getRoleId() == null){
                 continue;
             }
@@ -921,6 +932,7 @@ public class ThreadServiceImpl implements ThreadService {
             if (Objects.isNull(product)){
                 continue;
             }
+
             //String key = info.getProductCode().concat("_").concat(info.getTenantCode()).concat("_").concat(info.getRoleCode()).concat("_").concat(info.getResourceCode());
             String key = menuPermission.getBusinessType().concat("_").concat(tenantMap.get(menuPermission.getBusinessType())).concat("_").concat(info.getRoleId().toString()).concat("_").concat(menuPermission.getId().toString());
             //数据拼装key

@@ -95,7 +95,10 @@ public class SingleFindServiceImpl implements SingleFindService {
 
     @Override
     public List<AppRoleResource> roleResources(){
-        return roleResourceDao.queryAll(null);
+        QueryWrapper<AppRoleResource> wrapper = new QueryWrapper<>();
+        wrapper.eq("platform","purchase");
+        wrapper.eq("is_delete",0);
+        return roleResourceDao.selectList(wrapper);
     }
 
     @Override
@@ -307,7 +310,6 @@ public class SingleFindServiceImpl implements SingleFindService {
 
     @Override
     public  List<AppUserRole> queryUserroles(){
-        AppUserRole userRole = new AppUserRole();
         return userRoleDao.queryAllData();
     }
 
