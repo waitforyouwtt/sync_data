@@ -140,4 +140,8 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
     public List<Integer> findCountRelationRoleMenuPermissions() {
         return relationRoleMenuPermissionDao.findCountRelationRoleMenuPermissions();
     }
+
+    public List<RelationRoleMenuPermission> findRelationRoleMenuPermissions2(){
+        return relationRoleMenuPermissionDao.findCountRelationRoleMenuPermissions2();
+    }
 }

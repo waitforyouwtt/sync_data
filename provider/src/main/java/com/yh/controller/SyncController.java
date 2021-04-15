@@ -111,6 +111,12 @@ public class SyncController {
         return relationRoleMenuPermissionService.findRelationRoleMenuPermissions(min,max);
     }
 
+    @ApiOperation(value = "根据条件获取id区间角色资源集合",notes = "根据条件获取id区间角色资源集合")
+    @GetMapping("/relationRoleMenuPermissions2")
+    public List<RelationRoleMenuPermission> relationRoleMenuPermissions2(){
+        return relationRoleMenuPermissionService.findRelationRoleMenuPermissions2();
+    }
+
     @ApiOperation(value = "根据permissionId获取菜单信息(根据id 查询按钮信息)",notes = "根据permissionId获取菜单信息(根据id 查询按钮信息)",tags = {"SyncController"})
     @GetMapping("/findMenuPermissionId")
     public MenuPermission findMenuPermissionId(@RequestParam("id")String id){

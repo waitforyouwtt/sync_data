@@ -67,9 +67,6 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     @Override
     public List<MenuInfo> findMenuByIds(String id){
         log.info("根据id查找菜单信息：{},{},{}",id);
-        if (StringUtils.isBlank(id)){
-            return new ArrayList<>();
-        }
         List<String> ids = Arrays.asList(id.split(","));
         QueryWrapper<MenuInfo> params = new QueryWrapper<>();
         params.in("id",ids);

@@ -64,6 +64,10 @@ public interface DataSynchronizeFeign {
     @GetMapping("/relationRoleMenuPermissions")
     List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
 
+    @ApiOperation(value = "根据条件获取id区间角色资源集合",notes = "根据条件获取id区间角色资源集合")
+    @GetMapping("/relationRoleMenuPermissions2")
+    List<RelationRoleMenuPermission> relationRoleMenuPermissions2();
+
     @ApiOperation(value = "根据permissionId获取菜单信息",notes = "根据permissionId获取菜单信息")
     @GetMapping("/findMenuPermissionId")
     MenuPermission findMenuPermissionId(@RequestParam("id")String id);

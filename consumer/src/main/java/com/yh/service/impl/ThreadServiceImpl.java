@@ -1,5 +1,6 @@
 package com.yh.service.impl;
 
+import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -116,7 +117,7 @@ public class ThreadServiceImpl implements ThreadService {
         List<AppProductResource> lists = singleFindService.queryAllResources();
         Map<String, AppProductResource> tempMap = new HashMap<>();
         for(AppProductResource info: lists){
-            String key = info.getProductCode().concat("_").concat(info.getTenantCode()).concat("_").concat(info.getResourceCode());
+            String key = info.getProductCode().concat("_").concat(info.getTenantCode()).concat("_").concat(info.getResourceCode()).concat("_").concat("2");
             log.info("全量查询的资源key:{}",key);
             tempMap.put(key, info);
         }
@@ -195,7 +196,7 @@ public class ThreadServiceImpl implements ThreadService {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countRoleResource.size());
-        List<List<Integer>> partition = Lists.partition(countRoleResource, 1000);
+        List<List<Integer>> partition = Lists.partition(countRoleResource, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         //查询全部
@@ -207,12 +208,19 @@ public class ThreadServiceImpl implements ThreadService {
             tempMap.put(key, info);
         }
 
-        //使用线程池来发送各个用户的消息/通知任务集合
-        ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
-        ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(1024), importThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+        for (List<Integer> lists : partition){
+            int start = Collections.min(lists);
+            int end = Collections.max(lists);
+            log.info("每段的开始值&结束值：{},{}", start, end);
+            saveRoleResource(start, end,tempMap);
+        }
 
+        //使用线程池来发送各个用户的消息/通知任务集合
+      /*  ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
+        ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(1024), importThreadFactory, new ThreadPoolExecutor.AbortPolicy());
+*/
         //执行多个带返回结果的发送任务,并取得多个消息/通知发送返回结果
-        CompletionService<String> service = new ExecutorCompletionService(importThreadPool);
+/*        CompletionService<String> service = new ExecutorCompletionService(importThreadPool);
 
         partition.forEach(p -> {
             service.submit(new Callable<String>() {
@@ -230,7 +238,7 @@ public class ThreadServiceImpl implements ThreadService {
                     return "success";
                 }
             });
-        });
+        });*/
 
         return "成功";
     }
@@ -403,7 +411,13 @@ public class ThreadServiceImpl implements ThreadService {
 
     private String saveRoleResource(Integer start, Integer end, Map<String, AppRoleResource> tempMap) {
         AppRoleResourceDao roleResourceDao = SpringContextHolder.getBean(AppRoleResourceDao.class);
-        List<RelationRoleMenuPermission> data = feign.relationRoleMenuPermissions(start, end);
+        List<RelationRoleMenuPermission> data = feign.relationRoleMenuPermissions2();
+        Map<Integer,Integer> logMap = new HashMap<>();
+        data.stream().forEach(v->{
+            logMap.put(v.getRoleId(),v.getMenuPermissionId());
+        });
+        log.info("logMap得到的值:{}",JSONUtil.toJsonStr(logMap));
+
         if (CollectionUtils.isEmpty(data)) {
             log.info("此区间没有数据");
             return "fail";
@@ -575,36 +589,44 @@ public class ThreadServiceImpl implements ThreadService {
             }
 
             //数据拼装key
-            String key = info.getBusinessType().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
+            String key = info.getBusinessType().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString()).concat("_").concat("2");
 
             //数据去掉重复
-            AppProductResource queryResult = tempMap.get(key);
+/*            AppProductResource queryResult = tempMap.get(key);
             if (!Objects.isNull(queryResult)) {
                 continue;
-            }
+            }*/
 
             AppProductResource resource = new AppProductResource();
             resource.setProductCode(info.getBusinessType());
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
             resource.setTenantCode(tenantCode);
             //根据OperationObjectiveId菜单
-            MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId());
+/*            MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId());
             if (Objects.isNull(menu)){
                 continue;
+            }*/
+
+            resource.setParentCode(info.getOperationObjectiveId().toString());
+
+            String resourceUnique = StringCustomizedUtils.randomNumeric(8);
+            if (resourceUnique.startsWith("0")) {
+                resourceUnique = resourceUnique.substring(1, resourceUnique.length());
             }
-            resource.setParentCode(String.valueOf(menu.getId()));
+
+            resource.setResourceCode(resourceUnique);
             resource.setResourceCode(info.getId().toString());
             resource.setResourceName(info.getPermissionName());
             resource.setPath(info.getApiUrl());
             //固定为按钮
             resource.setType("2");
-            if ("1".equals(info.getApiMethod())){
+            if ("1".equals(info.getApiMethod()) || "get".equals(info.getApiMethod()) || "GET".equals(info.getApiMethod())){
               resource.setResourceType("1");
-            }else if ("2".equals(info.getApiMethod())){
+            }else if ("2".equals(info.getApiMethod()) || "post".equals(info.getApiMethod()) || "POST".equals(info.getApiMethod())){
                 resource.setResourceType("2");
-            }else if ("3".equals(info.getApiMethod())){
+            }else if ("3".equals(info.getApiMethod()) || "put".equals(info.getApiMethod()) || "PUT".equals(info.getApiMethod())){
                 resource.setResourceType("3");
-            }else if ("4".equals(info.getApiMethod())){
+            }else if ("4".equals(info.getApiMethod()) || "delete".equals(info.getApiMethod()) || "DELETE".equals(info.getApiMethod())){
                 resource.setResourceType("4");
             }else{
                 resource.setResourceType(" ");
@@ -629,7 +651,7 @@ public class ThreadServiceImpl implements ThreadService {
             //存放按钮code
             resource.setExpand2(info.getPermissionCode());
             //存放菜单父级id
-            resource.setExpand3(String.valueOf(menu.getId()));
+            resource.setExpand3(info.getOperationObjectiveId().toString());
             resource.setStatus("Y");
             resource.setIsDelete(0);
             resource.setPlatform("purchase");
@@ -867,16 +889,22 @@ public class ThreadServiceImpl implements ThreadService {
     public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions,Map<String,AppRoleResource> tempMap){
         List<AppRoleResource> result = new ArrayList<>();
 
-        //获取菜单按钮信息
-        List<Integer> menuIds = roleMenuPermissions.stream().map(RelationRoleMenuPermission::getMenuPermissionId).distinct().collect(Collectors.toList());
-        //integer转string
-        String menuString = menuIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-        List<MenuPermission> menuPermissions = feign.findMenuPermissionIds(menuString);
+        Map<Integer,Integer> logMap = new HashMap<>();
+        roleMenuPermissions.stream().forEach(v->{
+            logMap.put(v.getRoleId(),v.getMenuPermissionId());
+        });
+        log.info("角色资源logMap的数据:{}", JSONUtil.toJsonStr(logMap));
 
-        Map<Integer, MenuPermission > map = new HashMap<>();
+        //获取菜单按钮信息
+        List<Integer> buttonIds = roleMenuPermissions.stream().map(RelationRoleMenuPermission::getMenuPermissionId).distinct().collect(Collectors.toList());
+        //integer转string
+        String buttonString = buttonIds.stream().map(String::valueOf).collect(Collectors.joining(","));
+        List<MenuPermission> menuPermissions = feign.findMenuPermissionIds(buttonString);
+
+        Map<Integer, MenuPermission > buttonMap = new HashMap<>();
         //存放按钮信息
         for (MenuPermission mp: menuPermissions){
-            map.put(mp.getId(), mp);
+            buttonMap.put(mp.getId(), mp);
         }
 
         //获取菜单信息
@@ -889,12 +917,6 @@ public class ThreadServiceImpl implements ThreadService {
         Map<Integer, MenuInfo> menuInfoMap = new HashMap<>();
         for (MenuInfo menuInfo: menus){
             menuInfoMap.put(menuInfo.getId(), menuInfo);
-        }
-
-        //获取应用信息
-        List<String> productCodes = menuPermissions.stream().map(MenuPermission::getBusinessType).distinct().collect(Collectors.toList());
-        if (CollectionUtils.isEmpty(productCodes)){
-            return new ArrayList<>();
         }
 
         List<AppProduct> products = this.singleFindService.findProductLists();
@@ -911,20 +933,22 @@ public class ThreadServiceImpl implements ThreadService {
         }
 
         for (RelationRoleMenuPermission  info : roleMenuPermissions){
-
             if (info.getRoleId() == null){
                 continue;
             }
+
             //根据permissionId获取菜单按钮信息
-            MenuPermission menuPermission = map.get(info.getMenuPermissionId());
+            MenuPermission menuPermission = buttonMap.get(info.getMenuPermissionId());
             if (Objects.isNull(menuPermission)){
                 continue;
             }
+
             //根据operationObjectiveId获取菜单信息
             MenuInfo menuInfo = menuInfoMap.get(menuPermission.getOperationObjectiveId());
             if (Objects.isNull(menuInfo)){
                 continue;
             }
+
             //获取租户编码
             String tenantCode = tenantMap.get(menuPermission.getBusinessType());
             //根据应用编码查询应用信息

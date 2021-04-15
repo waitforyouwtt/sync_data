@@ -45,7 +45,7 @@ public class StringCustomizedUtils {
             array[i - 1] = tmp;
         }
         int result = 0;
-        for(int i = 0; i < 6; i++){
+        for(int i = 0; i < 8; i++){
             result = result * 10 + array[i];
         }
         return result;
@@ -130,7 +130,11 @@ public class StringCustomizedUtils {
      * @return
      */
     public static String randomNumeric(int length){
-        return RandomStringUtils.randomNumeric(length);
+        String str = RandomStringUtils.randomNumeric(length);
+        if (str.startsWith("0")){
+            str = str.substring(1,str.length());
+        }
+        return str;
     }
 
     /**
@@ -161,5 +165,12 @@ public class StringCustomizedUtils {
     }
 
 
+/*    public static void main(String[] args) {
+        String str = 0 + randomNumeric(8);
+        if (str.startsWith("0")) {
+            str = str.substring(1, str.length());
+        }
+        System.out.println(str);
+    }*/
 
 }

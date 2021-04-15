@@ -95,4 +95,6 @@ public interface RelationRoleMenuPermissionDao extends BaseMapper<RelationRoleMe
      * @return
      */
     List<Integer> findCountRelationRoleMenuPermissions();
+
+    List<RelationRoleMenuPermission> findCountRelationRoleMenuPermissions2();
 }

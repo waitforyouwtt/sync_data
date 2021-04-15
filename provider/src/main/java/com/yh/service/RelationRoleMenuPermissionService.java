@@ -73,4 +73,6 @@ public interface RelationRoleMenuPermissionService {
      * @return
      */
     List<Integer> findCountRelationRoleMenuPermissions();
+
+    List<RelationRoleMenuPermission> findRelationRoleMenuPermissions2();
 }
