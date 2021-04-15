@@ -73,7 +73,7 @@ public class AppProductResource implements Serializable {
      */
     private String expand3;
     /**
-     * 扩展字段4
+     * 扩展字段4: 放置按钮的id
      */
     private String expand4;
     /**

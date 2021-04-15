@@ -110,19 +110,26 @@ public class ThreadServiceImpl implements ThreadService {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countMenus.size());
-        List<List<Integer>> partition = Lists.partition(countMenus, 100);
+        List<List<Integer>> partition = Lists.partition(countMenus, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         List<AppProductResource> lists = singleFindService.queryAllResources();
         Map<String, AppProductResource> tempMap = new HashMap<>();
         for(AppProductResource info: lists){
-            String key = info.getProductCode().concat("_").concat(info.getTenantCode()).concat("_").concat(info.getResourceCode()).concat("_").concat("2");
+            String key = info.getProductCode().concat("_").concat(info.getTenantCode()).concat("_").concat(org.apache.commons.lang3.StringUtils.isBlank(info.getExpand4())? "0": info.getExpand4());
             log.info("全量查询的资源key:{}",key);
             tempMap.put(key, info);
         }
 
+        for (List<Integer> params : partition){
+            int start = Collections.min(params);
+            int end = Collections.max(params);
+            log.info("每段的开始值&结束值：{},{}", start, end);
+            saveResourceByButton(start, end, tempMap);
+        }
+
         //使用线程池来发送各个用户的消息/通知任务集合
-        ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
+/*        ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
         ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(1024), importThreadFactory, new ThreadPoolExecutor.AbortPolicy());
 
         //执行多个带返回结果的发送任务,并取得多个消息/通知发送返回结果
@@ -138,7 +145,7 @@ public class ThreadServiceImpl implements ThreadService {
                     return saveResourceByButton(start, end, tempMap);
                 }
             });
-        });
+        });*/
 
         return "成功";
     }
@@ -206,9 +213,6 @@ public class ThreadServiceImpl implements ThreadService {
             log.info("全量查询角色资源的key:{}",key);
             tempMap.put(key, info);
         }
-
-
-        /*saveRoleResource(0, 1,tempMap);*/
 
         //使用线程池来发送各个用户的消息/通知任务集合
         ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
@@ -584,7 +588,7 @@ public class ThreadServiceImpl implements ThreadService {
             }
 
             //数据拼装key
-            String key = info.getBusinessType().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString()).concat("_").concat("2");
+//            String key = info.getBusinessType().concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
 
             //数据去掉重复
 /*            AppProductResource queryResult = tempMap.get(key);
@@ -597,19 +601,11 @@ public class ThreadServiceImpl implements ThreadService {
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
             resource.setTenantCode(tenantCode);
             //根据OperationObjectiveId菜单
-/*            MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId());
+            MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId());
             if (Objects.isNull(menu)){
                 continue;
-            }*/
-
-            resource.setParentCode(info.getOperationObjectiveId().toString());
-
-            String resourceUnique = StringCustomizedUtils.randomNumeric(8);
-            if (resourceUnique.startsWith("0")) {
-                resourceUnique = resourceUnique.substring(1, resourceUnique.length());
             }
-
-            resource.setResourceCode(resourceUnique);
+            resource.setParentCode(info.getOperationObjectiveId().toString());
             resource.setResourceCode(info.getId().toString());
             resource.setResourceName(info.getPermissionName());
             resource.setPath(info.getApiUrl());

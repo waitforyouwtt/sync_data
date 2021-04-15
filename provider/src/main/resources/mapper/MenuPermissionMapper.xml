@@ -203,7 +203,7 @@
         permission_name, rank, is_delete, created_time, updated_time, created_by, updated_by, out_menu_id,
         out_menu_permission_id
         from menu_permission
-        where 1 = 1 /*and is_delete = 0*/
+        where 1 = 1
         and id &gt;= #{min} and id &lt;= #{max}
     </select>
 
