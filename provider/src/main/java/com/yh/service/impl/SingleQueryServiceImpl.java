@@ -46,7 +46,7 @@ public class SingleQueryServiceImpl implements SingleQueryService {
         QueryWrapper<MenuInfo> params = new QueryWrapper<>();
         params.eq("business_type",code);
         params.eq("parent_id",parentId);
-        params.eq("is_delete",0);
+        /*params.eq("is_delete",0);*/
 
         List<MenuInfo> result = singleQueryDao.selectList(params);
         if (!CollectionUtils.isEmpty(result)){
@@ -60,7 +60,7 @@ public class SingleQueryServiceImpl implements SingleQueryService {
         log.info("根据id查找菜单信息：{},{},{}",id);
         QueryWrapper<MenuInfo> params = new QueryWrapper<>();
         params.eq("id",id);
-        params.eq("is_delete",0);
+        /*params.eq("is_delete",0);*/
         return singleQueryDao.selectOne(params);
     }
 
@@ -70,7 +70,7 @@ public class SingleQueryServiceImpl implements SingleQueryService {
         List<String> ids = Arrays.asList(id.split(","));
         QueryWrapper<MenuInfo> params = new QueryWrapper<>();
         params.in("id",ids);
-        params.eq("is_delete",0);
+       /* params.eq("is_delete",0);*/
         return singleQueryDao.selectList(params);
     }
 
@@ -78,7 +78,7 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     public List<RelationRoleMenuPermission> queryRelationRoleMenuPermission(List<String> roleIds) {
         QueryWrapper<RelationRoleMenuPermission> wrapper = new QueryWrapper<>();
         wrapper.in("role_id",roleIds);
-        wrapper.eq("is_delete",0);
+        /*wrapper.eq("is_delete",0);*/
         return relationRoleMenuPermissionDao.selectList(wrapper);
     }
 
@@ -86,7 +86,7 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     public List<String> findProductCodes(List<Integer> menuPermissionIds) {
         QueryWrapper<MenuPermission> wrapper = new QueryWrapper();
         wrapper.in("id",menuPermissionIds);
-        wrapper.eq("is_delete",0);
+        /*wrapper.eq("is_delete",0);*/
         List<MenuPermission> menuPermissions = menuPermissionDao.selectList(wrapper);
         if (CollectionUtils.isEmpty(menuPermissions)){
            return Collections.EMPTY_LIST;
@@ -99,7 +99,7 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     public MenuPermission findByMenuPermissionId(String menuPermissionId) {
         QueryWrapper<MenuPermission> wrapper = new QueryWrapper();
         wrapper.in("id",menuPermissionId);
-        wrapper.eq("is_delete",0);
+       /* wrapper.eq("is_delete",0);*/
         return menuPermissionDao.selectOne(wrapper);
     }
 
@@ -111,7 +111,6 @@ public class SingleQueryServiceImpl implements SingleQueryService {
         List<String> ids = Arrays.asList(menuPermissionId.split(","));
         QueryWrapper<MenuPermission> wrapper = new QueryWrapper();
         wrapper.in("id",ids);
-        wrapper.eq("is_delete",0);
         return menuPermissionDao.selectList(wrapper);
     }
 }

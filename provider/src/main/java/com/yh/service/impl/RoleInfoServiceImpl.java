@@ -81,7 +81,7 @@ public class RoleInfoServiceImpl implements RoleInfoService {
     @Override
     public List<RoleInfo> findRoleInfos() {
         RoleInfo info = new RoleInfo();
-        info.setIsDelete(0);
+        /*info.setIsDelete(0);*/
         return this.roleInfoDao.queryAll(info);
     }
 

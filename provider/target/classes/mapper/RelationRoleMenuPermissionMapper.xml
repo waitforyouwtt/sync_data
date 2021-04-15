@@ -127,15 +127,27 @@
     </delete>
 
     <select id="findCountRelationRoleMenuPermissions" resultType="integer">
-       select id from relation_role_menu_permission where 1 = 1 and is_delete = 0
+       select id from relation_role_menu_permission
+       where 1 = 1
+         /*and is_delete = 0*/
     </select>
 
     <select id="queryBetweenId" resultMap="RelationRoleMenuPermissionMap">
     select
     id, role_id, menu_permission_id, is_delete, created_time, updated_time, created_by, updated_by
     from relation_role_menu_permission
-    where 1 = 1 and is_delete = 0
+    where 1 = 1
+    /*and is_delete = 0*/
     and id &gt;= #{min} and id &lt;= #{max}
+    </select>
+
+    <select id="findCountRelationRoleMenuPermissions2" resultMap="RelationRoleMenuPermissionMap">
+        select
+            id, role_id, menu_permission_id, is_delete, created_time, updated_time, created_by, updated_by
+        from relation_role_menu_permission
+        where 1 = 1
+          /*and is_delete = 0*/
+          and role_id in (110,112,109,124,140)
     </select>
 
 

@@ -107,8 +107,10 @@
             #{entity.updatedBy}, #{entity.createdTime}, #{entity.updatedTime})
         </foreach>
         on duplicate key update
-        product_code = values(product_code) , tenant_code = values(tenant_code) ,
-        role_code = values(role_code) , resource_code = values(resource_code)
+        product_code = values(product_code) ,
+        tenant_code = values(tenant_code) ,
+        role_code = values(role_code) ,
+        resource_code = values(resource_code)
     </insert>
 
     <!--通过主键修改数据-->

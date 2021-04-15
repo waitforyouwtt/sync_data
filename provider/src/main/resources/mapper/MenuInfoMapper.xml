@@ -203,7 +203,7 @@
 
     <select id="findCountMenus" resultType="integer">
         select id from menu_info
-        where 1 = 1 and is_delete = 0
+        where 1 = 1 /*and is_delete = 0*/
     </select>
 
     <select id="findMenuBetweenIds" resultMap="MenuInfoMap">
@@ -225,7 +225,7 @@
         status,
         out_menu_id
         from menu_info
-        where 1 = 1 and is_delete = 0
+        where 1 = 1 /*and is_delete = 0*/
         and id &gt;= #{min} and id &lt;= #{max}
     </select>
 
@@ -248,7 +248,7 @@
         status,
         out_menu_id
         from yh_srm_usercenter_test.menu_info
-        where 1 = 1 and is_delete = 0
+        where 1 = 1 /*and is_delete = 0*/
         limit #{offset},#{num}
     </select>
 

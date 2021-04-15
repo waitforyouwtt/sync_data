@@ -1,6 +1,5 @@
 package com.yh.service.impl;
 
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -196,7 +195,7 @@ public class ThreadServiceImpl implements ThreadService {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countRoleResource.size());
-        List<List<Integer>> partition = Lists.partition(countRoleResource, 500);
+        List<List<Integer>> partition = Lists.partition(countRoleResource, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         //查询全部
@@ -208,19 +207,14 @@ public class ThreadServiceImpl implements ThreadService {
             tempMap.put(key, info);
         }
 
-        for (List<Integer> lists : partition){
-            int start = Collections.min(lists);
-            int end = Collections.max(lists);
-            log.info("每段的开始值&结束值：{},{}", start, end);
-            saveRoleResource(start, end,tempMap);
-        }
+
+        /*saveRoleResource(0, 1,tempMap);*/
 
         //使用线程池来发送各个用户的消息/通知任务集合
-      /*  ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
+        ThreadFactory importThreadFactory = new ThreadFactoryBuilder().setNameFormat("import-data-pool-%d").build();
         ExecutorService importThreadPool = new ThreadPoolExecutor(5, 2000, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingDeque<Runnable>(1024), importThreadFactory, new ThreadPoolExecutor.AbortPolicy());
-*/
         //执行多个带返回结果的发送任务,并取得多个消息/通知发送返回结果
-/*        CompletionService<String> service = new ExecutorCompletionService(importThreadPool);
+        CompletionService<String> service = new ExecutorCompletionService(importThreadPool);
 
         partition.forEach(p -> {
             service.submit(new Callable<String>() {
@@ -238,7 +232,7 @@ public class ThreadServiceImpl implements ThreadService {
                     return "success";
                 }
             });
-        });*/
+        });
 
         return "成功";
     }
@@ -411,12 +405,13 @@ public class ThreadServiceImpl implements ThreadService {
 
     private String saveRoleResource(Integer start, Integer end, Map<String, AppRoleResource> tempMap) {
         AppRoleResourceDao roleResourceDao = SpringContextHolder.getBean(AppRoleResourceDao.class);
-        List<RelationRoleMenuPermission> data = feign.relationRoleMenuPermissions2();
+        List<RelationRoleMenuPermission> data = feign.relationRoleMenuPermissions(start,end);
+
         Map<Integer,Integer> logMap = new HashMap<>();
         data.stream().forEach(v->{
             logMap.put(v.getRoleId(),v.getMenuPermissionId());
         });
-        log.info("logMap得到的值:{}",JSONUtil.toJsonStr(logMap));
+        log.info("角色资源logMap得到的值:{}",JSONUtil.toJsonStr(logMap));
 
         if (CollectionUtils.isEmpty(data)) {
             log.info("此区间没有数据");
@@ -887,20 +882,24 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
     public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions,Map<String,AppRoleResource> tempMap){
+
         List<AppRoleResource> result = new ArrayList<>();
 
         Map<Integer,Integer> logMap = new HashMap<>();
         roleMenuPermissions.stream().forEach(v->{
             logMap.put(v.getRoleId(),v.getMenuPermissionId());
         });
-        log.info("角色资源logMap的数据:{}", JSONUtil.toJsonStr(logMap));
 
         //获取菜单按钮信息
+        List<MenuPermission> menuPermissions = new ArrayList<>();
         List<Integer> buttonIds = roleMenuPermissions.stream().map(RelationRoleMenuPermission::getMenuPermissionId).distinct().collect(Collectors.toList());
-        //integer转string
-        String buttonString = buttonIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-        List<MenuPermission> menuPermissions = feign.findMenuPermissionIds(buttonString);
-
+        List<List<Integer>> partition = Lists.partition(buttonIds, 300);
+        for (List<Integer> params : partition){
+            //integer转string
+            String buttonString = params.stream().map(String::valueOf).collect(Collectors.joining(","));
+            List<MenuPermission> menuPermissionIds = feign.findMenuPermissionIds(buttonString);
+            menuPermissions.addAll(menuPermissionIds);
+        }
         Map<Integer, MenuPermission > buttonMap = new HashMap<>();
         //存放按钮信息
         for (MenuPermission mp: menuPermissions){
@@ -908,17 +907,24 @@ public class ThreadServiceImpl implements ThreadService {
         }
 
         //获取菜单信息
-        List<Integer> objectiveIds = menuPermissions.stream().map(MenuPermission::getOperationObjectiveId).distinct().collect(Collectors.toList());
-        //integer转string
-        String menuIdString = objectiveIds.stream().map(String::valueOf).collect(Collectors.joining(","));
-
         //存放菜单信息
-        List<MenuInfo> menus = feign.findMenuByIds(menuIdString);
+        List<MenuInfo> menus = new ArrayList<>();
+
+        List<Integer> objectiveIds = menuPermissions.stream().map(MenuPermission::getOperationObjectiveId).distinct().collect(Collectors.toList());
+        List<List<Integer>> partition1 = Lists.partition(objectiveIds, 300);
+        for (List<Integer> params : partition1){
+            //integer转string
+            String menuIdString = params.stream().map(String::valueOf).collect(Collectors.joining(","));
+            List<MenuInfo> menusQuery = feign.findMenuByIds(menuIdString);
+            menus.addAll(menusQuery);
+        }
+
         Map<Integer, MenuInfo> menuInfoMap = new HashMap<>();
         for (MenuInfo menuInfo: menus){
             menuInfoMap.put(menuInfo.getId(), menuInfo);
         }
 
+        //存放应用
         List<AppProduct> products = this.singleFindService.findProductLists();
         Map<String, AppProduct> productMap = new HashMap<>();
         for (AppProduct product : products) {
@@ -931,6 +937,8 @@ public class ThreadServiceImpl implements ThreadService {
         for (AppTenantInfo tenant : tenants) {
             tenantMap.put(tenant.getProductCode(), tenant.getCode());
         }
+
+        Map<String,String> waitData = new HashMap<>();
 
         for (RelationRoleMenuPermission  info : roleMenuPermissions){
             if (info.getRoleId() == null){
@@ -953,13 +961,13 @@ public class ThreadServiceImpl implements ThreadService {
             String tenantCode = tenantMap.get(menuPermission.getBusinessType());
             //根据应用编码查询应用信息
             AppProduct product = productMap.get(menuPermission.getBusinessType());
-            if (Objects.isNull(product)){
+            /*if (Objects.isNull(product)){
                 continue;
-            }
+            }*/
 
-            //String key = info.getProductCode().concat("_").concat(info.getTenantCode()).concat("_").concat(info.getRoleCode()).concat("_").concat(info.getResourceCode());
-            String key = menuPermission.getBusinessType().concat("_").concat(tenantMap.get(menuPermission.getBusinessType())).concat("_").concat(info.getRoleId().toString()).concat("_").concat(menuPermission.getId().toString());
             //数据拼装key
+            String key = menuPermission.getBusinessType().concat("_").concat(tenantMap.get(menuPermission.getBusinessType())).concat("_").concat(info.getRoleId().toString()).concat("_").concat(menuPermission.getId().toString());
+
             AppRoleResource roleResource = tempMap.get(key);
             //数据去掉重复
             if (!Objects.isNull(roleResource)) {
@@ -990,9 +998,10 @@ public class ThreadServiceImpl implements ThreadService {
             view.setCreatedTime(new Date());
             view.setUpdatedTime(new Date());
             result.add(view);
-            log.info("当前插入行：{}");
+            waitData.put(view.getResourceCode(),view.getProductCode());
         }
         log.info("待插入角色资源的总条数[out]：{}",result.size());
+        log.info("条件为3：{}",JSONUtil.toJsonStr(waitData));
         return result;
     }
 
