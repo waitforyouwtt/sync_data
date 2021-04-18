@@ -3,6 +3,7 @@ package com.yh.feign;
 import com.yh.entity.*;
 import com.yh.view.ProductRoleVO;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -76,6 +77,9 @@ public interface DataSynchronizeFeign {
     @GetMapping("/findMenuPermissionIds")
     List<MenuPermission> findMenuPermissionIds(@RequestParam("ids")String ids);
 
+    @GetMapping("/queryByRoleId")
+    List<RelationRoleMenuPermission> queryByRoleId(@RequestParam("roleId") Integer roleId);
+
 
     @ApiOperation(value = "获取用户角色总条数",notes = "获取用户角色总条数")
     @GetMapping("/findCountRelationUserRoles")
@@ -103,4 +107,7 @@ public interface DataSynchronizeFeign {
 
     @GetMapping("/findIds")
     List<Integer> findIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max);
+
+    @GetMapping("/queryByRoleAndBy")
+    public List<RoleBusinessType> queryByRoleAndBy();
 }

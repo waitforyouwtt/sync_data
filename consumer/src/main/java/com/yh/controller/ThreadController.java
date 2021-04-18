@@ -50,9 +50,9 @@ public class ThreadController {
         return threadService.syncRelationUserRoles();
     }
 
-    @ApiOperation(value = "应用也是资源[数据处理中，请耐心等待]",notes = "应用也是资源同步",tags = {"ThreadController"})
-    @GetMapping("/applicationIsResource")
-    public String applicationIsResource(){
-        return threadService.applicationIsResource();
-    }
+//    @ApiOperation(value = "应用也是资源[数据处理中，请耐心等待]",notes = "应用也是资源同步",tags = {"ThreadController"})
+//    @GetMapping("/applicationIsResource")
+//    public String applicationIsResource(){
+//        return threadService.applicationIsResource();
+//    }
 }

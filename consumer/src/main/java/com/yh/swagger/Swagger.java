@@ -31,7 +31,7 @@ public class Swagger {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("这个世界就像一个巨大的夹娃娃机，隔着玻璃，我只想得到你......")
+                .title("同步代码......")
                 .description("云澜哥哥")
                 .termsOfServiceUrl("https://www.baidu.com")
                 .version("1.0")

@@ -62,7 +62,7 @@
                 and role_code = #{roleCode}
             </if>
             <if test="roleName != null and roleName != ''">
-                and role_name = #{roleName}
+                and role_name != #{roleName}
             </if>
             <if test="description != null and description != ''">
                 and description = #{description}

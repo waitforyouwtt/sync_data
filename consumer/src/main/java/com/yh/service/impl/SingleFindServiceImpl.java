@@ -267,13 +267,12 @@ public class SingleFindServiceImpl implements SingleFindService {
         List<String> productCodes = roles.stream().map(AppProductRole::getProductCode).distinct().collect(Collectors.toList());
         return productCodes;
     }
-
+    @Override
     public List<AppProductRole> findProductCodes2(List<Long> roleCodes){
         QueryWrapper<AppProductRole> wrapper = new QueryWrapper();
         wrapper.in("role_code",roleCodes);
         wrapper.eq("is_delete",0);
-        List<AppProductRole> roles = productRoleDao.selectList(wrapper);
-        return roles;
+        return productRoleDao.selectList(wrapper);
     }
 
     @Override
@@ -315,7 +314,11 @@ public class SingleFindServiceImpl implements SingleFindService {
 
     @Override
     public List<AppProductRole> queryAllRoles(){
-        return productRoleDao.queryAll(null);
+        AppProductRole info = new AppProductRole();
+        info.setIsDelete(0);
+        info.setRoleName("数据权限角色");
+        info.setPlatform("purchase");
+        return productRoleDao.queryAll(info);
     }
 
     public List<AppProductRole> queryAllRoles2(){
@@ -324,6 +327,9 @@ public class SingleFindServiceImpl implements SingleFindService {
 
     @Override
     public List<AppProductResource> queryAllResources(){
-        return resourceDao.queryAll(null);
+        AppProductResource info = new AppProductResource();
+        info.setIsDelete(0);
+        info.setPlatform("purchase");
+        return resourceDao.queryAll(info);
     }
 }

@@ -2,6 +2,7 @@ package com.yh.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.yh.entity.RelationRoleMenuPermission;
+import com.yh.entity.RoleBusinessType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -97,4 +98,8 @@ public interface RelationRoleMenuPermissionDao extends BaseMapper<RelationRoleMe
     List<Integer> findCountRelationRoleMenuPermissions();
 
     List<RelationRoleMenuPermission> findCountRelationRoleMenuPermissions2();
+
+    List<RelationRoleMenuPermission> queryByRoleId(@Param("roleId") Integer roleId);
+
+    List<RoleBusinessType> queryByRoleAndBy();
 }

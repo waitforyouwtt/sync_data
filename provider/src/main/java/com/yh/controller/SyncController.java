@@ -39,6 +39,7 @@ public class SyncController {
     public List<Integer> findCountMenus(){
         return menuInfoService.findCountMenus();
     }
+
     @ApiOperation(value = "根据条件获取id区间菜单集合",notes = "根据条件获取id区间菜单集合",tags = {"SyncController"})
     @GetMapping("/findMenuBetweenIds")
     List<MenuInfo> findMenuBetweenIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
@@ -107,8 +108,14 @@ public class SyncController {
 
     @ApiOperation(value = "根据条件获取id区间角色资源集合",notes = "根据条件获取id区间角色资源集合",tags = {"SyncController"})
     @GetMapping("/relationRoleMenuPermissions")
-    public List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
-        return relationRoleMenuPermissionService.findRelationRoleMenuPermissions(min,max);
+    public List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max) {
+        return relationRoleMenuPermissionService.findRelationRoleMenuPermissions(min, max);
+    }
+
+    @ApiOperation(value = "根据条件roleId获取源集合",notes = "根据条件获取集合",tags = {"SyncController"})
+    @GetMapping("/queryByRoleId")
+    public List<RelationRoleMenuPermission> queryByRoleId(@RequestParam("roleId")Integer roleId){
+        return relationRoleMenuPermissionService.queryByRoleId(roleId);
     }
 
     @ApiOperation(value = "根据条件获取id区间角色资源集合",notes = "根据条件获取id区间角色资源集合")
@@ -173,5 +180,10 @@ public class SyncController {
     @GetMapping("/findIds")
     public List<Integer> findIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
         return relationUserRoleService.findIds(min,max);
+    }
+
+    @GetMapping("/queryByRoleAndBy")
+    public List<RoleBusinessType> queryByRoleAndBy(){
+        return relationRoleMenuPermissionService.queryByRoleAndBy();
     }
 }

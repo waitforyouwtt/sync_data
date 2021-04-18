@@ -1,7 +1,9 @@
 package com.yh.service;
 
 import com.yh.entity.RelationRoleMenuPermission;
+import com.yh.entity.RoleBusinessType;
 import com.yh.view.ProductRoleVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -75,4 +77,8 @@ public interface RelationRoleMenuPermissionService {
     List<Integer> findCountRelationRoleMenuPermissions();
 
     List<RelationRoleMenuPermission> findRelationRoleMenuPermissions2();
+
+    List<RelationRoleMenuPermission> queryByRoleId(Integer roleId);
+
+    List<RoleBusinessType> queryByRoleAndBy();
 }

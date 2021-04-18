@@ -13,6 +13,12 @@
         <result property="updatedBy" column="updated_by" jdbcType="VARCHAR"/>
     </resultMap>
 
+    <resultMap type="com.yh.entity.RoleBusinessType" id="RoleBusinessTypeMap">
+        <result property="roleId" column="role_id" jdbcType="INTEGER"/>
+        <result property="businessType" column="business_type" jdbcType="VARCHAR"/>
+    </resultMap>
+
+
     <!--查询单个-->
     <select id="queryById" resultMap="RelationRoleMenuPermissionMap">
         select
@@ -147,9 +153,18 @@
         from relation_role_menu_permission
         where 1 = 1
           /*and is_delete = 0*/
-          and role_id in (110,112,109,124,140)
     </select>
 
+    <select id="queryByRoleId" resultMap="RelationRoleMenuPermissionMap">
+        select
+          id, role_id, menu_permission_id, is_delete, created_time, updated_time, created_by, updated_by
+        from relation_role_menu_permission
+        where role_id = #{roleId}
+    </select>
 
-
+    <select id="queryByRoleAndBy" resultMap="RoleBusinessTypeMap">
+       select DISTINCT r.role_id, m.business_type
+       from relation_role_menu_permission r, menu_permission m , role_info rf
+       where r.menu_permission_id=m.id
+    </select>
 </mapper>

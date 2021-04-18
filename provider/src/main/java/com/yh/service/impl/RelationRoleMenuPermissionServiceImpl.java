@@ -2,6 +2,7 @@ package com.yh.service.impl;
 
 import com.yh.dao.RelationRoleMenuPermissionDao;
 import com.yh.entity.RelationRoleMenuPermission;
+import com.yh.entity.RoleBusinessType;
 import com.yh.service.RelationRoleMenuPermissionService;
 import com.yh.service.SingleQueryService;
 import com.yh.view.ProductRoleVO;
@@ -143,5 +144,15 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
 
     public List<RelationRoleMenuPermission> findRelationRoleMenuPermissions2(){
         return relationRoleMenuPermissionDao.findCountRelationRoleMenuPermissions2();
+    }
+
+    @Override
+    public List<RelationRoleMenuPermission> queryByRoleId(Integer roleId) {
+        return relationRoleMenuPermissionDao.queryByRoleId(roleId);
+    }
+
+    @Override
+    public List<RoleBusinessType> queryByRoleAndBy() {
+        return relationRoleMenuPermissionDao.queryByRoleAndBy();
     }
 }
