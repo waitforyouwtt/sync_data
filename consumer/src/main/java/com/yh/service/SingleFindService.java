@@ -83,4 +83,6 @@ public interface SingleFindService {
     List<AppProductRole> queryAllRoles2();
 
     List<AppProductResource> queryAllResources();
+
+    List<ConfigResource> findConfigResource();
 }

@@ -1,13 +1,11 @@
 package com.yh.service.impl;
 
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yh.dao.*;
 import com.yh.entity.*;
 import com.yh.service.SingleFindService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -56,6 +54,8 @@ public class SingleFindServiceImpl implements SingleFindService {
     AppUserRoleDao userRoleDao;
     @Autowired
     UserBaseDao userBaseDao;
+    @Autowired
+    ConfigResourceDao configResourceDao;
 
     @Override
     public AppProductResource resourceDetails(String productCode,String tenantCode, String resourceCode) {
@@ -331,5 +331,10 @@ public class SingleFindServiceImpl implements SingleFindService {
         info.setIsDelete(0);
         info.setPlatform("purchase");
         return resourceDao.queryAll(info);
+    }
+
+    @Override
+    public List<ConfigResource> findConfigResource(){
+        return configResourceDao.queryAll(null);
     }
 }

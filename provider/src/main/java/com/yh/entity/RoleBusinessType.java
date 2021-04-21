@@ -3,6 +3,7 @@ package com.yh.entity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 
 /**
  * @author chensong
@@ -10,6 +11,6 @@ import java.io.Serializable;
  */
 @Data
 public class RoleBusinessType implements Serializable {
-    private Integer roleId;
+    private BigInteger roleId;
     private String businessType;
 }

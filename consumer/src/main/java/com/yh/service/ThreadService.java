@@ -33,8 +33,8 @@ public interface ThreadService {
     String syncRelationUserRoles();
 
     /**
-     * 应用也是资源,也需要同步
+     * 应用同步
      * @return
      */
-    String applicationIsResource();
+    String syncApplication();
 }
