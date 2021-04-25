@@ -1,5 +1,9 @@
 package com.yh.service;
 
+import com.yh.entity.RoleSplitByApplication;
+
+import java.util.List;
+
 public interface ThreadService {
 
     /**
@@ -19,6 +23,18 @@ public interface ThreadService {
      * @return
      */
     String roleSync();
+
+    /**
+     * 角色按应用拆分后进行同步
+     * @return
+     */
+    String roleSplitByApplication();
+
+    /**
+     * 同步丢弃但已经绑定用户的角色
+     * @return
+     */
+    String syncAbandonList(String code);
 
     /**
      * 角色资源同步

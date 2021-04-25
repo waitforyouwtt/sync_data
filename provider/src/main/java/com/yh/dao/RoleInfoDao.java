@@ -1,7 +1,9 @@
 package com.yh.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.yh.entity.Role;
 import com.yh.entity.RoleInfo;
+import com.yh.entity.RoleSplitByApplication;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -95,4 +97,17 @@ public interface RoleInfoDao extends BaseMapper<RoleInfo> {
      * @return
      */
     List<RoleInfo> findRoleBetweenIds(@Param("min") Long min,@Param("max") Long max);
+
+    /**
+     * 获取角色按应用拆分后的数据
+     * @return
+     */
+    List<RoleSplitByApplication> findRoleSplitByApplications();
+
+    /**
+     *
+     * @param codes
+     * @return
+     */
+    List<Role> findSyncAbandonList(@Param("list") List<String> codes);
 }

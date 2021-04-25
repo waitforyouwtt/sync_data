@@ -45,6 +45,14 @@ public interface DataSynchronizeFeign {
     @GetMapping("/findCountRoles")
     List<Long> findCountRoles();
 
+    @ApiOperation(value = "获取角色按应用拆分后的数据",notes = "获取角色按应用拆分后的数据")
+    @GetMapping("/findRoleSplitByApplications")
+    List<RoleSplitByApplication> findRoleSplitByApplications();
+
+    @ApiOperation(value = "同步丢弃但已经绑定用户的角色",notes = "同步丢弃但已经绑定用户的角色")
+    @GetMapping("/syncAbandonList")
+    List<Role> syncAbandonList(@RequestParam("code") String code);
+
     @ApiOperation(value = "根据条件获取id区间角色集合",notes = "根据条件获取id区间角色集合")
     @GetMapping("/findRoleBetweenIds")
     List<RoleInfo> findRoleBetweenIds(@RequestParam("min")Long min, @RequestParam("max")Long max);

@@ -1,6 +1,8 @@
 package com.yh.service;
 
+import com.yh.entity.Role;
 import com.yh.entity.RoleInfo;
+import com.yh.entity.RoleSplitByApplication;
 
 import java.util.List;
 
@@ -68,4 +70,17 @@ public interface RoleInfoService {
      * @return
      */
     List<RoleInfo> findRoleBetweenIds(Long min, Long max);
+
+    /**
+     * 获取角色按应用拆分后的数据
+     * @return
+     */
+    List<RoleSplitByApplication> findRoleSplitByApplications();
+
+    /**
+     * 同步丢弃但已经绑定用户的角色
+     * @param code
+     * @return
+     */
+    List<Role> findSyncAbandonList(String code);
 }

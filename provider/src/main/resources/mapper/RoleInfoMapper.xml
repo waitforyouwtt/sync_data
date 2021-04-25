@@ -195,4 +195,28 @@
         and id &gt;= #{min} and id &lt;= #{max}
     </select>
 
+    <select id="findRoleSplitByApplications" resultType="com.yh.entity.RoleSplitByApplication">
+        select b.id as roleId,b.role_code as roleCode,b.role_name as roleName,
+        b.role_type_code as roleTypeCode,b.parent_id as  parentId,b.role_path as rolePath,c.business_type as businessType
+        from relation_role_menu_permission  as a
+        inner join role_info as b
+        on a.role_id = b.id
+        inner join menu_permission as c
+        on a.menu_permission_id = c.id
+        group by b.id,b.role_code,b.role_name,b.role_type_code,b.parent_id,b.role_path,c.business_type
+    </select>
+
+    <select id="findSyncAbandonList" resultType="com.yh.entity.Role">
+        select b.id roleId,b.role_code roleCode,b.role_name as roleName,
+        b.role_type_code as roleTypeCode,b.parent_id as  parentId,b.role_path as rolePath from relation_user_role as a
+        left join role_info as b
+        on a.role_id = b.id
+        where 1 = 1
+        and a.is_delete = 0
+        and b.id in
+        <foreach collection="list" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
 </mapper>

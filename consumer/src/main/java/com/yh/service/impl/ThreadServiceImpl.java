@@ -22,6 +22,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
+
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -163,6 +165,216 @@ public class ThreadServiceImpl implements ThreadService {
         });
         return "成功";
     }
+
+    @Async
+    @Override
+    public String roleSplitByApplication(){
+        AppProductRoleDao roleDao = SpringContextHolder.getBean(AppProductRoleDao.class);
+
+        List<AppProductRole> productRoles = this.singleFindService.queryAllRoles2();
+        Map<String,AppProductRole> roleMap = new HashMap<>();
+        productRoles.stream().forEach(v->{
+            String key = v.getProductCode()+"_"+v.getTenantCode()+"_"+v.getRoleCode();
+            roleMap.put(key,v);
+        });
+
+        //存放租户信息
+        List<AppTenantInfo> tenantInfos = this.singleFindService.findTenants();
+        Map<String, String> tenantMap = new HashMap<>();
+        for (AppTenantInfo info : tenantInfos) {
+            tenantMap.put(info.getProductCode(), info.getCode());
+        }
+
+        List<RoleSplitByApplication> roleSplitByApplications = this.feign.findRoleSplitByApplications();
+        Map<BigInteger,String> logMap = new HashMap<>();
+        roleSplitByApplications.stream().forEach(v->{
+            String key = v.getBusinessType()+"_"+v.getRoleId();
+            logMap.put(v.getRoleId(),key);
+        });
+        log.info("打印的logMap:{}",JSONUtil.toJsonStr(logMap));
+
+
+        if (CollectionUtils.isEmpty(roleSplitByApplications)){
+            return null;
+        }
+
+        List<AppProductRole> params = new ArrayList<>();
+
+        for (RoleSplitByApplication info : roleSplitByApplications){
+            //根据应用获取租户信息
+            String tenantCode = tenantMap.get(info.getBusinessType());
+            /**
+             * 去掉重复
+             */
+            String infoUniqueKey = info.getBusinessType()+"_"+tenantCode+"_"+info.getRoleId();
+            log.info("组装数据的info key:{}",infoUniqueKey);
+            if (roleMap.get(infoUniqueKey) != null){
+                log.error("丢弃的数据:{}",infoUniqueKey);
+               continue;
+            }
+            AppProductRole role = new AppProductRole();
+            role.setProductCode(info.getBusinessType());
+             role.setUniqueCode(StringCustomizedUtils.uniqueCode());
+            if (StringUtils.isBlank(tenantCode)) {
+                role.setTenantCode("defatult");
+            } else {
+                role.setTenantCode(tenantCode);
+            }
+
+            role.setRoleCode(String.valueOf(info.getRoleId()));
+            if (StringUtils.isNotBlank(info.getRoleName())) {
+                role.setRoleName(info.getRoleName());
+            }
+
+            //存放角色
+            if (StringUtils.isNotBlank(info.getRoleTypeCode())) {
+                role.setDescription(info.getRoleTypeCode());
+            }
+
+            //存储第三方role_code
+            if (StringUtils.isNotBlank(info.getRoleCode())) {
+                role.setOutRoleCode(info.getRoleCode());
+            }
+
+            role.setRoleStatus("Y");
+            role.setPlatform("purchase");
+
+            //存放父级编码
+            if (info.getParentId() != null) {
+                role.setExtension1(String.valueOf(info.getParentId()));
+            } else {
+                log.error("没有父级id的角色:{}"+info.toString());
+            }
+            //存放path
+            if (StringUtils.isNotBlank(info.getRolePath())) {
+                role.setExtension2(info.getRolePath());
+            }
+            role.setIsDelete(0);
+            role.setCreatedBy("admin");
+            role.setUpdatedBy("admin");
+            role.setCreatedTime(new Date());
+            role.setUpdatedTime(new Date());
+            params.add(role);
+        }
+        List<List<AppProductRole>> partition = Lists.partition(params, 300);
+        for (List<AppProductRole> param : partition){
+            roleDao.insertBatch(param);
+        }
+        return "success";
+    }
+
+    @Async
+    @Override
+    public String syncAbandonList(String code){
+        AppProductRoleDao roleDao = SpringContextHolder.getBean(AppProductRoleDao.class);
+
+        List<Role> roleCodes = feign.syncAbandonList(code);
+
+        if (CollectionUtils.isEmpty(roleCodes)){
+            log.info("没有需要同步的数据");
+            return "fail";
+        }
+
+        List<AppProductRole> productRoles = this.singleFindService.queryAllRoles2();
+        Map<String,AppProductRole> roleMap = new HashMap<>();
+        productRoles.stream().forEach(v->{
+            String key = v.getProductCode()+"_"+v.getTenantCode()+"_"+v.getRoleCode();
+            roleMap.put(key,v);
+        });
+
+        List<AppProduct> products = this.singleFindService.findProductLists();
+
+        //存放租户信息
+        List<AppTenantInfo> tenantInfos = this.singleFindService.findTenants();
+        Map<String, String> tenantMap = new HashMap<>();
+        for (AppTenantInfo info : tenantInfos) {
+            tenantMap.put(info.getProductCode(), info.getCode());
+        }
+
+        List<AppProductRole> params = new ArrayList<>();
+
+        for (Role info : roleCodes){
+            for (AppProduct product : products){
+                //根据应用获取租户信息
+                String tenantCode = tenantMap.get(product.getProductCode());
+                /**
+                 * 去掉重复
+                 */
+                String infoUniqueKey = product.getProductCode()+"_"+tenantCode+"_"+info.getRoleId();
+                log.info("组装数据的info key:{}",infoUniqueKey);
+                if (roleMap.get(infoUniqueKey) != null){
+                    log.error("丢弃的数据:{}",infoUniqueKey);
+                    continue;
+                }
+                AppProductRole role = new AppProductRole();
+                role.setProductCode(product.getProductCode());
+                role.setUniqueCode(StringCustomizedUtils.uniqueCode());
+                if (StringUtils.isBlank(tenantCode)) {
+                    role.setTenantCode("defatult");
+                } else {
+                    role.setTenantCode(tenantCode);
+                }
+
+                role.setRoleCode(String.valueOf(info.getRoleId()));
+                if (StringUtils.isNotBlank(info.getRoleName())) {
+                    role.setRoleName(info.getRoleName());
+                }
+
+                //存放角色
+                if (StringUtils.isNotBlank(info.getRoleTypeCode())) {
+                    role.setDescription(info.getRoleTypeCode());
+                }
+
+                //存储第三方role_code
+                if (StringUtils.isNotBlank(info.getRoleCode())) {
+                    role.setOutRoleCode(info.getRoleCode());
+                }
+
+                role.setRoleStatus("Y");
+                role.setPlatform("purchase");
+
+                //存放父级编码
+                if (info.getParentId() != null) {
+                    role.setExtension1(String.valueOf(info.getParentId()));
+                } else {
+                    log.error("没有父级id的角色:{}"+info.toString());
+                }
+                //存放path
+                if (StringUtils.isNotBlank(info.getRolePath())) {
+                    role.setExtension2(info.getRolePath());
+                }
+                role.setIsDelete(0);
+                role.setCreatedBy("admin");
+                role.setUpdatedBy("admin");
+                role.setCreatedTime(new Date());
+                role.setUpdatedTime(new Date());
+                params.add(role);
+            }
+        }
+
+        List<AppProductRole> data = removeDuplicateModel(params);
+        if (!CollectionUtils.isEmpty(data)){
+            List<List<AppProductRole>> partition = Lists.partition(data, 300);
+            for (List<AppProductRole> param : partition){
+                roleDao.insertBatch(param);
+            }
+        }
+        return "success";
+    }
+
+    public static List<AppProductRole> removeDuplicateModel(List<AppProductRole> results) {
+        Set<AppProductRole> set = new TreeSet<>(new Comparator<AppProductRole>() {
+            @Override
+            public int compare(AppProductRole o1, AppProductRole o2) {
+                String aa = o1.getProductCode()+"_"+o1.getTenantCode()+"_"+o1.getRoleCode();
+                String bb = o2.getProductCode()+"_"+o2.getTenantCode()+"_"+o2.getRoleCode();
+                return aa.compareTo(bb);
+            }
+        });
+        set.addAll(results);
+        return new ArrayList<>(set);
+    }
+
 
     @Async
     @Override
@@ -723,6 +935,9 @@ public class ThreadServiceImpl implements ThreadService {
             dataLogMap.put(v.getId().toString(), v.getRoleName());
         });
 
+        //丢弃的同步的角色Id
+        List<String> abandonList = new ArrayList<>();
+
         List<AppProductRole> result = new ArrayList<>();
 
         Map<String, String> logMap = new HashMap<>();
@@ -733,6 +948,7 @@ public class ThreadServiceImpl implements ThreadService {
 
                 if (roleBusinessType.getRoleId().intValue() != info.getId().intValue()) {
                     log.error("舍弃同步角色的id:{}",info.getId());
+                    abandonList.add(String.valueOf(info.getId()));
                     continue;
                 }
 
@@ -796,6 +1012,7 @@ public class ThreadServiceImpl implements ThreadService {
                 result.add(role);
             }
         }
+        log.error("丢弃的角色Id集合是:{}",abandonList.stream().distinct().collect(Collectors.toList()));
         return result;
     }
 
@@ -903,7 +1120,7 @@ public class ThreadServiceImpl implements ThreadService {
                         continue;
                     }
                     view.setTenantCode(tenantCode);
-                    view.setRoleName(roleMap.get(info.getRoleId()));
+                    view.setRoleName(roleMap.get(String.valueOf(info.getRoleId())));
 
                     if (userMap.get(info.getUserId()) != null) {
                         view.setUserCode(userMap.get(info.getUserId()).getUserCode());

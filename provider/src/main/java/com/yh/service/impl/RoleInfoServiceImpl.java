@@ -1,11 +1,17 @@
 package com.yh.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.yh.dao.RoleInfoDao;
+import com.yh.entity.Role;
 import com.yh.entity.RoleInfo;
+import com.yh.entity.RoleSplitByApplication;
 import com.yh.service.RoleInfoService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -93,5 +99,19 @@ public class RoleInfoServiceImpl implements RoleInfoService {
     @Override
     public List<RoleInfo> findRoleBetweenIds(Long min, Long max) {
         return roleInfoDao.findRoleBetweenIds(min,max);
+    }
+
+    @Override
+    public List<RoleSplitByApplication> findRoleSplitByApplications(){
+        return roleInfoDao.findRoleSplitByApplications();
+    }
+
+    @Override
+    public List<Role> findSyncAbandonList(String code){
+        if (StringUtils.isBlank(code)){
+            return Collections.emptyList();
+        }
+        List<String> codes = Arrays.asList(code.split(","));
+        return roleInfoDao.findSyncAbandonList(codes);
     }
 }
