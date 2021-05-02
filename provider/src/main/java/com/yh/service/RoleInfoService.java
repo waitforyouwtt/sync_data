@@ -79,8 +79,8 @@ public interface RoleInfoService {
 
     /**
      * 同步丢弃但已经绑定用户的角色
-     * @param code
+     * @param
      * @return
      */
-    List<Role> findSyncAbandonList(String code);
+    List<Role> findSyncAbandonList();
 }

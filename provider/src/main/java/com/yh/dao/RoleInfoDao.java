@@ -106,8 +106,8 @@ public interface RoleInfoDao extends BaseMapper<RoleInfo> {
 
     /**
      *
-     * @param codes
+     * @param
      * @return
      */
-    List<Role> findSyncAbandonList(@Param("list") List<String> codes);
+    List<Role> findSyncAbandonList();
 }

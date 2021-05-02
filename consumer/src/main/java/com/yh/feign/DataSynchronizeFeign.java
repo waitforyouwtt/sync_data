@@ -51,7 +51,7 @@ public interface DataSynchronizeFeign {
 
     @ApiOperation(value = "同步丢弃但已经绑定用户的角色",notes = "同步丢弃但已经绑定用户的角色")
     @GetMapping("/syncAbandonList")
-    List<Role> syncAbandonList(@RequestParam("code") String code);
+    List<Role> syncAbandonList();
 
     @ApiOperation(value = "根据条件获取id区间角色集合",notes = "根据条件获取id区间角色集合")
     @GetMapping("/findRoleBetweenIds")

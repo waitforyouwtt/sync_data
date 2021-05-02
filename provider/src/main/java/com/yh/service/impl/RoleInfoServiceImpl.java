@@ -107,11 +107,7 @@ public class RoleInfoServiceImpl implements RoleInfoService {
     }
 
     @Override
-    public List<Role> findSyncAbandonList(String code){
-        if (StringUtils.isBlank(code)){
-            return Collections.emptyList();
-        }
-        List<String> codes = Arrays.asList(code.split(","));
-        return roleInfoDao.findSyncAbandonList(codes);
+    public List<Role> findSyncAbandonList(){
+        return roleInfoDao.findSyncAbandonList();
     }
 }

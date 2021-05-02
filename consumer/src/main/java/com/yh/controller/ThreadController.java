@@ -1,6 +1,5 @@
 package com.yh.controller;
 
-import com.yh.entity.RoleSplitByApplication;
 import com.yh.service.SingleService;
 import com.yh.service.ThreadService;
 import io.swagger.annotations.Api;
@@ -10,8 +9,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @Api(value = "ThreadController")
 @RestController
@@ -50,8 +47,8 @@ public class ThreadController {
 
     @ApiOperation(value = "同步丢弃但已经绑定用户的角色",notes = "同步丢弃但已经绑定用户的角色",tags = {"ThreadController"})
     @GetMapping("syncAbandonList")
-    public String syncAbandonList(@RequestParam("code") String code){
-        return threadService.syncAbandonList(code);
+    public String syncAbandonList(){
+        return threadService.syncAbandonList();
     }
     @ApiOperation(value = "角色资源同步[数据处理中，请耐心等待]",notes = "角色资源同步",tags = {"ThreadController"})
     @GetMapping("/roleResource")

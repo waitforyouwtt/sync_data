@@ -17,12 +17,9 @@ import com.yh.view.ProductRoleVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
-
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -75,7 +72,7 @@ public class ThreadServiceImpl implements ThreadService {
                     int start = Collections.min(lists);
                     int end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
-                    return saveResourceByMenu(start, end, null);
+                    return saveResourceByMenu(start, end);
                 }
             });
         });
@@ -109,7 +106,7 @@ public class ThreadServiceImpl implements ThreadService {
                     int start = Collections.min(lists);
                     int end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
-                    return saveResourceByButton(start, end, null);
+                    return saveResourceByButton(start, end);
                 }
             });
         });
@@ -128,10 +125,6 @@ public class ThreadServiceImpl implements ThreadService {
         Collections.sort(countRoles);
         List<List<Long>> partition = Lists.partition(countRoles, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}", partition.size());
-
-        //查询全部应用
-        List<AppProduct> productLists = this.singleFindService.findProductLists();
-        log.info("查询全部应用条数：{}", productLists.size());
 
         //存放租户信息
         List<AppTenantInfo> tenantInfos = this.singleFindService.findTenants();
@@ -158,7 +151,7 @@ public class ThreadServiceImpl implements ThreadService {
                     Long start = Collections.min(lists);
                     Long end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
-                    saveRole(start, end, tenantMap, productLists, roleBys);
+                    saveRole(start, end, tenantMap,roleBys);
                     return "success";
                 }
             });
@@ -174,7 +167,7 @@ public class ThreadServiceImpl implements ThreadService {
         List<AppProductRole> productRoles = this.singleFindService.queryAllRoles2();
         Map<String,AppProductRole> roleMap = new HashMap<>();
         productRoles.stream().forEach(v->{
-            String key = v.getProductCode()+"_"+v.getTenantCode()+"_"+v.getRoleCode();
+            String key = v.getProductCode()+"_"+v.getRoleCode();
             roleMap.put(key,v);
         });
 
@@ -186,13 +179,6 @@ public class ThreadServiceImpl implements ThreadService {
         }
 
         List<RoleSplitByApplication> roleSplitByApplications = this.feign.findRoleSplitByApplications();
-        Map<BigInteger,String> logMap = new HashMap<>();
-        roleSplitByApplications.stream().forEach(v->{
-            String key = v.getBusinessType()+"_"+v.getRoleId();
-            logMap.put(v.getRoleId(),key);
-        });
-        log.info("打印的logMap:{}",JSONUtil.toJsonStr(logMap));
-
 
         if (CollectionUtils.isEmpty(roleSplitByApplications)){
             return null;
@@ -206,22 +192,20 @@ public class ThreadServiceImpl implements ThreadService {
             /**
              * 去掉重复
              */
-            String infoUniqueKey = info.getBusinessType()+"_"+tenantCode+"_"+info.getRoleId();
-            log.info("组装数据的info key:{}",infoUniqueKey);
+            String infoUniqueKey = info.getBusinessType()+"_"+info.getRoleId();
             if (roleMap.get(infoUniqueKey) != null){
-                log.error("丢弃的数据:{}",infoUniqueKey);
                continue;
             }
             AppProductRole role = new AppProductRole();
             role.setProductCode(info.getBusinessType());
              role.setUniqueCode(StringCustomizedUtils.uniqueCode());
             if (StringUtils.isBlank(tenantCode)) {
-                role.setTenantCode("defatult");
+                role.setTenantCode("default");
             } else {
                 role.setTenantCode(tenantCode);
             }
-
             role.setRoleCode(String.valueOf(info.getRoleId()));
+
             if (StringUtils.isNotBlank(info.getRoleName())) {
                 role.setRoleName(info.getRoleName());
             }
@@ -265,10 +249,10 @@ public class ThreadServiceImpl implements ThreadService {
 
     @Async
     @Override
-    public String syncAbandonList(String code){
+    public String syncAbandonList(){
         AppProductRoleDao roleDao = SpringContextHolder.getBean(AppProductRoleDao.class);
 
-        List<Role> roleCodes = feign.syncAbandonList(code);
+        List<Role> roleCodes = feign.syncAbandonList();
 
         if (CollectionUtils.isEmpty(roleCodes)){
             log.info("没有需要同步的数据");
@@ -278,7 +262,7 @@ public class ThreadServiceImpl implements ThreadService {
         List<AppProductRole> productRoles = this.singleFindService.queryAllRoles2();
         Map<String,AppProductRole> roleMap = new HashMap<>();
         productRoles.stream().forEach(v->{
-            String key = v.getProductCode()+"_"+v.getTenantCode()+"_"+v.getRoleCode();
+            String key = v.getProductCode()+"_"+v.getRoleCode();
             roleMap.put(key,v);
         });
 
@@ -300,7 +284,7 @@ public class ThreadServiceImpl implements ThreadService {
                 /**
                  * 去掉重复
                  */
-                String infoUniqueKey = product.getProductCode()+"_"+tenantCode+"_"+info.getRoleId();
+                String infoUniqueKey = product.getProductCode()+"_"+info.getRoleId();
                 log.info("组装数据的info key:{}",infoUniqueKey);
                 if (roleMap.get(infoUniqueKey) != null){
                     log.error("丢弃的数据:{}",infoUniqueKey);
@@ -310,7 +294,7 @@ public class ThreadServiceImpl implements ThreadService {
                 role.setProductCode(product.getProductCode());
                 role.setUniqueCode(StringCustomizedUtils.uniqueCode());
                 if (StringUtils.isBlank(tenantCode)) {
-                    role.setTenantCode("defatult");
+                    role.setTenantCode("default");
                 } else {
                     role.setTenantCode(tenantCode);
                 }
@@ -514,7 +498,7 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
     //第二步落库区：------------------------------------------------------------------------------------------------------------------------
-    private String saveResourceByMenu(Integer start, Integer end, Map<String, AppProductResource> tempMap) {
+    private String saveResourceByMenu(Integer start, Integer end) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
         List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start, end);
         if (CollectionUtils.isEmpty(menuInfos)) {
@@ -524,7 +508,7 @@ public class ThreadServiceImpl implements ThreadService {
         log.info("需要同步的区间总体条数:{}", menuInfos.size());
         List<AppProductResource> data = new ArrayList<>();
         try {
-            data = convertMenuToResource(menuInfos, tempMap);
+            data = convertMenuToResource(menuInfos);
         } catch (Exception e) {
             log.error("菜单转换资源发生异常:{}", e.getStackTrace());
         }
@@ -539,7 +523,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveResourceByButton(Integer start, Integer end, Map<String, AppProductResource> tempMap) {
+    private String saveResourceByButton(Integer start, Integer end) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
         List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start, end);
         if (CollectionUtils.isEmpty(menuPermissions)) {
@@ -550,12 +534,11 @@ public class ThreadServiceImpl implements ThreadService {
 
         List<AppProductResource> data = new ArrayList<>();
         try {
-            data = convertMenuPermissionResource(menuPermissions, tempMap);
+            data = convertMenuPermissionResource(menuPermissions);
         } catch (Exception e) {
             e.getStackTrace();
             log.error("菜单按钮转换资源发生异常:{}", e.getStackTrace());
         }
-        log.info("真正需要同步的数据量：" + data.size());
         if (!CollectionUtils.isEmpty(data)) {
             List<List<AppProductResource>> partition = Lists.partition(data, 500);
             for (List<AppProductResource> params : partition) {
@@ -567,7 +550,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveRole(Long start, Long end, Map<String, String> tenantMap, List<AppProduct> productLists, List<RoleBusinessType> roleBys) {
+    private String saveRole(Long start, Long end, Map<String, String> tenantMap, List<RoleBusinessType> roleBys) {
         AppProductRoleDao roleDao = SpringContextHolder.getBean(AppProductRoleDao.class);
         List<RoleInfo> roleInfos = feign.findRoleBetweenIds(start, end);
         if (CollectionUtils.isEmpty(roleInfos)) {
@@ -577,7 +560,7 @@ public class ThreadServiceImpl implements ThreadService {
         log.info("需要同步的区间总体条数:{}", roleInfos.size());
         List<AppProductRole> data = new ArrayList<>();
         try {
-            data = convertRoles2(roleInfos, tenantMap, roleBys);
+            data = convertRoles(roleInfos, tenantMap, roleBys);
         } catch (Exception e) {
             log.error("转换角色发生异常：{}", e.getStackTrace());
         }
@@ -645,7 +628,7 @@ public class ThreadServiceImpl implements ThreadService {
     }
 
     //第三步：实体转换区-----------------------------------------------------------------------------------------------------
-    private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus, Map<String, AppProductResource> tempMap) {
+    private List<AppProductResource> convertMenuToResource(List<MenuInfo> menus) {
         //查询租户信息
         List<AppTenantInfo> tenantCodes = singleFindService.findTenants();
 
@@ -667,7 +650,7 @@ public class ThreadServiceImpl implements ThreadService {
             }
 
             AppProductResource resource = new AppProductResource();
-            // resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
+            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(tenantCode);
 
@@ -712,7 +695,7 @@ public class ThreadServiceImpl implements ThreadService {
         return resources;
     }
 
-    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data, Map<String, AppProductResource> tempMap) {
+    private List<AppProductResource> convertMenuPermissionResource(List<MenuPermission> data) {
         //查询租户信息
         List<AppTenantInfo> tenantCodes = singleFindService.findTenants();
 
@@ -750,7 +733,7 @@ public class ThreadServiceImpl implements ThreadService {
 
             AppProductResource resource = new AppProductResource();
             resource.setProductCode(info.getBusinessType());
-            // resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
+            resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
             resource.setTenantCode(tenantCode);
             //根据OperationObjectiveId菜单
             MenuInfo menu = menuInfoMap.get(info.getOperationObjectiveId());
@@ -806,135 +789,7 @@ public class ThreadServiceImpl implements ThreadService {
         return resources;
     }
 
-    public List<AppProductRole> convertRoles(List<RoleInfo> data, Map<String, AppProductRole> tempMap) {
-        List<AppProductRole> result = new ArrayList<>();
-
-        //long转string
-        List<Long> roleIds = data.stream().map(RoleInfo::getId).distinct().collect(Collectors.toList());
-        String longs = StringUtils.join(roleIds.toArray(), ",");
-
-        //根据角色id倒推productCode
-        List<ProductRoleVO> productRoles = this.feign.findProductCodeByRoleIds(longs);
-        Map<Long, List<String>> productMap = new HashMap<>();
-        for (ProductRoleVO p : productRoles) {
-            if (org.apache.commons.lang3.StringUtils.isBlank(p.getProductCode())) {
-                productMap.put(p.getRoleId(), new ArrayList<>());
-            } else {
-                List<String> product = Arrays.asList(p.getProductCode().split(","));
-                productMap.put(p.getRoleId(), product);
-            }
-        }
-
-        List<AppTenantInfo> tenantInfos = this.singleFindService.findTenants();
-        Map<String, String> tenantMap = new HashMap<>();
-        for (AppTenantInfo info : tenantInfos) {
-            tenantMap.put(info.getProductCode(), info.getCode());
-        }
-
-        //默认应用
-        List<String> productCodes;
-        //查询全部应用
-        List<AppProduct> productLists = this.singleFindService.findProductLists();
-
-        Map<String, String> logMap = new HashMap<>();
-
-        for (RoleInfo info : data) {
-
-            //如果根据角色id倒推relation_role_menu_permission未得到应用，则默认全部应用
-            if (CollectionUtils.isEmpty(productMap.get(info.getId()))) {
-                List<String> collect = new ArrayList<>();
-                if (!CollectionUtils.isEmpty(productLists)) {
-                    collect = productLists.stream().map(AppProduct::getProductCode).distinct().collect(Collectors.toList());
-                }
-                productCodes = collect;
-            } else {
-                productCodes = productMap.get(info.getId());
-            }
-
-            if (!CollectionUtils.isEmpty(productCodes)) {
-
-                for (String code : productCodes) {
-                    if (info.getId() == null) {
-                        continue;
-                    }
-                    //根据应用获取租户信息
-                    String tenantCode = tenantMap.get(code);
-                    if (StringUtils.isBlank(tenantCode)) {
-                        tenantCode = "default";
-                    }
-                    //数据拼装key
-                    String key = code.concat("_").concat(tenantCode).concat("_").concat(info.getId().toString());
-                    //数据去掉重复
-                    AppProductRole queryResult = tempMap.get(key);
-                    if (!Objects.isNull(queryResult)) {
-                        continue;
-                    }
-
-                    AppProductRole role = new AppProductRole();
-                    role.setProductCode(code);
-                    role.setUniqueCode(StringCustomizedUtils.uniqueCode());
-                    if (StringUtils.isBlank(tenantCode)) {
-                        role.setTenantCode("defatult");
-                    } else {
-                        role.setTenantCode(tenantCode);
-                    }
-
-                    role.setRoleCode(info.getId().toString());
-                    if (StringUtils.isNotBlank(info.getRoleName())) {
-                        role.setRoleName(info.getRoleName());
-                    }
-
-                    //存放角色
-                    if (StringUtils.isNotBlank(info.getRoleTypeCode())) {
-                        role.setDescription(info.getRoleTypeCode());
-                    }
-
-                    //存储第三方role_code
-                    if (StringUtils.isNotBlank(info.getRoleCode())) {
-                        role.setOutRoleCode(info.getRoleCode());
-                    }
-
-                    role.setRoleStatus("Y");
-                    role.setPlatform("purchase");
-                    //存放父级编码
-                    if (info.getParentId() != null) {
-                        role.setExtension1(String.valueOf(info.getParentId()));
-                    } else {
-                        logMap.put(info.getId().toString(), info.getRoleName());
-                    }
-                    //存放path
-                    if (StringUtils.isNotBlank(info.getRolePath())) {
-                        role.setExtension2(info.getRolePath());
-                    }
-                    role.setIsDelete(0);
-                    if (StringUtils.isBlank(info.getCreatedBy())) {
-                        role.setCreatedBy("admin");
-                    } else {
-                        role.setCreatedBy(info.getCreatedBy());
-                    }
-                    if (StringUtils.isBlank(info.getUpdatedBy())) {
-                        role.setUpdatedBy("admin");
-                    } else {
-                        role.setUpdatedBy(info.getUpdatedBy());
-                    }
-                    role.setCreatedTime(new Date());
-                    role.setUpdatedTime(new Date());
-
-                    result.add(role);
-                    log.info("待插入待总条数：{}", result.size());
-                }
-            }
-        }
-        return result;
-    }
-
-    public List<AppProductRole> convertRoles2(List<RoleInfo> data, Map<String, String> tenantMap, List<RoleBusinessType> roleBys) {
-
-        Map<String, String> dataLogMap = new HashMap<>();
-        data.stream().forEach(v -> {
-            dataLogMap.put(v.getId().toString(), v.getRoleName());
-        });
-
+    public List<AppProductRole> convertRoles(List<RoleInfo> data, Map<String, String> tenantMap, List<RoleBusinessType> roleBys) {
         //丢弃的同步的角色Id
         List<String> abandonList = new ArrayList<>();
 
@@ -960,9 +815,9 @@ public class ThreadServiceImpl implements ThreadService {
 
                 AppProductRole role = new AppProductRole();
                 role.setProductCode(roleBusinessType.getBusinessType());
-                // role.setUniqueCode(StringCustomizedUtils.uniqueCode());
+                role.setUniqueCode(StringCustomizedUtils.uniqueCode());
                 if (StringUtils.isBlank(tenantCode)) {
-                    role.setTenantCode("defatult");
+                    role.setTenantCode("default");
                 } else {
                     role.setTenantCode(tenantCode);
                 }
@@ -1018,11 +873,6 @@ public class ThreadServiceImpl implements ThreadService {
 
     public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions, Map<String, AppProduct> productMap, Map<String, String> tenantMap, Map<Integer, MenuPermission> menuPermissionMap) {
         List<AppRoleResource> result = new ArrayList<>();
-
-        Map<Integer, Integer> logMap = new HashMap<>();
-        roleMenuPermissions.stream().forEach(v -> {
-            logMap.put(v.getRoleId(), v.getMenuPermissionId());
-        });
 
         Map<String, String> waitData = new HashMap<>();
 
@@ -1082,13 +932,15 @@ public class ThreadServiceImpl implements ThreadService {
 
         //查询用户信息
         List<Long> userLongs = relationUserRoles.stream().map(RelationUserRole::getUserId).distinct().collect(Collectors.toList());
+
         //根据user_info_id 查询用户信息
         List<UserBase> userBases = singleFindService.queryByUserIds(userLongs);
+
         //角色
         List<Long> roleIds = relationUserRoles.stream().map(RelationUserRole::getRoleId).distinct().collect(Collectors.toList());
-        log.info("查询roleIds的值：" + roleIds);
+
         List<AppProductRole> roles = singleFindService.findProductCodes2(roleIds);
-        log.info("查询的roles的结果数据量：" + roles.size());
+
 
         Map<String, String> roleMap = new HashMap<>();
 

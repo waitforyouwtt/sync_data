@@ -1,9 +1,5 @@
 package com.yh.service;
 
-import com.yh.entity.RoleSplitByApplication;
-
-import java.util.List;
-
 public interface ThreadService {
 
     /**
@@ -34,7 +30,7 @@ public interface ThreadService {
      * 同步丢弃但已经绑定用户的角色
      * @return
      */
-    String syncAbandonList(String code);
+    String syncAbandonList();
 
     /**
      * 角色资源同步
