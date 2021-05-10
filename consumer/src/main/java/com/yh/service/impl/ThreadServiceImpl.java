@@ -11,16 +11,16 @@ import com.yh.entity.*;
 import com.yh.feign.DataSynchronizeFeign;
 import com.yh.service.SingleFindService;
 import com.yh.service.ThreadService;
+import com.yh.utils.Constant;
+import com.yh.utils.HttpUtils;
 import com.yh.utils.SpringContextHolder;
 import com.yh.utils.StringCustomizedUtils;
-import com.yh.view.ProductRoleVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -44,6 +44,9 @@ public class ThreadServiceImpl implements ThreadService {
 
     @Autowired
     AppProductResourceDao resourceDao;
+
+    @Autowired
+    HttpUtils httpUtils;
 
     //第一步方法区：--------------------------------------------------------------------------------------------------------------
     @Async
@@ -262,7 +265,7 @@ public class ThreadServiceImpl implements ThreadService {
         List<AppProductRole> productRoles = this.singleFindService.queryAllRoles2();
         Map<String,AppProductRole> roleMap = new HashMap<>();
         productRoles.stream().forEach(v->{
-            String key = v.getProductCode()+"_"+v.getRoleCode();
+            String key = v.getRoleCode();
             roleMap.put(key,v);
         });
 
@@ -284,10 +287,9 @@ public class ThreadServiceImpl implements ThreadService {
                 /**
                  * 去掉重复
                  */
-                String infoUniqueKey = product.getProductCode()+"_"+info.getRoleId();
+                String infoUniqueKey = String.valueOf(info.getRoleId());
                 log.info("组装数据的info key:{}",infoUniqueKey);
                 if (roleMap.get(infoUniqueKey) != null){
-                    log.error("丢弃的数据:{}",infoUniqueKey);
                     continue;
                 }
                 AppProductRole role = new AppProductRole();
@@ -490,9 +492,15 @@ public class ThreadServiceImpl implements ThreadService {
             vo.setProtocol("2");
             vo.setDescription("采购中台");
             vo.setIsDelete(0);
+            vo.setOptCode( "admin" );
+            vo.setOptBy( "admin" );
             vo.setCreatedBy("admin");
             vo.setUpdatedBy("admin");
             vo.setGrantType("authorization_code");
+            vo.setRefreshTokenExpirationTime( 300L );
+            vo.setTokenExpirationTime( 200L );
+            String json = JSONUtil.toJsonStr( vo );
+            httpUtils.postJson(  json, Constant.APPLICATION_URL);
         }
         return "成功";
     }

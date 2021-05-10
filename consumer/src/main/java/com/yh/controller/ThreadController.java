@@ -50,6 +50,7 @@ public class ThreadController {
     public String syncAbandonList(){
         return threadService.syncAbandonList();
     }
+
     @ApiOperation(value = "角色资源同步[数据处理中，请耐心等待]",notes = "角色资源同步",tags = {"ThreadController"})
     @GetMapping("/roleResource")
     public String roleResource(){
