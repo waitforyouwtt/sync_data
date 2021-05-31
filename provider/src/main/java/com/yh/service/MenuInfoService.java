@@ -60,7 +60,7 @@ public interface MenuInfoService {
      * 查询菜单的总条数
      * @return
      */
-    List<Integer> findCountMenus();
+    List<Long> findCountMenus();
 
     /**
      * 根据条件获取id区间菜单集合
@@ -68,7 +68,7 @@ public interface MenuInfoService {
      * @param max
      * @return
      */
-    List<MenuInfo> findMenuBetweenIds(Integer min, Integer max);
+    List<MenuInfo> findMenuBetweenIds(Long min, Long max);
 
     /**
      *

@@ -17,13 +17,13 @@
         <result property="rolePath" column="role_path" jdbcType="VARCHAR"/>
         <result property="businessType" column="business_type" jdbcType="VARCHAR"/>
         <result property="outRoleId" column="out_role_id" jdbcType="INTEGER"/>
-        <result property="outRoleIdTest" column="out_role_id_test" jdbcType="INTEGER"/>
+       <!-- <result property="outRoleIdTest" column="out_role_id_test" jdbcType="INTEGER"/>-->
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="RoleInfoMap">
         select
-          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
+          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id
         from role_info
         where id = #{id}
     </select>
@@ -31,7 +31,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="RoleInfoMap">
         select
-          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
+          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id
         from role_info
         limit #{offset}, #{limit}
     </select>
@@ -40,7 +40,7 @@
     <select id="queryAll" resultMap="RoleInfoMap">
         select
         id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by,
-        updated_by, role_path, business_type, out_role_id, out_role_id_test
+        updated_by, role_path, business_type, out_role_id
         from role_info
         <where>
             <if test="id != null">
@@ -85,46 +85,44 @@
             <if test="outRoleId != null">
                 and out_role_id = #{outRoleId}
             </if>
-            <if test="outRoleIdTest != null">
-                and out_role_id_test = #{outRoleIdTest}
-            </if>
+
         </where>
     </select>
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
-        insert into role_info(role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test)
-        values (#{roleTypeCode}, #{roleCode}, #{roleName}, #{isLeaf}, #{parentId}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}, #{rolePath}, #{businessType}, #{outRoleId}, #{outRoleIdTest})
+        insert into role_info(role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id)
+        values (#{roleTypeCode}, #{roleCode}, #{roleName}, #{isLeaf}, #{parentId}, #{isDelete}, #{createdTime}, #{updatedTime}, #{createdBy}, #{updatedBy}, #{rolePath}, #{businessType}, #{outRoleId})
     </insert>
 
     <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
         insert into role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
-        is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id,
-        out_role_id_test)
+        is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id
+        )
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.roleTypeCode}, #{entity.roleCode}, #{entity.roleName}, #{entity.isLeaf}, #{entity.parentId},
             #{entity.isDelete}, #{entity.createdTime}, #{entity.updatedTime}, #{entity.createdBy}, #{entity.updatedBy},
-            #{entity.rolePath}, #{entity.businessType}, #{entity.outRoleId}, #{entity.outRoleIdTest})
+            #{entity.rolePath}, #{entity.businessType}, #{entity.outRoleId})
         </foreach>
     </insert>
 
     <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
         insert into role_info(role_type_code, role_code, role_name, is_leaf, parent_id,
-        is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id,
-        out_role_id_test)
+        is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id
+        )
         values
         <foreach collection="entities" item="entity" separator=",">
             (#{entity.roleTypeCode}, #{entity.roleCode}, #{entity.roleName}, #{entity.isLeaf}, #{entity.parentId},
             #{entity.isDelete}, #{entity.createdTime}, #{entity.updatedTime}, #{entity.createdBy}, #{entity.updatedBy},
-            #{entity.rolePath}, #{entity.businessType}, #{entity.outRoleId}, #{entity.outRoleIdTest})
+            #{entity.rolePath}, #{entity.businessType}, #{entity.outRoleId})
         </foreach>
         on duplicate key update
         role_type_code = values(role_type_code) , role_code = values(role_code) , role_name = values(role_name) ,
         is_leaf = values(is_leaf) , parent_id = values(parent_id) , is_delete = values(is_delete) , created_time =
         values(created_time) , updated_time = values(updated_time) , created_by = values(created_by) , updated_by =
         values(updated_by) , role_path = values(role_path) , business_type = values(business_type) , out_role_id =
-        values(out_role_id) , out_role_id_test = values(out_role_id_test)
+        values(out_role_id)
     </insert>
 
     <!--通过主键修改数据-->
@@ -170,9 +168,7 @@
             <if test="outRoleId != null">
                 out_role_id = #{outRoleId},
             </if>
-            <if test="outRoleIdTest != null">
-                out_role_id_test = #{outRoleIdTest},
-            </if>
+
         </set>
         where id = #{id}
     </update>
@@ -189,7 +185,7 @@
 
     <select id="findRoleBetweenIds" resultMap="RoleInfoMap">
         select
-          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id, out_role_id_test
+          id, role_type_code, role_code, role_name, is_leaf, parent_id, is_delete, created_time, updated_time, created_by, updated_by, role_path, business_type, out_role_id
         from role_info
         where 1 = 1 and is_delete = 0
         and id &gt;= #{min} and id &lt;= #{max}

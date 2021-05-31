@@ -3,6 +3,7 @@ package com.yh.entity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -15,13 +16,13 @@ import java.util.Date;
 public class MenuPermission implements Serializable {
     private static final long serialVersionUID = 603678035244737875L;
 
-    private Integer id;
+    private BigInteger id;
 
     private String businessType;
     /**
      * 操作对象id
      */
-    private Integer operationObjectiveId;
+    private Long operationObjectiveId;
 
     private String operationObjectiveName;
 

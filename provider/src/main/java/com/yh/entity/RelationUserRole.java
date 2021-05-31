@@ -3,6 +3,7 @@ package com.yh.entity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -15,7 +16,7 @@ import java.util.Date;
 public class RelationUserRole implements Serializable {
     private static final long serialVersionUID = 791941970867657024L;
 
-    private Integer id;
+    private BigInteger id;
     /**
      * 用户id
      */

@@ -85,12 +85,12 @@ public class MenuInfoServiceImpl implements MenuInfoService {
     }
 
     @Override
-    public List<Integer> findCountMenus() {
+    public List<Long> findCountMenus() {
         return menuInfoDao.findCountMenus();
     }
 
     @Override
-    public List<MenuInfo> findMenuBetweenIds(Integer min, Integer max) {
+    public List<MenuInfo> findMenuBetweenIds(Long min, Long max) {
         return menuInfoDao.findMenuBetweenIds(min,max);
     }
 

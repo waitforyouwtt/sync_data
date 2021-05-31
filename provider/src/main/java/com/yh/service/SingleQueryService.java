@@ -35,7 +35,7 @@ public interface SingleQueryService {
      * @param menuPermissionIds
      * @return
      */
-    List<String> findProductCodes (List<Integer> menuPermissionIds);
+    List<String> findProductCodes (List<Long> menuPermissionIds);
 
     MenuPermission findByMenuPermissionId(String menuPermissionId);
 

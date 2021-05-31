@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @RestController
@@ -36,13 +37,13 @@ public class SyncController {
 
     @ApiOperation(value = "获取菜单的总条数",notes = "获取菜单的总条数",tags = {"SyncController"})
     @GetMapping("/findCountMenus")
-    public List<Integer> findCountMenus(){
+    public List<Long> findCountMenus(){
         return menuInfoService.findCountMenus();
     }
 
     @ApiOperation(value = "根据条件获取id区间菜单集合",notes = "根据条件获取id区间菜单集合",tags = {"SyncController"})
     @GetMapping("/findMenuBetweenIds")
-    List<MenuInfo> findMenuBetweenIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+    List<MenuInfo> findMenuBetweenIds(@RequestParam("min")Long min,@RequestParam("max")Long max){
         return menuInfoService.findMenuBetweenIds(min,max);
     }
 
@@ -54,13 +55,13 @@ public class SyncController {
 
     @ApiOperation(value = "获取按钮的总条数",notes = "获取按钮的总条数",tags = {"SyncController"})
     @GetMapping("/findCountPermission")
-    List<Integer> findCountPermission(){
+    List<Long> findCountPermission(){
        return menuPermissionService.findCountPermission();
     }
 
     @ApiOperation(value = "根据条件获取id区间按钮集合",notes = "根据条件获取id区间按钮集合",tags = {"SyncController"})
     @GetMapping("/menuPermissionBetweenIds")
-    List<MenuPermission> menuPermissionBetweenIds(@RequestParam("min")Integer min, @RequestParam("max")Integer max){
+    List<MenuPermission> menuPermissionBetweenIds(@RequestParam("min")Long min, @RequestParam("max")Long max){
         return menuPermissionService.menuPermissionBetweenIds(min,max);
     }
 
@@ -114,13 +115,13 @@ public class SyncController {
 
     @ApiOperation(value = "获取角色资源总条数",notes = "获取角色资源总条数" ,tags = {"SyncController"})
     @GetMapping("/findCountRelationRoleMenuPermissions")
-    public List<Integer> findCountRelationRoleMenuPermissions(){
+    public List<Long> findCountRelationRoleMenuPermissions(){
         return relationRoleMenuPermissionService.findCountRelationRoleMenuPermissions();
     }
 
     @ApiOperation(value = "根据条件获取id区间角色资源集合",notes = "根据条件获取id区间角色资源集合",tags = {"SyncController"})
     @GetMapping("/relationRoleMenuPermissions")
-    public List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Integer min,@RequestParam("max")Integer max) {
+    public List<RelationRoleMenuPermission> relationRoleMenuPermissions(@RequestParam("min")Long min,@RequestParam("max")Long max) {
         return relationRoleMenuPermissionService.findRelationRoleMenuPermissions(min, max);
     }
 
@@ -150,13 +151,13 @@ public class SyncController {
 
     @ApiOperation(value = "获取用户角色总条数",notes = "获取用户角色总条数",tags = {"SyncController"})
     @GetMapping("/findCountRelationUserRoles")
-    List<Integer> findCountRelationUserRoles(){
+    List<Long> findCountRelationUserRoles(){
         return relationUserRoleService.findCountRelationUserRoles();
     }
 
     @ApiOperation(value = "根据条件获取id区间用户角色集合",notes = "根据条件获取id区间用户角色集合",tags = {"SyncController"})
     @GetMapping("/relationUserRoles")
-    public List<RelationUserRole> relationUserRoles(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+    public List<RelationUserRole> relationUserRoles(@RequestParam("min")Long min,@RequestParam("max")Long max){
         return relationUserRoleService.findRelationUserRoles(min,max);
     }
 
@@ -190,7 +191,7 @@ public class SyncController {
     //同步用户和角色
     @ApiOperation(value = "",notes = "",tags = {"SyncController"})
     @GetMapping("/findIds")
-    public List<Integer> findIds(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+    public List<Integer> findIds(@RequestParam("min")Long min,@RequestParam("max")Long max){
         return relationUserRoleService.findIds(min,max);
     }
 

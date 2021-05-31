@@ -6,6 +6,7 @@ import com.yh.service.MenuPermissionService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
      * @return 实例对象
      */
     @Override
-    public MenuPermission queryById(int id) {
+    public MenuPermission queryById(BigInteger id) {
         return this.menuPermissionDao.queryById(id);
     }
 
@@ -85,12 +86,12 @@ public class MenuPermissionServiceImpl implements MenuPermissionService {
     }
 
     @Override
-    public List<Integer> findCountPermission() {
+    public List<Long> findCountPermission() {
         return menuPermissionDao.findCountPermission();
     }
 
     @Override
-    public List<MenuPermission> menuPermissionBetweenIds(Integer min, Integer max) {
+    public List<MenuPermission> menuPermissionBetweenIds(Long min, Long max) {
         return menuPermissionDao.menuPermissionBetweenIds(min,max);
     }
 }

@@ -138,4 +138,18 @@ public class UserInfo implements Serializable {
      * 0:未关联数据权限 1:已关联数据权限
      */
     private Integer dataFlag;
+
+    public UserInfo() {
+
+    }
+
+    public UserInfo(String id, String userNumber, String email, String nickname, String name, Integer gender, Integer status) {
+        this.id = id;
+        this.userNumber = userNumber;
+        this.email = email;
+        this.nickname = nickname;
+        this.name = name;
+        this.gender = gender;
+        this.status = status;
+    }
 }

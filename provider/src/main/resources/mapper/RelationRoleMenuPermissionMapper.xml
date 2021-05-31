@@ -132,7 +132,7 @@
         delete from relation_role_menu_permission where id = #{id}
     </delete>
 
-    <select id="findCountRelationRoleMenuPermissions" resultType="integer">
+    <select id="findCountRelationRoleMenuPermissions" resultType="long">
        select id from relation_role_menu_permission
        where 1 = 1
        and is_delete = 0

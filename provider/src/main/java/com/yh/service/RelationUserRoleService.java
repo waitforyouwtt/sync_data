@@ -2,6 +2,7 @@ package com.yh.service;
 
 import com.yh.entity.RelationUserRole;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ public interface RelationUserRoleService {
      * @param id 主键
      * @return 实例对象
      */
-    RelationUserRole queryById(Integer id);
+    RelationUserRole queryById(BigInteger id);
 
     /**
      * 查询多条数据
@@ -59,13 +60,13 @@ public interface RelationUserRoleService {
      * @param max
      * @return
      */
-    List<RelationUserRole> findRelationUserRoles(Integer min, Integer max);
+    List<RelationUserRole> findRelationUserRoles(Long min, Long max);
 
-    List<Integer> findIds(Integer min, Integer max);
+    List<Integer> findIds(Long min, Long max);
 
     /**
      * 获取用户角色总条数
      * @return
      */
-    List<Integer> findCountRelationUserRoles();
+    List<Long> findCountRelationUserRoles();
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 
 /**
  * (RoleInfo)表控制层
@@ -30,7 +31,7 @@ public class RoleInfoController {
      * @return 单条数据
      */
     @GetMapping("selectOne")
-    public RoleInfo selectOne(Long id) {
+    public RoleInfo selectOne(BigInteger id) {
         return this.roleInfoService.queryById(id);
     }
 

@@ -4,6 +4,7 @@ import com.yh.entity.Role;
 import com.yh.entity.RoleInfo;
 import com.yh.entity.RoleSplitByApplication;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -20,7 +21,7 @@ public interface RoleInfoService {
      * @param id 主键
      * @return 实例对象
      */
-    RoleInfo queryById(Long id);
+    RoleInfo queryById(BigInteger id);
 
     /**
      * 查询多条数据

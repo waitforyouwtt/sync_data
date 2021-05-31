@@ -5,6 +5,7 @@ import com.yh.entity.MenuPermission;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public interface MenuPermissionDao extends BaseMapper<MenuPermission> {
      * @param id 主键
      * @return 实例对象
      */
-    MenuPermission queryById(int id);
+    MenuPermission queryById(BigInteger id);
 
     /**
      * 查询指定行数据
@@ -82,7 +83,7 @@ public interface MenuPermissionDao extends BaseMapper<MenuPermission> {
      */
     int deleteById(Object id);
 
-    List<Integer> findCountPermission();
+    List<Long> findCountPermission();
 
     /**
      * 根据条件获取id区间按钮集合
@@ -90,5 +91,5 @@ public interface MenuPermissionDao extends BaseMapper<MenuPermission> {
      * @param max
      * @return
      */
-    List<MenuPermission> menuPermissionBetweenIds(@Param("min") Integer min,@Param("max") Integer max);
+    List<MenuPermission> menuPermissionBetweenIds(@Param("min") Long min,@Param("max") Long max);
 }

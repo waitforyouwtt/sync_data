@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -18,13 +19,13 @@ public class MenuInfo implements Serializable {
 
     private static final long serialVersionUID = -73500409665383268L;
 
-    private Integer id;
+    private BigInteger id;
     /**
      * 类型：1页面 2其他
      */
     private Integer type;
 
-    private Integer parentId;
+    private BigInteger parentId;
     /**
      * 编码
      */

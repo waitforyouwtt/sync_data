@@ -7,6 +7,7 @@ import com.yh.entity.RoleSplitByApplication;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -24,7 +25,7 @@ public interface RoleInfoDao extends BaseMapper<RoleInfo> {
      * @param id 主键
      * @return 实例对象
      */
-    RoleInfo queryById(Long id);
+    RoleInfo queryById(BigInteger id);
 
     /**
      * 查询指定行数据

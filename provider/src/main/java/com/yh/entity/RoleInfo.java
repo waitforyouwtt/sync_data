@@ -3,6 +3,7 @@ package com.yh.entity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -16,7 +17,7 @@ public class RoleInfo implements Serializable {
 
     private static final long serialVersionUID = -70765005377848795L;
 
-    private Long id;
+    private BigInteger id;
     /**
      * 角色类型 ADMIN MANGER等
      */
@@ -60,5 +61,4 @@ public class RoleInfo implements Serializable {
 
     private Long outRoleId;
 
-    private Long outRoleIdTest;
 }

@@ -133,14 +133,14 @@
         and id &gt;= #{min} and id &lt;= #{max}
     </select>
 
-    <select id="queryIds" resultType="integer">
+    <select id="queryIds" resultType="long">
         select id from relation_user_role
         where 1 = 1 /*and is_delete = 0*/
         and id &gt;= #{min} and id &lt;= #{max}
         order by id ASC
     </select>
 
-    <select id="findCountRelationUserRoles" resultType="integer">
+    <select id="findCountRelationUserRoles" resultType="long">
         select id from relation_user_role
         where 1 = 1 /* and is_delete = 0*/
     </select>

@@ -44,19 +44,19 @@ public class ThreadServiceImpl2 implements ThreadService2 {
     @Async
     @Override
     public String menuSyncResource() {
-        List<Integer> countMenus = feign.findCountMenus();
+        List<Long> countMenus = feign.findCountMenus();
         if (CollectionUtils.isEmpty(countMenus)){
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countMenus.size());
 
         int batchNum = 500;
-        List<List<Integer>> partition = Lists.partition(countMenus, 500);
+        List<List<Long>> partition = Lists.partition(countMenus, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
-        for (List<Integer> lists : partition){
-            Integer start = Collections.min(lists);
-            Integer end = Collections.max(lists);
+        for (List<Long> lists : partition){
+            Long start = Collections.min(lists);
+            Long end = Collections.max(lists);
             threadRunMenu(start,end,batchNum);
         }
         return "成功";
@@ -65,7 +65,7 @@ public class ThreadServiceImpl2 implements ThreadService2 {
     @Async
     @Override
     public String menuPermissionSyncResource() {
-        List<Integer> countMenus = feign.findCountPermission();
+        List<Long> countMenus = feign.findCountPermission();
         if (CollectionUtils.isEmpty(countMenus)){
             return "暂无数据需要同步";
         }
@@ -73,12 +73,12 @@ public class ThreadServiceImpl2 implements ThreadService2 {
 
         int batchNum = 500;
 
-        List<List<Integer>> partition = Lists.partition(countMenus, 500);
+        List<List<Long>> partition = Lists.partition(countMenus, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
-        for (List<Integer> lists : partition){
-            Integer start = Collections.min(lists);
-            Integer end = Collections.max(lists);
+        for (List<Long> lists : partition){
+            Long start = Collections.min(lists);
+            Long end = Collections.max(lists);
             threadRunPermission(start,end,batchNum);
         }
         return "成功";
@@ -109,18 +109,18 @@ public class ThreadServiceImpl2 implements ThreadService2 {
     @Async
     @Override
     public String roleResource() {
-        List<Integer> countRoleResource = feign.findCountRelationRoleMenuPermissions();
+        List<Long> countRoleResource = feign.findCountRelationRoleMenuPermissions();
         if (CollectionUtils.isEmpty(countRoleResource)){
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countRoleResource.size());
         int batchNum = 500;
-        List<List<Integer>> partition = Lists.partition(countRoleResource, 500);
+        List<List<Long>> partition = Lists.partition(countRoleResource, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
-        for (List<Integer> lists : partition){
-            Integer start = Collections.min(lists);
-            Integer end = Collections.max(lists);
+        for (List<Long> lists : partition){
+            Long start = Collections.min(lists);
+            Long end = Collections.max(lists);
             log.info("每段的开始值&结束值：{},{}",start,end);
             threadRunRoleResource(start,end,batchNum);
         }
@@ -129,20 +129,20 @@ public class ThreadServiceImpl2 implements ThreadService2 {
 
     @Override
     public String syncRelationUserRoles() {
-        List<Integer> countRelationUserRoles = feign.findCountRelationUserRoles();
+        List<Long> countRelationUserRoles = feign.findCountRelationUserRoles();
         if (CollectionUtils.isEmpty(countRelationUserRoles)){
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countRelationUserRoles.size());
-        List<List<Integer>> partition = Lists.partition(countRelationUserRoles, 1000);
+        List<List<Long>> partition = Lists.partition(countRelationUserRoles, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
         ExecutorService executor = Executors.newFixedThreadPool(4);
         CountDownLatch countDownLatch = new CountDownLatch(countRelationUserRoles.size()/1000);
         try {
 
-            for (List<Integer> lists : partition){
-                Integer start = Collections.min(lists);
-                Integer end = Collections.max(lists);
+            for (List<Long> lists : partition){
+                Long start = Collections.min(lists);
+                Long end = Collections.max(lists);
                 log.info("每段的开始值&结束值：{},{}",start,end);
 
                 ImportRelationUserRoleTask task = new ImportRelationUserRoleTask(start,end, countDownLatch);
@@ -162,11 +162,11 @@ public class ThreadServiceImpl2 implements ThreadService2 {
     class ImportRelationUserRoleTask implements Runnable{
         private AppUserRoleDao appUserRoleDao  = SpringContextHolder.getBean(AppUserRoleDao.class);
 
-        Integer start;
-        Integer end;
+        Long start;
+        Long end;
         private CountDownLatch countDownLatch;
 
-        public ImportRelationUserRoleTask(Integer start,Integer end,CountDownLatch countDownLatch){
+        public ImportRelationUserRoleTask(Long start,Long end,CountDownLatch countDownLatch){
             this.start = start;
             this.end   = end;
             this.countDownLatch = countDownLatch;
@@ -234,7 +234,7 @@ public class ThreadServiceImpl2 implements ThreadService2 {
     }
 
     //第二------------------------------------------------------------------------------------------------------------------------------------------------
-    private void threadRunMenu(Integer start,Integer end,Integer batchNum){
+    private void threadRunMenu(Long start,Long end,Integer batchNum){
         log.info("每段的开始值&结束值：{},{}",start,end);
         List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start,end);
         log.info("需要同步的区间总体条数:{}",menuInfos.size());
@@ -271,7 +271,7 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         }
     }
 
-    private void threadRunPermission(Integer start, Integer end, int batchNum) {
+    private void threadRunPermission(Long start, Long end, int batchNum) {
         log.info("每段的开始值&结束值：{},{}",start,end);
         List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start,end);
         log.info("需要同步的区间总体条数:{}",menuPermissions.size());
@@ -339,7 +339,7 @@ public class ThreadServiceImpl2 implements ThreadService2 {
         }
     }
 
-    private void threadRunRoleResource(Integer start, Integer end, int batchNum) {
+    private void threadRunRoleResource(Long start, Long end, int batchNum) {
         log.info("每段的开始值&结束值：{},{}",start,end);
         List<RelationRoleMenuPermission> roleResources = feign.relationRoleMenuPermissions(start,end);
         log.info("需要同步的区间总体条数:{}",roleResources.size());

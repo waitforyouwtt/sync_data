@@ -13,5 +13,12 @@
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://10.251.76.35:3306/o2o_support_idaas</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="yh_srm_usercenter_prod@10.251.84.16" uuid="8d026b02-05fc-41e1-bbc1-228efc082d7d">
+      <driver-ref>mysql.8</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://10.251.84.16:3306/yh_srm_usercenter_prod</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

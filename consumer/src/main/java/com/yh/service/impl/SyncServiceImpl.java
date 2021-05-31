@@ -145,7 +145,7 @@ public class SyncServiceImpl implements SyncService {
     }
 
     @Override
-    public String roleResource(Integer min,Integer max) {
+    public String roleResource(Long min,Long max) {
         int result = 0;
         List<RelationRoleMenuPermission> relationRoleMenuPermissions = productResourceFeign.relationRoleMenuPermissions(min,max);
         log.info("需要同步角色资源的总体条数:{}",relationRoleMenuPermissions);
@@ -178,7 +178,7 @@ public class SyncServiceImpl implements SyncService {
     }
 
     @Override
-    public String syncRelationUserRoles(Integer min, Integer max) {
+    public String syncRelationUserRoles(Long min, Long max) {
         int result = 0;
         List<RelationUserRole> relationUserRoles = productResourceFeign.relationUserRoles(min, max);
         if (CollectionUtils.isEmpty(relationUserRoles)){
@@ -214,18 +214,18 @@ public class SyncServiceImpl implements SyncService {
 
     @Async
     @Override
-    public String syncRelationUserRoles3(Integer min, Integer max) {
+    public String syncRelationUserRoles3(Long min, Long max) {
 
-        List<Integer> integers = productResourceFeign.findIds(min, max);
+        List<Long> integers = productResourceFeign.findIds(min, max);
         if (CollectionUtils.isEmpty(integers)){
             return "此区间没有数据";
         }
         log.info("需要同步用户角色的总体条数:{}",integers);
-        List<List<Integer>> partition = Lists.partition(integers, 1000);
+        List<List<Long>> partition = Lists.partition(integers, 1000);
 
-        for (List<Integer> lists : partition){
-            Integer start = Collections.min(lists);
-            Integer end = Collections.max(lists);
+        for (List<Long> lists : partition){
+            Long start = Collections.min(lists);
+            Long end = Collections.max(lists);
             log.info("每段的开始值&结束值：{},{}",start,end);
             List<RelationUserRole> relationUserRoles = productResourceFeign.relationUserRoles(start, end);
 
@@ -542,7 +542,7 @@ public class SyncServiceImpl implements SyncService {
         for (MenuInfo info: menus){
             AppProductResource resource = new AppProductResource();
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setId(100000+info.getId());
+            //resource.setId(info.getId());
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(singleFindService.findTenantCode(info.getBusinessType()));
 
@@ -556,7 +556,7 @@ public class SyncServiceImpl implements SyncService {
             }else{
                 resource.setParentCode(queryMenu.getId().toString());
             }*/
-            if (info.getParentId() == null || info.getParentId() ==0){
+            if (info.getParentId() == null || info.getParentId() .intValue() == 0){
                 resource.setParentCode("0");
             }else{
                 resource.setParentCode(String.valueOf(info.getParentId()));
@@ -588,7 +588,7 @@ public class SyncServiceImpl implements SyncService {
         for (MenuPermission info: permissions){
             AppProductResource resource = new AppProductResource();
             resource.setUniqueCode(StringCustomizedUtils.uniqueCode());
-            resource.setId(100000+info.getId());
+            //resource.setId(100000+info.getId());
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(singleFindService.findTenantCode(info.getBusinessType()));
             /**

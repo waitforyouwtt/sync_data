@@ -6,6 +6,7 @@ import com.yh.service.RelationUserRoleService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -26,7 +27,7 @@ public class RelationUserRoleServiceImpl implements RelationUserRoleService {
      * @return 实例对象
      */
     @Override
-    public RelationUserRole queryById(Integer id) {
+    public RelationUserRole queryById(BigInteger id) {
         return this.relationUserRoleDao.queryById(id);
     }
 
@@ -78,17 +79,17 @@ public class RelationUserRoleServiceImpl implements RelationUserRoleService {
     }
 
     @Override
-    public List<RelationUserRole> findRelationUserRoles(Integer min, Integer max) {
+    public List<RelationUserRole> findRelationUserRoles(Long min, Long max) {
         return relationUserRoleDao.queryBetweenId(min,max);
     }
 
     @Override
-    public List<Integer> findIds(Integer min, Integer max) {
+    public List<Integer> findIds(Long min, Long max) {
         return relationUserRoleDao.queryIds(min,max);
     }
 
     @Override
-    public List<Integer> findCountRelationUserRoles() {
+    public List<Long> findCountRelationUserRoles() {
         return relationUserRoleDao.findCountRelationUserRoles();
     }
 }

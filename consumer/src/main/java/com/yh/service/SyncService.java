@@ -24,7 +24,7 @@ public interface SyncService {
      * 角色资源同步
      * @return
      */
-    String roleResource(Integer min,Integer max);
+    String roleResource(Long min,Long max);
 
     /**
      * 角色用户
@@ -32,9 +32,9 @@ public interface SyncService {
      * @param max
      * @return
      */
-    String syncRelationUserRoles(Integer min, Integer max);
+    String syncRelationUserRoles(Long min, Long max);
 
-    String syncRelationUserRoles3(Integer min, Integer max);
+    String syncRelationUserRoles3(Long min, Long max);
 
     /**
      * 同步租户信息

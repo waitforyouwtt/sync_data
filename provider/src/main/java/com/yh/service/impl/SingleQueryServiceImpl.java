@@ -83,7 +83,7 @@ public class SingleQueryServiceImpl implements SingleQueryService {
     }
 
     @Override
-    public List<String> findProductCodes(List<Integer> menuPermissionIds) {
+    public List<String> findProductCodes(List<Long> menuPermissionIds) {
         QueryWrapper<MenuPermission> wrapper = new QueryWrapper();
         wrapper.in("id",menuPermissionIds);
         /*wrapper.eq("is_delete",0);*/

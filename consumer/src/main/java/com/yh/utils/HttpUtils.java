@@ -1,6 +1,7 @@
 package com.yh.utils;
 
-import com.alibaba.fastjson.JSON;
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -15,7 +16,7 @@ import java.util.Map;
 @Service
 public class HttpUtils {
 
-    public static String shenshuUrl = "http://o2o-support-dev.o2o-support-idaas-gateway.devgw.yonghui.cn";
+    public static String shenshuUrl = "http://shenshu-api.yonghui.cn";
 
     @Autowired
     RestTemplate restTemplate;
@@ -37,7 +38,7 @@ public class HttpUtils {
         if (response == null){
             return new Result(500000,"远程调用返回结果为null");
         }
-        Map<String,Object> maps = (Map) JSON.parse( response );
+        Map<String,Object> maps = (Map) JSONUtil.parse( response );
         if (!maps.get("code").equals(200000)){
             log.warn("调用神荼平台接口出错，{}", maps.get("message"));
             return new Result(500000,maps.get("message").toString());

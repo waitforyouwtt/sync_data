@@ -2,6 +2,7 @@ package com.yh.service;
 
 import com.yh.entity.MenuPermission;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ public interface MenuPermissionService {
      * @param id 主键
      * @return 实例对象
      */
-    MenuPermission queryById(int id);
+    MenuPermission queryById(BigInteger id);
 
     /**
      * 查询多条数据
@@ -60,7 +61,7 @@ public interface MenuPermissionService {
      * 获取按钮总条数
      * @return
      */
-    List<Integer> findCountPermission();
+    List<Long> findCountPermission();
 
     /**
      * 根据条件获取id区间按钮集合
@@ -68,5 +69,5 @@ public interface MenuPermissionService {
      * @param max
      * @return
      */
-    List<MenuPermission> menuPermissionBetweenIds(Integer min, Integer max);
+    List<MenuPermission> menuPermissionBetweenIds(Long min, Long max);
 }

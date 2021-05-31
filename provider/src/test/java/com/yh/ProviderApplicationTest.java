@@ -31,16 +31,16 @@ public class ProviderApplicationTest {
 
     @Test
     public void testxx(){
-        int min = 9;
-        int max = 1642;
+        Long min = 9L;
+        Long max = 1642L;
         List<MenuInfo> menuBetweenIds = menuInfoService.findMenuBetweenIds(min, max);
         log.info("得到的数据:{}",menuBetweenIds);
     }
 
     @Test
     public void test(){
-        Integer min = 300000;
-        Integer max = 500000;
+        long min = 300000l;
+        long max = 500000l;
         List<Integer> integers = relationUserRoleService.findIds(min, max);
         List<List<Integer>> partition = Lists.partition(integers, 1000);
         for (List<Integer> lists: partition){

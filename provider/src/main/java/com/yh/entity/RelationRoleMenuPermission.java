@@ -3,6 +3,7 @@ package com.yh.entity;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.Date;
 
 /**
@@ -15,13 +16,13 @@ import java.util.Date;
 public class RelationRoleMenuPermission implements Serializable {
     private static final long serialVersionUID = 794959371908528579L;
 
-    private Integer id;
+    private BigInteger id;
     /**
      * 角色id
      */
-    private Integer roleId;
+    private Long roleId;
 
-    private Integer menuPermissionId;
+    private Long menuPermissionId;
     /**
      * 0:正常 1:删除
      */

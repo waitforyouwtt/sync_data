@@ -7,7 +7,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Api(value = "ThreadController")
@@ -54,7 +53,12 @@ public class ThreadController {
     @ApiOperation(value = "角色资源同步[数据处理中，请耐心等待]",notes = "角色资源同步",tags = {"ThreadController"})
     @GetMapping("/roleResource")
     public String roleResource(){
-        return threadService.roleResource();
+        try{
+            return threadService.roleResource();
+        }catch (Exception e){
+            e.getStackTrace();
+        }
+        return null;
     }
 
     @ApiOperation(value = "用户角色同步[数据处理中，请耐心等待]",notes = "用户角色同步同步",tags = {"ThreadController"})

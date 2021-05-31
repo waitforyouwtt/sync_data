@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,7 +42,7 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
      * @return 实例对象
      */
     @Override
-    public RelationRoleMenuPermission queryById(Integer id) {
+    public RelationRoleMenuPermission queryById(BigInteger id) {
         return this.relationRoleMenuPermissionDao.queryById(id);
     }
 
@@ -99,7 +100,7 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
         if (CollectionUtils.isEmpty(relationRoleMenuPermissions)){
             return Collections.EMPTY_LIST;
         }
-        List<Integer> menuPermissionIds = relationRoleMenuPermissions.stream().map(RelationRoleMenuPermission::getMenuPermissionId).collect(Collectors.toList());
+        List<Long> menuPermissionIds = relationRoleMenuPermissions.stream().map(RelationRoleMenuPermission::getMenuPermissionId).collect(Collectors.toList());
         List<String> productCodes = this.singleQueryService.findProductCodes(menuPermissionIds);
         return productCodes;
     }
@@ -114,11 +115,11 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
         if (CollectionUtils.isEmpty(relationRoleMenuPermissions)){
             return Collections.EMPTY_LIST;
         }
-        Map<Integer, List<RelationRoleMenuPermission>> integerListMap = relationRoleMenuPermissions.stream().collect(Collectors.groupingBy(RelationRoleMenuPermission::getRoleId));
+        Map<Long, List<RelationRoleMenuPermission>> integerListMap = relationRoleMenuPermissions.stream().collect(Collectors.groupingBy(RelationRoleMenuPermission::getRoleId));
         List<ProductRoleVO> products = new ArrayList<>();
         integerListMap.forEach((k, v) -> {
             System.out.println("key:value = " + k + ":" + v);
-            List<Integer> menuPermissionIds = v.stream().map(RelationRoleMenuPermission::getMenuPermissionId).distinct().collect(Collectors.toList());
+            List<Long> menuPermissionIds = v.stream().map(RelationRoleMenuPermission::getMenuPermissionId).distinct().collect(Collectors.toList());
             List<String>  productCodes = this.singleQueryService.findProductCodes(menuPermissionIds);
             ProductRoleVO vo = new ProductRoleVO();
             vo.setRoleId(Long.valueOf(k));
@@ -133,12 +134,12 @@ public class RelationRoleMenuPermissionServiceImpl implements RelationRoleMenuPe
     }
 
     @Override
-    public List<RelationRoleMenuPermission> findRelationRoleMenuPermissions(Integer min,Integer max) {
+    public List<RelationRoleMenuPermission> findRelationRoleMenuPermissions(Long min,Long max) {
         return this.relationRoleMenuPermissionDao.queryBetweenId(min,max);
     }
 
     @Override
-    public List<Integer> findCountRelationRoleMenuPermissions() {
+    public List<Long> findCountRelationRoleMenuPermissions() {
         return relationRoleMenuPermissionDao.findCountRelationRoleMenuPermissions();
     }
 

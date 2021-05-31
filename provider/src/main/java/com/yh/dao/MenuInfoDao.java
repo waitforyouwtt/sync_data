@@ -85,7 +85,7 @@ public interface MenuInfoDao {
      * 查询菜单的总条数
      * @return
      */
-    List<Integer> findCountMenus();
+    List<Long> findCountMenus();
 
     /**
      * 根据条件获取id区间菜单集合
@@ -93,7 +93,7 @@ public interface MenuInfoDao {
      * @param max
      * @return
      */
-    List<MenuInfo> findMenuBetweenIds(@Param("min") Integer min,@Param("max") Integer max);
+    List<MenuInfo> findMenuBetweenIds(@Param("min") Long min,@Param("max") Long max);
 
     List<MenuInfo> findMenuPage(@Param("offset") Integer offset,@Param("num") Integer num);
 }

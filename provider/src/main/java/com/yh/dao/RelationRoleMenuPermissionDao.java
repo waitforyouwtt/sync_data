@@ -6,6 +6,7 @@ import com.yh.entity.RoleBusinessType;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -23,7 +24,7 @@ public interface RelationRoleMenuPermissionDao extends BaseMapper<RelationRoleMe
      * @param id 主键
      * @return 实例对象
      */
-    RelationRoleMenuPermission queryById(Integer id);
+    RelationRoleMenuPermission queryById(BigInteger id);
 
     /**
      * 查询指定行数据
@@ -89,13 +90,13 @@ public interface RelationRoleMenuPermissionDao extends BaseMapper<RelationRoleMe
      * @param max
      * @return
      */
-    List<RelationRoleMenuPermission> queryBetweenId(@Param("min")Integer min,@Param("max")Integer max);
+    List<RelationRoleMenuPermission> queryBetweenId(@Param("min")Long min,@Param("max")Long max);
 
     /**
      * 获取角色资源总条数
      * @return
      */
-    List<Integer> findCountRelationRoleMenuPermissions();
+    List<Long> findCountRelationRoleMenuPermissions();
 
     List<RelationRoleMenuPermission> findCountRelationRoleMenuPermissions2();
 

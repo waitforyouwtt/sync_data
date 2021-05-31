@@ -49,7 +49,7 @@
     <select id="queryAll" resultMap="AppProductResourceMap">
         select
         id, unique_code, product_code, tenant_code, parent_code, resource_code, resource_name, path, type,
-        resource_type, order_num, description, expand1, expand2, expand3, expand4, expand5, is_delete, created_by,
+        resource_type, order_num, description,status,platform, expand1, expand2, expand3, expand4, expand5, is_delete, created_by,
         updated_by, created_time, updated_time
         from app_product_resource
         <where>
@@ -88,6 +88,9 @@
             </if>
             <if test="description != null and description != ''">
                 and description = #{description}
+            </if>
+            <if test="platform != null and platform != ''">
+                and platform = #{platform}
             </if>
             <if test="expand1 != null and expand1 != ''">
                 and expand1 = #{expand1}

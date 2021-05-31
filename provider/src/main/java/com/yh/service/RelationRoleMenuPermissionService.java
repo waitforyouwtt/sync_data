@@ -5,6 +5,7 @@ import com.yh.entity.RoleBusinessType;
 import com.yh.view.ProductRoleVO;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -21,7 +22,7 @@ public interface RelationRoleMenuPermissionService {
      * @param id 主键
      * @return 实例对象
      */
-    RelationRoleMenuPermission queryById(Integer id);
+    RelationRoleMenuPermission queryById(BigInteger id);
 
     /**
      * 查询多条数据
@@ -68,13 +69,13 @@ public interface RelationRoleMenuPermissionService {
      *根据条件获取id区间角色资源集合
      * @return
      */
-    List<RelationRoleMenuPermission> findRelationRoleMenuPermissions(Integer min,Integer max);
+    List<RelationRoleMenuPermission> findRelationRoleMenuPermissions(Long min,Long max);
 
     /**
      * 获取角色资源总条数
      * @return
      */
-    List<Integer> findCountRelationRoleMenuPermissions();
+    List<Long> findCountRelationRoleMenuPermissions();
 
     List<RelationRoleMenuPermission> findRelationRoleMenuPermissions2();
 

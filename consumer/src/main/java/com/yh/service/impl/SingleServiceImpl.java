@@ -46,12 +46,12 @@ public class SingleServiceImpl implements SingleService {
     @Override
     public String syncRelationUserRoles() {
 
-        List<Integer> countRelationUserRoles = feign.findCountRelationUserRoles();
+        List<Long> countRelationUserRoles = feign.findCountRelationUserRoles();
         if (CollectionUtils.isEmpty(countRelationUserRoles)){
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}",countRelationUserRoles.size());
-        List<List<Integer>> partition = Lists.partition(countRelationUserRoles, 1000);
+        List<List<Long>> partition = Lists.partition(countRelationUserRoles, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}",partition.size());
 
         List<AppUserRole> lists = singleFindService.queryUserroles();
@@ -62,9 +62,9 @@ public class SingleServiceImpl implements SingleService {
             tempMap.put(key, appUserRole);
         }
 
-        for (List<Integer> list : partition){
-            int start = Collections.min(list);
-            int end = Collections.max(list);
+        for (List<Long> list : partition){
+            Long start = Collections.min(list);
+            Long end = Collections.max(list);
             log.info("每段的开始值&结束值：{},{}", start, end);
             return doWork2(start, end,tempMap);
         }
@@ -72,7 +72,7 @@ public class SingleServiceImpl implements SingleService {
     }
 
 
-    private String doWork2(Integer start, Integer end,Map<String, AppUserRole> tempMap){
+    private String doWork2(Long start, Long end,Map<String, AppUserRole> tempMap){
 
         List<RelationUserRole> relationUserRoles = feign.relationUserRoles(start, end);
 

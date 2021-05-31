@@ -47,13 +47,13 @@ public class SyncMenuController {
 
     @ApiOperation(value = "用户角色同步[数据处理中，请耐心等待]",notes = "用户角色同步同步",tags = {"SyncMenuController"})
     @GetMapping("/syncRelationUserRoles")
-    public String syncRelationUserRoles(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+    public String syncRelationUserRoles(@RequestParam("min")Long min,@RequestParam("max")Long max){
         return syncService.syncRelationUserRoles(min,max);
     }
 
     @ApiOperation(value = "用户角色同步[数据处理中，请耐心等待]",notes = "用户角色同步同步",tags = {"SyncMenuController"})
     @GetMapping("/syncRelationUserRoles3")
-    public String syncRelationUserRoles3(@RequestParam("min")Integer min,@RequestParam("max")Integer max){
+    public String syncRelationUserRoles3(@RequestParam("min")Long min,@RequestParam("max")Long max){
         return syncService.syncRelationUserRoles3(min,max);
     }
 

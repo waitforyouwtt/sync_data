@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 
 /**
  * (MenuPermission)表控制层
@@ -30,7 +31,7 @@ public class MenuPermissionController {
      * @return 单条数据
      */
     @GetMapping("/selectOne")
-    public MenuPermission selectOne(int id) {
+    public MenuPermission selectOne(BigInteger id) {
         return this.menuPermissionService.queryById(id);
     }
 

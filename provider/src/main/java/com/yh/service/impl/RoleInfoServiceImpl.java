@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -33,7 +34,7 @@ public class RoleInfoServiceImpl implements RoleInfoService {
      * @return 实例对象
      */
     @Override
-    public RoleInfo queryById(Long id) {
+    public RoleInfo queryById(BigInteger id) {
         return this.roleInfoDao.queryById(id);
     }
 

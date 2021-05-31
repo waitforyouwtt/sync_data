@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.math.BigInteger;
 
 /**
  * (RelationRoleMenuPermission)表控制层
@@ -30,7 +31,7 @@ public class RelationRoleMenuPermissionController {
      * @return 单条数据
      */
     @GetMapping("selectOne")
-    public RelationRoleMenuPermission selectOne(Integer id) {
+    public RelationRoleMenuPermission selectOne(BigInteger id) {
         return this.relationRoleMenuPermissionService.queryById(id);
     }
 

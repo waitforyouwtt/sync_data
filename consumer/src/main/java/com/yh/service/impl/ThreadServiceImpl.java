@@ -11,7 +11,7 @@ import com.yh.entity.*;
 import com.yh.feign.DataSynchronizeFeign;
 import com.yh.service.SingleFindService;
 import com.yh.service.ThreadService;
-import com.yh.utils.Constant;
+import com.yh.utils.ConstantPool;
 import com.yh.utils.HttpUtils;
 import com.yh.utils.SpringContextHolder;
 import com.yh.utils.StringCustomizedUtils;
@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -52,13 +54,13 @@ public class ThreadServiceImpl implements ThreadService {
     @Async
     @Override
     public String menuSyncResource() {
-        List<Integer> countMenus = feign.findCountMenus();
+        List<Long> countMenus = feign.findCountMenus();
         if (CollectionUtils.isEmpty(countMenus)) {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}", countMenus.size());
         Collections.sort(countMenus);
-        List<List<Integer>> partition = Lists.partition(countMenus, 1000);
+        List<List<Long>> partition = Lists.partition(countMenus, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}", partition.size());
 
         //使用线程池来发送各个用户的消息/通知任务集合
@@ -71,9 +73,9 @@ public class ThreadServiceImpl implements ThreadService {
             sendMultiMsgSvc.submit(new Callable<String>() {
                 @Override
                 public String call() throws Exception {
-                    List<Integer> lists = p;
-                    int start = Collections.min(lists);
-                    int end = Collections.max(lists);
+                    List<Long> lists = p;
+                    Long start = Collections.min(lists);
+                    Long end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
                     return saveResourceByMenu(start, end);
                 }
@@ -86,13 +88,13 @@ public class ThreadServiceImpl implements ThreadService {
     @Async
     @Override
     public String menuPermissionSyncResource() {
-        List<Integer> countMenus = feign.findCountPermission();
+        List<Long> countMenus = feign.findCountPermission();
         if (CollectionUtils.isEmpty(countMenus)) {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}", countMenus.size());
         Collections.sort(countMenus);
-        List<List<Integer>> partition = Lists.partition(countMenus, 1000);
+        List<List<Long>> partition = Lists.partition(countMenus, 500);
         log.info("根据同步数据总条数运算得到的分段条数：{}", partition.size());
 
         //使用线程池来发送各个用户的消息/通知任务集合
@@ -105,9 +107,9 @@ public class ThreadServiceImpl implements ThreadService {
             sendMultiMsgSvc.submit(new Callable<String>() {
                 @Override
                 public String call() throws Exception {
-                    List<Integer> lists = p;
-                    int start = Collections.min(lists);
-                    int end = Collections.max(lists);
+                    List<Long> lists = p;
+                    Long start = Collections.min(lists);
+                    Long end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
                     return saveResourceByButton(start, end);
                 }
@@ -366,20 +368,20 @@ public class ThreadServiceImpl implements ThreadService {
     @Override
     public String roleResource() {
 
-        List<Integer> countRoleResource = feign.findCountRelationRoleMenuPermissions();
+        List<Long> countRoleResource = feign.findCountRelationRoleMenuPermissions();
         if (CollectionUtils.isEmpty(countRoleResource)) {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}", countRoleResource.size());
         Collections.sort(countRoleResource);
-        List<List<Integer>> partition = Lists.partition(countRoleResource, 1000);
+        List<List<Long>> partition = Lists.partition(countRoleResource, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}", partition.size());
 
         //查询所有的menu_permission
         List<MenuPermission> menuPermissions = feign.menuPermissions();
-        Map<Integer, MenuPermission> menuPermissionMap = new HashMap<>();
+        Map<Long, MenuPermission> menuPermissionMap = new HashMap<>();
         for (MenuPermission menuPermission : menuPermissions) {
-            menuPermissionMap.put(menuPermission.getId(), menuPermission);
+            menuPermissionMap.put(menuPermission.getId().longValue(), menuPermission);
         }
 
         //存放应用
@@ -406,9 +408,9 @@ public class ThreadServiceImpl implements ThreadService {
             service.submit(new Callable<String>() {
                 @Override
                 public String call() {
-                    List<Integer> lists = p;
-                    int start = Collections.min(lists);
-                    int end = Collections.max(lists);
+                    List<Long> lists = p;
+                    Long start = Collections.min(lists);
+                    Long end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
                     try {
                         saveRoleResource(start, end, productMap, tenantMap, menuPermissionMap);
@@ -427,13 +429,13 @@ public class ThreadServiceImpl implements ThreadService {
     @Async
     @Override
     public String syncRelationUserRoles() {
-        List<Integer> countRelationUserRoles = feign.findCountRelationUserRoles();
+        List<Long> countRelationUserRoles = feign.findCountRelationUserRoles();
         if (CollectionUtils.isEmpty(countRelationUserRoles)) {
             return "暂无数据需要同步";
         }
         log.info("需要同步数据的总体条数:{}", countRelationUserRoles.size());
         Collections.sort(countRelationUserRoles);
-        List<List<Integer>> partition = Lists.partition(countRelationUserRoles, 1000);
+        List<List<Long>> partition = Lists.partition(countRelationUserRoles, 1000);
         log.info("根据同步数据总条数运算得到的分段条数：{}", partition.size());
 
         //查询全部应用
@@ -459,9 +461,9 @@ public class ThreadServiceImpl implements ThreadService {
             sendMultiMsgSvc.submit(new Callable<String>() {
                 @Override
                 public String call() {
-                    List<Integer> lists = p;
-                    int start = Collections.min(lists);
-                    int end = Collections.max(lists);
+                    List<Long> lists = p;
+                    Long start = Collections.min(lists);
+                    Long end = Collections.max(lists);
                     log.info("每段的开始值&结束值：{},{}", start, end);
                     try {
                         saveUserRole(start, end, tenantMap);
@@ -499,14 +501,16 @@ public class ThreadServiceImpl implements ThreadService {
             vo.setGrantType("authorization_code");
             vo.setRefreshTokenExpirationTime( 300L );
             vo.setTokenExpirationTime( 200L );
+            vo.setClientId(info.getClientId());
+            vo.setClientSecret(info.getClientSecret());
             String json = JSONUtil.toJsonStr( vo );
-            httpUtils.postJson(  json, Constant.APPLICATION_URL);
+            httpUtils.postJson(  json, ConstantPool.APPLICATION_URL);
         }
         return "成功";
     }
 
     //第二步落库区：------------------------------------------------------------------------------------------------------------------------
-    private String saveResourceByMenu(Integer start, Integer end) {
+    private String saveResourceByMenu(Long start, Long end) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
         List<MenuInfo> menuInfos = feign.findMenuBetweenIds(start, end);
         if (CollectionUtils.isEmpty(menuInfos)) {
@@ -531,7 +535,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveResourceByButton(Integer start, Integer end) {
+    private String saveResourceByButton(Long start, Long end) {
         AppProductResourceDao resourceDao = SpringContextHolder.getBean(AppProductResourceDao.class);
         List<MenuPermission> menuPermissions = feign.menuPermissionBetweenIds(start, end);
         if (CollectionUtils.isEmpty(menuPermissions)) {
@@ -574,17 +578,22 @@ public class ThreadServiceImpl implements ThreadService {
         }
 
         if (!CollectionUtils.isEmpty(data)) {
-            List<List<AppProductRole>> partition = Lists.partition(data, 500);
+            List<List<AppProductRole>> partition = Lists.partition(data, 100);
             for (List<AppProductRole> params : partition) {
                 log.info("开始插入数据库");
-                roleDao.insertOrUpdateBatch(params);
+                try{
+                    roleDao.insertOrUpdateBatch(params);
+                }catch (Exception e){
+                    e.printStackTrace();
+                    log.error("错误:{}",JSONUtil.toJsonStr(params));
+                }
             }
         }
         log.info("发出线程任务完成的信号");
         return "true";
     }
 
-    private String saveRoleResource(Integer start, Integer end, Map<String, AppProduct> productMap, Map<String, String> tenantMap, Map<Integer, MenuPermission> menuPermissionMap) {
+    private String saveRoleResource(Long start, Long end, Map<String, AppProduct> productMap, Map<String, String> tenantMap, Map<Long, MenuPermission> menuPermissionMap) {
         AppRoleResourceDao roleResourceDao = SpringContextHolder.getBean(AppRoleResourceDao.class);
         List<RelationRoleMenuPermission> data = feign.relationRoleMenuPermissions(start, end);
 
@@ -612,7 +621,7 @@ public class ThreadServiceImpl implements ThreadService {
         return "true";
     }
 
-    private String saveUserRole(Integer start, Integer end, Map<String, String> tenantMap) {
+    private String saveUserRole(Long start, Long end, Map<String, String> tenantMap) {
         AppUserRoleDao appUserRoleDao = SpringContextHolder.getBean(AppUserRoleDao.class);
         List<RelationUserRole> relationUserRoles = feign.relationUserRoles(start, end);
 
@@ -625,7 +634,7 @@ public class ThreadServiceImpl implements ThreadService {
         roleUsers = convertRoleUser(relationUserRoles, tenantMap);
 
         if (!CollectionUtils.isEmpty(roleUsers)) {
-            List<List<AppUserRole>> partition = Lists.partition(roleUsers, 500);
+            List<List<AppUserRole>> partition = Lists.partition(roleUsers, 100);
             for (List<AppUserRole> list : partition) {
                 appUserRoleDao.insertOrUpdateBatch(list);
             }
@@ -662,7 +671,7 @@ public class ThreadServiceImpl implements ThreadService {
             resource.setProductCode(info.getBusinessType());
             resource.setTenantCode(tenantCode);
 
-            if (info.getParentId() == null || info.getParentId() == 0) {
+            if (info.getParentId() == null || info.getParentId().intValue() == 0) {
                 resource.setParentCode("0");
             } else {
                 resource.setParentCode(String.valueOf(info.getParentId()));
@@ -712,15 +721,15 @@ public class ThreadServiceImpl implements ThreadService {
             tenantMap.put(v.getProductCode(), v.getCode());
         });
 
-        List<Integer> operationObjectiveIds = data.stream().map(MenuPermission::getOperationObjectiveId).distinct().collect(Collectors.toList());
+        List<Long> operationObjectiveIds = data.stream().map(MenuPermission::getOperationObjectiveId).collect(Collectors.toList());
 
         //Integer转string
         String menuIdString = operationObjectiveIds.stream().map(String::valueOf).collect(Collectors.joining(","));
         List<MenuInfo> menus = feign.findMenuByIds(menuIdString);
 
-        Map<Integer, MenuInfo> menuInfoMap = new HashMap<>();
+        Map<Long, MenuInfo> menuInfoMap = new HashMap<>();
         for (MenuInfo menuInfo : menus) {
-            menuInfoMap.put(menuInfo.getId(), menuInfo);
+            menuInfoMap.put(menuInfo.getId().longValue(), menuInfo);
         }
 
         List<AppProductResource> resources = new ArrayList<>();
@@ -879,7 +888,7 @@ public class ThreadServiceImpl implements ThreadService {
         return result;
     }
 
-    public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions, Map<String, AppProduct> productMap, Map<String, String> tenantMap, Map<Integer, MenuPermission> menuPermissionMap) {
+    public List<AppRoleResource> convertRoleResource(List<RelationRoleMenuPermission> roleMenuPermissions, Map<String, AppProduct> productMap, Map<String, String> tenantMap, Map<Long, MenuPermission> menuPermissionMap) {
         List<AppRoleResource> result = new ArrayList<>();
 
         Map<String, String> waitData = new HashMap<>();
@@ -927,8 +936,8 @@ public class ThreadServiceImpl implements ThreadService {
             }
             view.setIsDelete(info.getIsDelete());
 
-            view.setCreatedTime(new Date());
-            view.setUpdatedTime(new Date());
+            view.setCreatedTime(info.getCreatedTime());
+            view.setUpdatedTime(info.getUpdatedTime());
             result.add(view);
             waitData.put(view.getResourceCode(), view.getProductCode());
         }

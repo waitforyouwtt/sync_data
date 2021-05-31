@@ -5,6 +5,7 @@ import com.yh.entity.RelationUserRole;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ public interface RelationUserRoleDao extends BaseMapper<RelationUserRole> {
      * @param id 主键
      * @return 实例对象
      */
-    RelationUserRole queryById(Integer id);
+    RelationUserRole queryById(BigInteger id);
 
     /**
      * 查询指定行数据
@@ -88,13 +89,13 @@ public interface RelationUserRoleDao extends BaseMapper<RelationUserRole> {
      * @param max
      * @return
      */
-    List<RelationUserRole> queryBetweenId(@Param("min") Integer min,@Param("max") Integer max);
+    List<RelationUserRole> queryBetweenId(@Param("min") Long min,@Param("max") Long max);
 
-    List<Integer> queryIds(@Param("min") Integer min,@Param("max") Integer max);
+    List<Integer> queryIds(@Param("min") Long min,@Param("max") Long max);
 
     /**
      * 获取用户角色总条数
      * @return
      */
-    List<Integer> findCountRelationUserRoles();
+    List<Long> findCountRelationUserRoles();
 }
